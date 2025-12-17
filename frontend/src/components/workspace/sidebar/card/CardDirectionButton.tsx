@@ -2,17 +2,17 @@
 
 import React from 'react';
 
-interface DirectionButtonProps {
+interface CardDirectionButtonProps {
   label: string;
   isActive: boolean;
   onClick: () => void;
 }
 
-export default function DirectionButton({
+export default function CardDirectionButton({
   label,
   isActive,
   onClick,
-}: DirectionButtonProps) {
+}: CardDirectionButtonProps) {
   return (
     <button
       onClick={onClick}

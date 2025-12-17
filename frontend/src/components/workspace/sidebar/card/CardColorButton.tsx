@@ -2,17 +2,17 @@
 
 import React from 'react';
 
-interface ColorButtonProps {
+interface CardColorButtonProps {
   color: string;
   isActive: boolean;
   onClick: () => void;
 }
 
-export default function ColorButton({
+export default function CardColorButton({
   color,
   isActive,
   onClick,
-}: ColorButtonProps) {
+}: CardColorButtonProps) {
   return (
     <button
       onClick={onClick}
