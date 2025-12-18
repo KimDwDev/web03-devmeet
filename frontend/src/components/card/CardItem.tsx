@@ -71,11 +71,10 @@ export default function CardItem({
       animate={
         isSelected
           ? {
-              // y: [-RADIUS, -RADIUS - 240, -RADIUS - 200],
-              y: [-RADIUS, -RADIUS - 240, centerY],
+              y: [-RADIUS, -RADIUS - 360, centerY, centerY, centerY],
               x: '-50%',
-              scale: [1, 2, 1, 1, 3],
-              rotate: [0, 0, -90, -90, -90],
+              scale: [1, 1.5, 2.5, 2.5, 3],
+              rotate: [0, -90, -90, -90, -90],
               rotateY: [0, 0, 0, 0, 180],
             }
           : {
@@ -87,9 +86,9 @@ export default function CardItem({
       transition={
         isSelected
           ? {
-              // times: [0, 0.3, 0.5, 0.8, 1],
-              times: [0, 0.2, 0.4, 0.6, 1], // 시점 최적화 (타임 고려중..)
-              duration: 3.5,
+              // [시작, 상승중, 중앙도착, 대기, 뒤집기완료]
+              times: [0, 0.2, 0.5, 0.8, 1],
+              duration: 4,
               ease: 'easeInOut',
             }
           : { type: 'spring', stiffness: 260, damping: 26 }
