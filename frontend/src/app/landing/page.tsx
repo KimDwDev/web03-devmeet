@@ -30,21 +30,27 @@ export default function LandingPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
   return (
     <main className="relative h-screen w-screen overflow-hidden bg-[#9E3B34]">
       {/* 랜딩 타이틀 */}
-      <div className="absolute top-24 w-full text-center text-white">
-        <h1 className="text-[36px] leading-snug font-semibold">
-          새로운 시작이 될
-          <br />
-          카드를 골라보세요
-        </h1>
-      </div>
+      {!selectedId && (
+        <div className="absolute top-24 w-full text-center text-white">
+          <h1 className="text-[36px] leading-snug font-semibold">
+            새로운 시작이 될
+            <br />
+            카드를 골라보세요
+          </h1>
+        </div>
+      )}
 
       {/* 카드 영역 */}
       <motion.div
-        className="absolute -bottom-210 left-1/2 -translate-x-1/2"
-        drag="x"
+        className={`absolute -bottom-220 left-1/2 -translate-x-1/2 ${
+          selectedId ? 'pointer-events-none' : '' // 선택 시 카드 전체 클릭 차단
+        }`}
+        drag={selectedId ? false : 'x'}
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.06}
         onDragStart={() => {
@@ -63,6 +69,8 @@ export default function LandingPage() {
           <CardItem
             key={card.id}
             index={idx}
+            isSelected={selectedId === card.id}
+            onSelect={() => setSelectedId(card.id)}
             total={CARDS.length}
             rotation={smoothRotation}
             isDragging={isDragging}
