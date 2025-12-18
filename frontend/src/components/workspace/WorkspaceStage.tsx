@@ -10,14 +10,14 @@ import RenderItem from './items/RenderItem';
 
 export default function WorkspaceStage() {
   // Store 상태 및 액션
-  const cardData = useWorkspaceStore((s) => s.cardData);
-  const selectedId = useWorkspaceStore((s) => s.selectedId);
-  const zoom = useWorkspaceStore((s) => s.zoom);
-  const removeItem = useWorkspaceStore((s) => s.removeItem);
-  const selectItem = useWorkspaceStore((s) => s.selectItem);
-  const updateItem = useWorkspaceStore((s) => s.updateItem);
-  const editingNode = useWorkspaceStore((s) => s.editingNode);
-  const setEditingNode = useWorkspaceStore((s) => s.setEditingNode);
+  const cardData = useWorkspaceStore((state) => state.cardData);
+  const selectedId = useWorkspaceStore((state) => state.selectedId);
+  const zoom = useWorkspaceStore((state) => state.zoom);
+  const removeItem = useWorkspaceStore((state) => state.removeItem);
+  const selectItem = useWorkspaceStore((state) => state.selectItem);
+  const updateItem = useWorkspaceStore((state) => state.updateItem);
+  const editingNode = useWorkspaceStore((state) => state.editingNode);
+  const setEditingNode = useWorkspaceStore((state) => state.setEditingNode);
 
   // 접근 Ref 설정 (stage : 워크스페이스 / transformer : 선택 및 변형 도구)
   const stageRef = useRef<Konva.Stage | null>(null);
