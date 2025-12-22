@@ -1,5 +1,5 @@
-import { NotAllowMinValue } from "@/0.common/error/domain/user/user.error";
-import { baseVo } from "@/1.domain/shared";
+import { NotAllowMinValue } from "@error/domain/user/user.error";
+import { baseVo } from "@domain/shared";
 
 
 export type CardStateProps = {

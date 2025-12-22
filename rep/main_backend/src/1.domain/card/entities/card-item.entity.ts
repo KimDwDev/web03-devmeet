@@ -1,4 +1,4 @@
-import { cardIdVo, cardItemIsLockedVo, cardItemIsVisibleVo, cardItemNameVo, cardItemOpacityVo, cardItemPositionVo, CardItemProps, cardItemRotationVo, cardItemScaleVo, cardItemSizeVo, cardItemTypeVo, cardItemZindexVo, itemIdVo } from "../vo";
+import { cardIdVo, cardItemIsLockedVo, cardItemIsVisibleVo, cardItemNameVo, cardItemOpacityVo, cardItemPositionVo, CardItemProps, cardItemRotationVo, cardItemScaleVo, cardItemSizeVo, cardItemTypeVo, cardItemZindexVo, itemIdVo } from "@domain/card/vo";
 
 
 export class CardItem {

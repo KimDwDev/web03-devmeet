@@ -36,18 +36,6 @@ export function cardIdVo( card_id : CardProps["card_id"] ) : string {
   return card_id;
 };
 
-// category_id를 검증하기 위함
-export function categoryIdVo( category_id : CardProps["category_id"] ) : number {
-  const name : string = "category_id";
-
-  if ( category_id !== 0 ) baseVo({ name, value : category_id, type : "number" });
-
-  const min : number = 0;
-  if ( category_id < min ) throw new NotAllowMinValue({ name, min });
-
-  return category_id;
-};
-
 // thumnail을 검증
 export function thumbnailPathVo( thumbnail_path : Exclude<CardProps["thumbnail_path"], undefined> ) : string {
   const name : string = "thumbnail_path";

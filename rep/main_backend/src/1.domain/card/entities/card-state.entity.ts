@@ -1,5 +1,5 @@
 import { idVo } from "@domain/shared";
-import { cardIdVo, CardStateProps, likeCountVo, viewCountVo } from "../vo";
+import { cardIdVo, CardStateProps, likeCountVo, viewCountVo } from "@domain/card/vo";
 
 
 export class CardState {
@@ -11,7 +11,7 @@ export class CardState {
   private readonly updated_at : Exclude<CardStateProps["updated_at"], undefined>;
 
   constructor({ 
-    id, card_id, like_count, view_count, created_at, updated_at
+    id, card_id, like_count, view_count, created_at = new Date(), updated_at = new Date()
   } : CardStateProps) {
     this.id = idVo(id);
     card_id = cardIdVo(card_id);

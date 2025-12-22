@@ -1,6 +1,6 @@
 import { NotAllowCardItemType, NotAllowRangeType } from "@error/domain/card/card.error";
 import { NotAllowMaxLengthText, NotAllowMinValue, NotTypeUUidV7 } from "@error/domain/user/user.error";
-import { baseVo } from "@/1.domain/shared";
+import { baseVo } from "@domain/shared";
 
 
 export const cardItemTypes : Array<string> = ['text', 'image', 'video'] as const;

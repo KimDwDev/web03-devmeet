@@ -1,5 +1,6 @@
 import { userIdVo } from "@domain/user/user.vo";
-import { backgroundColorVo, cardIdVo, CardProps, categoryIdVo, statusVo, thumbnailPathVo, titleVo, workspaceHeightVo, workspaceWidthVo } from "@domain/card/vo";
+import { backgroundColorVo, cardIdVo, CardProps, statusVo, thumbnailPathVo, titleVo, workspaceHeightVo, workspaceWidthVo } from "@domain/card/vo";
+import { idVo } from "@domain/shared";
 
 
 export class Card {
@@ -22,7 +23,7 @@ export class Card {
    } : CardProps) {
     this.card_id = cardIdVo(card_id);
     this.user_id = userIdVo(user_id);
-    this.category_id = categoryIdVo(category_id);
+    this.category_id = idVo(category_id);
     this.thumbnail_path = thumbnail_path ? thumbnailPathVo(thumbnail_path) : undefined;
     this.status = statusVo(status);
     this.title = titleVo(title);
