@@ -10,6 +10,7 @@ import {
   InsertOauthAndUserDataToMysql,
   InsertUserDataToMySql,
 } from './user/user.outbound';
+import { InsertCardAndCardStateDataToMysql } from './card/card.outbound';
 
 @Global()
 @Module({
@@ -59,6 +60,7 @@ import {
     SelectUserAndOauthWhereEmailFromMysql,
     InsertOauthAndUserDataToMysql,
     InsertUserDataToMySql,
+    InsertCardAndCardStateDataToMysql,
   ],
   exports: [
     MYSQL_DB,
@@ -66,6 +68,7 @@ import {
     SelectUserAndOauthWhereEmailFromMysql,
     InsertOauthAndUserDataToMysql,
     InsertUserDataToMySql,
+    InsertCardAndCardStateDataToMysql,
   ],
 })
 export class MysqlModule {}

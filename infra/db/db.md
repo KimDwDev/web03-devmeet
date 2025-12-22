@@ -112,8 +112,8 @@ CREATE TABLE `Cards` (
   CONSTRAINT check_background_color
     CHECK (
       background_color REGEXP '^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$'
-      OR background_color REGEXP '^rgb\\([0-9]{1,3},[0-9]{1,3},[0-9]{1,3}\\)$'
-      OR background_color REGEXP '^rgba\\([0-9]{1,3},[0-9]{1,3},[0-9]{1,3},(0(\\.[0-9]+)?|1(\\.0+)?)\\)$'
+      OR background_color REGEXP '^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$'
+      OR background_color REGEXP '^rgba\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*(0(\.\d+)?|1(\.0+)?)\s*\)$'
       OR background_color IN ('transparent', 'currentColor')
     )
 );

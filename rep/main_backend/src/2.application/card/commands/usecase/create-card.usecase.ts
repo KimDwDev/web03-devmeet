@@ -30,7 +30,7 @@ export class CreateCardUsecase<T> {
     this.insertCardAndCardStateToDb = insertCardAndCardStateToDb;
   }
 
-  async execute( dto : CreateCardDto ) {
+  async execute( dto : CreateCardDto ) : Promise<string> {
 
     // 1. 정합성 파악 
     const cardAggregate = CardAggregate.createCard({ 
