@@ -1,5 +1,5 @@
 import { NotAllowCardItemType, NotAllowRangeType } from "@error/domain/card/card.error";
-import { NotAllowMaxLengthText, NotAllowMinValue, NotTypeUUidV7 } from "@error/domain/user/user.error";
+import { NotAllowMaxLengthText, NotAllowMinValue, NotAllowType, NotTypeUUidV7 } from "@error/domain/user/user.error";
 import { baseVo } from "@domain/shared";
 
 
@@ -10,21 +10,22 @@ export type CardItemProps = {
   item_id : string;
   card_id : string;
   type : CardItemTypeProps;
-  x : number,
-  y : number,
-  width : number,
-  height : number | undefined,
-  rotation : number,
-  scale_x : number,
-  scale_y : number,
-  opacity : number | undefined,
-  z_index : number | undefined,
-  is_locked : boolean | undefined,
-  is_visible : boolean | undefined,
-  name : string | undefined,
-  created_at? : Date,
-  updated_at? : Date,
-  deleted_at? : Date | undefined,
+  x : number;
+  y : number;
+  width : number;
+  height : number | undefined;
+  rotation : number;
+  scale_x : number;
+  scale_y : number;
+  opacity : number | undefined;
+  z_index : number | undefined;
+  is_locked : boolean | undefined;
+  is_visible : boolean | undefined;
+  name : string | undefined;
+  option : Record<string, any>;
+  created_at? : Date;
+  updated_at? : Date;
+  deleted_at? : Date | undefined;
 };
 
 // item_id 체크
@@ -151,14 +152,11 @@ export function cardItemNameVo( name : Exclude<CardItemProps["name"], undefined>
   return name;
 };
 
-export function cardItemSrcVo( src : string ) : string {
-  const name : string = "src";
+// option에 대한 타입 체크
+export function cardItemOptionVo( option : CardItemProps["option"] ) : Record<string, any> {
+  const name : string = "option";
 
-  baseVo({ name, value : src, type : "string" });
-  src = src.trim();
+  if ( !option || option === null || option === undefined || typeof option !== "object" ) throw new NotAllowType({ name, type : "json" });
 
-  const length : number = 2048;
-  if ( src.length > length ) throw new NotAllowMaxLengthText({ name, length });
-
-  return src;
-}
+  return option;
+};

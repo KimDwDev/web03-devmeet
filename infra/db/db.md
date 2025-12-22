@@ -218,7 +218,7 @@ CREATE TABLE `Card_item_assets`(
   key_name VARCHAR(2048) NOT NULL,
   mime_type VARCHAR(50) NOT NULL,
   `size` BIGINT UNSIGNED NOT NULL, 
-  `status` ENUM('uploading', 'ready', 'failed') NOT NULL
+  `status` ENUM('uploading', 'ready', 'failed') NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
