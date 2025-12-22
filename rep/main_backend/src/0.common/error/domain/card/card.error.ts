@@ -36,3 +36,21 @@ export class NotAllowRangeType extends BaseError {
     });
   };
 };  
+
+export class NotAllowTextFillType extends BaseError {
+  constructor() {
+    super({
+      message : "카드 텍스트의 색깔 타입을 다시 확인해주시길 바랍니다.",
+      status : 500
+    })
+  };
+};
+
+export class NotAllowTextAlignType extends BaseError {
+  constructor() {
+    super({
+      message : "카드 텍스트의 align의 종류를 다시 확인해주시길 바랍니다.",
+      status : 500
+    })
+  };
+};
