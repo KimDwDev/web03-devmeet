@@ -1,10 +1,11 @@
-import { GetMultiPartVerGroupIdFromDisk, GetUploadUrlFromDisk } from "@app/ports/disk/disk.inbound";
-import { CreateMultipartUploadCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetMultiPartUploadUrlFromDisk, GetMultiPartVerGroupIdFromDisk, GetUploadUrlFromDisk } from "@app/ports/disk/disk.inbound";
+import { CreateMultipartUploadCommand, PutObjectCommand, S3Client, UploadPartCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Inject, Injectable } from "@nestjs/common";
 import { S3_DISK } from "../../disk.constants";
 import { ConfigService } from "@nestjs/config";
 import path from "path";
+import { GetUrlTypes } from "@app/card/commands/dto";
 
 
 @Injectable()
@@ -64,4 +65,34 @@ export class GetMultipartUploadIdFromS3Bucket extends GetMultiPartVerGroupIdFrom
 
     return res.UploadId!;
   };
+};
+
+@Injectable()
+export class GetPresignedUrlsFromS3Bucket extends GetMultiPartUploadUrlFromDisk<S3Client> {
+
+  constructor(
+    @Inject(S3_DISK) disk : S3Client,
+    private readonly config : ConfigService
+  ) { super(disk); };
+
+  async getUrls({ upload_id, pathName, partNumbers }: { upload_id: string; pathName: string; partNumbers: Array<number>; }): Promise<Array<GetUrlTypes>> {
+    
+    const Bucket : string = this.config.get<string>("NODE_APP_AWS_BUCKET_NAME", "bucket_name");
+    const expiresIn : number = this.config.get<number>("NODE_APP_AWS_PRESIGNED_URL_EXPIRES_SEC", 180);
+
+    return Promise.all(
+      partNumbers.map(async (partNumber : number) => {
+        const command = new UploadPartCommand({
+          Bucket,
+          Key : pathName,
+          UploadId : upload_id,
+          PartNumber : partNumber
+        });
+
+        const upload_url : string = await getSignedUrl(this.disk, command, { expiresIn });
+
+        return { upload_url, part_number : partNumber };
+    })
+  );
+  }
 };
