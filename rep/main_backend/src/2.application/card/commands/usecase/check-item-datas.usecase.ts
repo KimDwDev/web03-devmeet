@@ -60,7 +60,7 @@ export class CheckCardItemDatasUsecase<T, ET, DT> {
     }
 
     // 2. 검증 
-    const checked : boolean = await this.checkUploadFromDisk.checks({ pathName : filePath, tags : dto.tags }); // 여기 안에서 문제가 발생하면 어디가 문제 였는지 이야기 해주면 될 것 같다. 
+    const checked : boolean = await this.checkUploadFromDisk.checks({ pathName : filePath, upload_id : dto.upload_id, tags : dto.tags }); // 여기 안에서 문제가 발생하면 어디가 문제 였는지 이야기 해주면 될 것 같다. 
     if ( !checked ) throw new NotAllowUploadDataToCheck(undefined);
 
     // 3. 변경 ( db, cache )

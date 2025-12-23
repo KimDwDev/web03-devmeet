@@ -50,7 +50,7 @@ export class CheckUploadDataFromDisk<T> extends InboundBaseDisk<T> {
 export class CheckUploadDatasFromDisk<T> extends InboundBaseDisk<T> {
   constructor( disk : T ) { super(disk); };
 
-  public async checks({ pathName, tags } : { pathName : string, tags : any }) : Promise<boolean> | never {
+  public async checks({ pathName, upload_id, tags } : { pathName : string, upload_id : string, tags : any }) : Promise<boolean> | never {
     throw new NullInterfaceError();
   };
 };

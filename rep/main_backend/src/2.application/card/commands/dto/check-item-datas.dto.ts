@@ -9,5 +9,6 @@ export type CheckCardItemDataTag = {
 export type CheckCardItemDatasUrlProps = {
   card_id : string;
   item_id : string;
+  upload_id : string;
   tags : Array<CheckCardItemDataTag>;
 };
