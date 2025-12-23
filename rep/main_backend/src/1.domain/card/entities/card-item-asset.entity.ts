@@ -5,7 +5,7 @@ import {
   cardItemAssetSizeVo,
   cardItemAssetStatusVo,
 } from '@domain/card/vo/card-item-asset.vo';
-import { itemIdVo } from '@domain/card/vo';
+import { cardIdVo, itemIdVo } from '@domain/card/vo';
 
 export class CardItemAsset {
   private readonly item_id: CardItemAssetProps['item_id'];
@@ -13,6 +13,7 @@ export class CardItemAsset {
   private readonly mime_type: CardItemAssetProps['mime_type'];
   private readonly size: CardItemAssetProps['size'];
   private readonly status: CardItemAssetProps['status'];
+  private readonly card_id : CardItemAssetProps["card_id"];
   private readonly created_at: Exclude<
     CardItemAssetProps['created_at'],
     undefined
@@ -28,6 +29,7 @@ export class CardItemAsset {
     mime_type,
     size,
     status,
+    card_id,
     created_at = new Date(),
     updated_at = new Date(),
   }: CardItemAssetProps) {
@@ -36,6 +38,7 @@ export class CardItemAsset {
     this.mime_type = cardItemAssetMimeTypeVo(mime_type);
     this.size = cardItemAssetSizeVo(size);
     this.status = cardItemAssetStatusVo(status);
+    this.card_id = cardIdVo(card_id);
     this.created_at =
       created_at && created_at instanceof Date ? created_at : new Date();
     this.updated_at =
@@ -59,6 +62,9 @@ export class CardItemAsset {
   getStatus(): CardItemAssetProps['status'] {
     return this.status;
   }
+  getCardId() : CardItemAssetProps["card_id"] {
+    return this.card_id
+  }
   getCreatedAt(): Exclude<CardItemAssetProps['created_at'], undefined> {
     return this.created_at;
   }
@@ -73,6 +79,7 @@ export class CardItemAsset {
       mime_type: this.mime_type,
       size: this.size,
       status: this.status,
+      card_id : this.card_id,
       created_at: this.created_at,
       updated_at: this.updated_at,
     };

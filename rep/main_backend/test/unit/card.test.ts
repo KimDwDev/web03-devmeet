@@ -1720,8 +1720,9 @@ describe("domain 레이어에 card와 관련된 단위테스트", () => {
       key_name = key_name as string;
       mime_type = mime_type as string;
       size = size as number;
+      const card_id : string = '018e9a48-3c8a-7b20-bc9d-9f5b8e9f88c0'
       return new CardItemAsset({
-        item_id, key_name, mime_type, size, status, created_at, updated_at
+        item_id, key_name, mime_type, size, status, card_id, created_at, updated_at
       });
     };
     if ( ok ) {

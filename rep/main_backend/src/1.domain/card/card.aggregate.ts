@@ -15,7 +15,7 @@ type CreateCardItemInput = Omit<
 
 type CreateCardItemAssetInput = Omit<
   CardItemAssetProps,
-  'item_id' | "status" | 'created_at' | 'updated_at' | 'deleted_at'
+  "card_id" | 'item_id' | "status" | 'created_at' | 'updated_at' | 'deleted_at'
 >;
 
 export class CardAggregate {
@@ -158,6 +158,7 @@ export class CardAggregate {
       mime_type: cardItemAssetInput.mime_type,
       size: cardItemAssetInput.size,
       status: "uploading",
+      card_id : this.card.getCardId(),
       created_at: now,
       updated_at: now,
     });

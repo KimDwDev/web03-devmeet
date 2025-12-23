@@ -19,6 +19,7 @@ export type CardItemAssetProps = {
   mime_type: string;
   size: number;
   status: CardItemAssetStatusProps;
+  card_id : string;
   created_at?: Date;
   updated_at?: Date;
 };

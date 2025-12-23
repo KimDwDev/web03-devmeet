@@ -119,7 +119,7 @@ export class UploadingCardItemUsecase<T, ET> {
         cardItemAssetInput : {
           key_name : dto.file_info.path,
           mime_type : dto.file_info.mime_type,
-          size : dto.file_info.size
+          size : dto.file_info.size,
         },
         itemIdGenerator : this.itemIdGenerator
       });
@@ -144,7 +144,7 @@ export class UploadingCardItemUsecase<T, ET> {
           const upload_url : string = await this.getUploadUrlFromDisk.getUrl({ pathName : [
             cardItem.card_id, 
             cardItem.item_id, 
-            dto.file_info.path
+            cardAsset.key_name
           ], mime_type : cardAsset.mime_type });
 
           // 4. item_id, presigned_url 반환
@@ -156,7 +156,7 @@ export class UploadingCardItemUsecase<T, ET> {
           const upload_id : string = await this.getMultiVerGroupIdFromDisk.getMultiId({ pathName : [
             cardItem.card_id, 
             cardItem.item_id, 
-            dto.file_info.path
+            cardAsset.key_name
           ], mime_type : cardAsset.mime_type });
 
           // 4. item_id, upload_id, part_size 반환
