@@ -29,7 +29,7 @@ export type CreateCardItemDataDto = {
 };
 
 export type MiniSizeFileType = {
-  presigned_url : string;
+  upload_url : string;
 };
 
 export type BigSizeFileType = {

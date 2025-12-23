@@ -5,13 +5,15 @@ import { IdGenerator } from "@domain/shared";
 import { CardItemAssetProps, CardItemProps } from "@domain/card/vo";
 import { NotAllowCreateCardItemNotUploadInfo, NotCreateCardItemData } from "@error/application/card/card.error";
 import { DeleteValueToDb, InsertValueToDb } from "@app/ports/db/db.outbound";
+import { GetUploadUrlFromDisk } from "@/2.application/ports/disk/disk.inbound";
 
 
-type UploadCardItemUsecaseProps<T> = {
+type UploadCardItemUsecaseProps<T, ET> = {
   itemIdGenerator : IdGenerator;
   insertCardItemToDb : InsertValueToDb<T>;
   insertCardItemAndCardItemAssetToDb : InsertValueToDb<T>;
   deleteCardItemAndCardItemAssetToDb : DeleteValueToDb<T>;
+  getUploadUrlFromDisk : GetUploadUrlFromDisk<ET>
 };
 
 export type InsertCardItemAndAssetDataProps = {
@@ -19,20 +21,22 @@ export type InsertCardItemAndAssetDataProps = {
   cardAsset : Required<CardItemAssetProps>;
 };
 
-export class UploadingCardItemUsecase<T> {
+export class UploadingCardItemUsecase<T, ET> {
 
-  private readonly itemIdGenerator : UploadCardItemUsecaseProps<T>["itemIdGenerator"];
-  private readonly insertCardItemToDb : UploadCardItemUsecaseProps<T>["insertCardItemToDb"];
-  private readonly insertCardItemAndCardItemAssetToDb : UploadCardItemUsecaseProps<T>["insertCardItemAndCardItemAssetToDb"];
-  private readonly deleteCardItemAndCardItemAssetToDb : UploadCardItemUsecaseProps<T>["deleteCardItemAndCardItemAssetToDb"];
+  private readonly itemIdGenerator : UploadCardItemUsecaseProps<T, ET>["itemIdGenerator"];
+  private readonly insertCardItemToDb : UploadCardItemUsecaseProps<T, ET>["insertCardItemToDb"];
+  private readonly insertCardItemAndCardItemAssetToDb : UploadCardItemUsecaseProps<T, ET>["insertCardItemAndCardItemAssetToDb"];
+  private readonly deleteCardItemAndCardItemAssetToDb : UploadCardItemUsecaseProps<T, ET>["deleteCardItemAndCardItemAssetToDb"];
+  private readonly getUploadUrlFromDisk : UploadCardItemUsecaseProps<T, ET>["getUploadUrlFromDisk"];
 
   constructor({
-    itemIdGenerator, insertCardItemToDb, insertCardItemAndCardItemAssetToDb, deleteCardItemAndCardItemAssetToDb
-  } : UploadCardItemUsecaseProps<T>) {
+    itemIdGenerator, insertCardItemToDb, insertCardItemAndCardItemAssetToDb, deleteCardItemAndCardItemAssetToDb, getUploadUrlFromDisk
+  } : UploadCardItemUsecaseProps<T, ET>) {
     this.itemIdGenerator = itemIdGenerator;
     this.insertCardItemToDb = insertCardItemToDb;
     this.insertCardItemAndCardItemAssetToDb = insertCardItemAndCardItemAssetToDb;
     this.deleteCardItemAndCardItemAssetToDb = deleteCardItemAndCardItemAssetToDb;
+    this.getUploadUrlFromDisk = getUploadUrlFromDisk;
   };
 
   async execute(dto : CreateCardItemDataDto) : Promise<AfterCreateCardItemDataInfo> {
@@ -132,12 +136,19 @@ export class UploadingCardItemUsecase<T> {
         // 10mb 이하
         if ( dto.file_info.size <= 10 ) {
           // 3. presigned_url 발급
+          const upload_url : string = await this.getUploadUrlFromDisk.getUrl({ pathName : [
+            cardItem.card_id, 
+            cardItem.item_id, 
+            cardAsset.key_name
+          ], mime_type : cardAsset.mime_type });
 
           // 4. item_id, presigned_url 반환
-
+          const returnDto : AfterCreateCardItemDataInfo = {
+            item_id : cardItem.item_id , mini : {upload_url}};
+          return returnDto;
         } else {
           // 3. upload_id, part_size 
-
+          
           // 4. item_id, upload_id, part_size 반환
           
         }
