@@ -1,4 +1,4 @@
-import { DeleteValueToDb, InsertValueToDb } from "@app/ports/db/db.outbound";
+import { DeleteValueToDb, InsertValueToDb, UpdateValueToDb } from "@app/ports/db/db.outbound";
 import { Inject, Injectable } from "@nestjs/common";
 import { ResultSetHeader, type Pool } from "mysql2/promise";
 import { DB_CARD_ITEM_ASSETS_ATTRIBUTE_NAME, DB_CARD_ITEMS_ATTRIBUTE_NAME, DB_CARD_STATS_ATTRIBUTE_NAME, DB_CARDS_ATTRIBUTE_NAME, DB_TABLE_NAME, MYSQL_DB } from "../../db.constants";
@@ -366,4 +366,44 @@ export class DeleteCardItemAndCardAssetDataToMysql extends DeleteValueToDb<Pool>
 
     return deleteChecked;
   };
+};
+
+// card_item_asset을 item_id를 이용해서 찾고 데이터를 수정하는 로직
+@Injectable()
+export class UpdateCardItemAssetDataToMysql extends UpdateValueToDb<Pool> {
+
+  constructor(
+    @Inject(MYSQL_DB) db : Pool
+  ) { super(db); };
+
+  // 데이터 업데이트 로직
+  private async updateData({
+    db, tableName, uniqueName, uniqueValue, updateColName, updateValue
+  } : {
+    db : Pool; tableName : string; uniqueName : string; uniqueValue : string; updateColName : string; updateValue : any;
+  }) : Promise<boolean> {
+
+    const sql : string = `
+    UPDATE \`${tableName}\`
+    SET \`${updateColName}\` = ?
+    WHERE \`${uniqueName}\` = UUID_TO_BIN(?, true)
+    `;
+
+    const [ updateCheck ] = await db.query<ResultSetHeader>(sql, [ updateValue, uniqueValue ]);
+
+    return updateCheck && updateCheck.affectedRows ? true : false;
+  };
+
+  // 데이터를 업데이트 하는 로직
+  async update({ uniqueValue, updateColName, updateValue }: { uniqueValue: string; updateColName : string; updateValue: any; }): Promise<boolean> {
+
+    const db = this.db;
+    const tableName : string = DB_TABLE_NAME.CARD_ITEM_ASSETS;
+    const uniqueName : string = DB_CARD_ITEM_ASSETS_ATTRIBUTE_NAME.ITEM_ID;
+
+    const updateChecked : boolean = await this.updateData({ db, tableName, uniqueName, uniqueValue, updateColName, updateValue });
+
+    return updateChecked;
+  };
+
 };

@@ -6,7 +6,7 @@ import { NotAllowUpdateDataToCache, NotAllowUpdateDataToDb, NotAllowUploadDataTo
 import { CheckUploadDataFromDisk } from "@app/ports/disk/disk.inbound";
 import { UpdateValueToDb } from "@app/ports/db/db.outbound";
 import { InsertDataToCache, UpdateDataToCache } from "@app/ports/cache/cache.outbound";
-import { CardItemAssetProps } from "@domain/card/vo";
+import { CardItemAssetProps, cardItemAssetStatusList } from "@domain/card/vo";
 import { InsertCardAssetDataProps } from "./uploading-card-item.usecase";
 import { PathMapping } from "@domain/shared";
 
@@ -15,6 +15,7 @@ type CheckCarItemDataUsecaseValues = {
   cardAssetNamespace : string;
   itemIdKeyName : string;
   itemIdAttribute : string;  
+  statusColName : string;
   statusKeyName : string;
 };
 
@@ -93,10 +94,10 @@ export class CheckCardItemDataUsecase<T, ET, DT> {
     if ( !checked ) throw new NotAllowUploadDataToCheck(undefined);
 
     // 3. 변경 ( db, cache )
-    const updateChecked : boolean = await this.updateCardAssetToDb.update({ uniqueValue : dto.item_id, updateValue : undefined }); // 상태를 변경해주면 되기 때문에
+    const updateChecked : boolean = await this.updateCardAssetToDb.update({ uniqueValue : dto.item_id, updateColName : this.usecaseValues.statusColName, updateValue : cardItemAssetStatusList[1] }); // 상태를 변경해주면 되기 때문에
     if ( !updateChecked ) throw new NotAllowUpdateDataToDb();
 
-    const updateCacheChecked : boolean = await this.updateCardAssetToCache.updateKey({ namespace, keyName : this.usecaseValues.statusKeyName, updateValue : undefined }); // 마찬가지 상태를 변경해주면 된다. 
+    const updateCacheChecked : boolean = await this.updateCardAssetToCache.updateKey({ namespace, keyName : this.usecaseValues.statusKeyName, updateValue : cardItemAssetStatusList[1] }); // 마찬가지 상태를 변경해주면 된다. 
     if ( !updateCacheChecked ) throw new NotAllowUpdateDataToCache();
 
     return;

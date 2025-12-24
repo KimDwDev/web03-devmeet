@@ -37,7 +37,7 @@ export class UpdateValueToDb<T> extends OutboundBaseDb<T> {
     super(db);
   };
 
-  public async update({uniqueValue, updateValue } : {uniqueValue: any, updateValue : any }) : Promise<boolean> | never {
+  public async update({uniqueValue, updateColName, updateValue } : {uniqueValue: any, updateColName : string, updateValue : any }) : Promise<boolean> | never {
     throw new NullInterfaceError();
   };
 };
