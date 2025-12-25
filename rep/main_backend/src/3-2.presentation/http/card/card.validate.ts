@@ -151,3 +151,11 @@ export class GetPresignedUrlsValidate {
   part_numbers : Array<number>
 
 };
+
+export class CheckEtagValidate { 
+
+  @IsNotEmpty()
+  @IsString()
+  etag : string;
+
+};

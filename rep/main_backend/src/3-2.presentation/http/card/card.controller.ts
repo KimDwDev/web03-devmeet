@@ -3,8 +3,8 @@ import { JwtGuard } from "../auth/guards";
 import { type Request } from "express";
 import { CardService } from "./card.service";
 import { Payload } from "@app/auth/commands/dto";
-import { CreateCardItemValidate, CreateCardValidate, GetPresignedUrlsValidate } from "./card.validate";
-import { AfterCreateCardItemDataInfo, CreateCardDto, CreateCardItemDataDto } from "@app/card/commands/dto";
+import { CheckEtagValidate, CreateCardItemValidate, CreateCardValidate, GetPresignedUrlsValidate } from "./card.validate";
+import { AfterCreateCardItemDataInfo, CheckCardItemDataUrlProps, CreateCardDto, CreateCardItemDataDto } from "@app/card/commands/dto";
 import { MultiPartResponseDataDto, UploadMultipartDataDto } from "@app/card/queries/dto";
 
 
@@ -74,5 +74,24 @@ export class CardController {
     const presigned_urls : MultiPartResponseDataDto = await this.cardService.getPresignedUrlsService(payloadDto);
     return presigned_urls
   }
+
+  @Post(":card_id/items/:item_id/check")
+  @UseGuards(JwtGuard)
+  @UsePipes(new ValidationPipe({
+    transform : true,
+    whitelist : true    
+  }))
+  @HttpCode(200) 
+  async checkEtagController(
+    @Body() dto : CheckEtagValidate,
+    @Param("card_id") card_id : string,
+    @Param("item_id") item_id : string
+  ) : Promise<Record<string, string>> {
+    const payloadDto : CheckCardItemDataUrlProps = {
+      card_id, item_id, etag : dto.etag
+    };
+    await this.cardService.checkEtagService(payloadDto);
+    return { "status" : "ok" };
+  };
 
 };
