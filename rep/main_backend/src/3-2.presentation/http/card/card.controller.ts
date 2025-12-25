@@ -5,7 +5,7 @@ import { CardService } from "./card.service";
 import { Payload } from "@app/auth/commands/dto";
 import { CreateCardItemValidate, CreateCardValidate, GetPresignedUrlsValidate } from "./card.validate";
 import { AfterCreateCardItemDataInfo, CreateCardDto, CreateCardItemDataDto } from "@app/card/commands/dto";
-import { UploadMultipartDataDto } from "@app/card/queries/dto";
+import { MultiPartResponseDataDto, UploadMultipartDataDto } from "@app/card/queries/dto";
 
 
 @Controller("api/cards")
@@ -65,12 +65,13 @@ export class CardController {
     @Body() dto : GetPresignedUrlsValidate,
     @Param("card_id") card_id : string,
     @Param("item_id") item_id : string
-  ) {
+  ) : Promise<MultiPartResponseDataDto> {
     const payloadDto : UploadMultipartDataDto = {
       ...dto,
       card_id, item_id
     };
-    
+    const presigned_urls : MultiPartResponseDataDto = await this.cardService.getPresignedUrlsService(payloadDto);
+    return presigned_urls
   }
 
 };
