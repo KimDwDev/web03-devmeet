@@ -150,7 +150,7 @@ export class UploadingCardItemUsecase<T, ET, DT> {
         // cache에 저장하여 안정성을 높이는 선택도 필요하다. -> 곧 추가
 
         // 10mb 이하
-        if ( dto.file_info.size <= 10 ) {
+        if ( dto.file_info.size <= 10 * 1024 * 1024 ) {
           // 3. presigned_url 발급
           const upload_url : string = await this.getUploadUrlFromDisk.getUrl({ pathName : [
             cardItem.card_id, 
