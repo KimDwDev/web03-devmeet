@@ -9,11 +9,11 @@ import CookieParser from 'cookie-parser';
 import { MysqlModule } from '@infra/db/mysql/db';
 import { SettingModule } from '@present/http/setting/setting.module';
 import { AuthModule } from '@present/http/auth/auth.module';
-import { RedisModule } from '@infra/cache/redis/redis';
+import { RedisModule } from '@infra/cache/redis/cache';
 import { JwtModule } from '@infra/auth/jwt/jwt.module';
 import { CardModule } from '@present/http/card/card.module';
 import { S3DiskModule } from '@infra/disk/s3/disk';
-import { RedisChannelModule } from './3-1.infra/channel/redis/channel';
+import { RedisChannelModule } from '@infra/channel/redis/channel';
 
 @Module({
   imports: [

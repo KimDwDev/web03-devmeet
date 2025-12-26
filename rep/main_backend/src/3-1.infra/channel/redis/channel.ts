@@ -2,6 +2,7 @@ import { Global, Module } from "@nestjs/common";
 import { REDIS_CHANNEL_PUB, REDIS_CHANNEL_SUB } from "../channel.constants";
 import { ConfigService } from "@nestjs/config";
 import { createClient } from "redis";
+import { RedisSseBrokerService } from "./channel.service";
 
 
 @Global()
@@ -34,17 +35,21 @@ import { createClient } from "redis";
         const url : string = config.get<string>("NODE_APP_REDIS_URL", "redis://localhost:6379");
         const client = createClient({ url });
 
-        client.on("error", (e) => console.error(`[redis pub error]`, e));
+        client.on("error", (e) => console.error(`[redis sub error]`, e));
         await client.connect();
         return client;
       }, 
       inject : [ConfigService]
-    }
+    },
+
+    // 우리가 만든 함수들 모아놓는 장소 
+    RedisSseBrokerService,
 
   ],
   exports : [
     REDIS_CHANNEL_PUB,
-    REDIS_CHANNEL_SUB
+    REDIS_CHANNEL_SUB,
+    RedisSseBrokerService,
   ]
 })
 export class RedisChannelModule {};

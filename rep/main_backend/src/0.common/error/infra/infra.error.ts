@@ -31,3 +31,12 @@ export class InvalidTokenError extends Error {
     super(message);
   }
 }
+
+export class ChannelError extends BaseError {
+  constructor(err : Error) {
+    super({
+      message : `${err}`,
+      status : 500
+    });
+  }
+}
