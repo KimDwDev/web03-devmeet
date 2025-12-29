@@ -1,5 +1,5 @@
 // 조심해야 할 건 domain과 비슷한 이름이라는 점이다. 이에 대해서 고민을 해봐야 한다. 
-import { Field, Float, ID, Int, ObjectType, registerEnumType } from "@nestjs/graphql";
+import { Field, Float, ID, InputType, Int, ObjectType, registerEnumType } from "@nestjs/graphql";
 import GraphQLJSON from "graphql-type-json";
 
 
@@ -127,5 +127,53 @@ export class Card {
 
   @Field(() => [CardItem])
   card_items : CardItem[];
+
+};
+
+// 여기서 부터는 mutation 전용으로 만들 수 있다. 
+@InputType()
+export class UpdateCardItemInput {
+
+  @Field(() => ID)
+  item_id : string;
+
+  @Field(() => Int, { nullable : true })
+  x? : number;
+
+  @Field(() => Int, { nullable : true })
+  y? : number;
+
+  @Field(() => Int, { nullable : true })
+  width? : number;
+
+  @Field(() => Int, { nullable : true })
+  height? : number | null;
+
+  @Field(() => Int, { nullable : true })
+  rotation? : number;
+
+  @Field(() => Float, { nullable : true })
+  scale_x? : number;
+
+  @Field(() => Float, { nullable: true })
+  scale_y?: number;
+
+  @Field(() => Float, { nullable: true })
+  opacity?: number | null;
+
+  @Field(() => Int, { nullable: true })
+  z_index?: number | null;
+
+  @Field(() => Boolean, { nullable: true })
+  is_locked?: boolean | null;
+
+  @Field(() => Boolean, { nullable: true })
+  is_visible?: boolean | null;
+
+  @Field(() => String, { nullable: true })
+  name?: string | null;
+
+  @Field(() => GraphQLJSON, { nullable : true })
+  option? : Record<string, any>;
 
 };

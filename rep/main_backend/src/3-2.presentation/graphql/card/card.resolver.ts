@@ -1,5 +1,5 @@
-import { Resolver, ResolveField, Parent, Query, Args, ID } from "@nestjs/graphql";
-import { Card, CardItem } from "./card.types";
+import { Resolver, ResolveField, Parent, Query, Args, ID, Mutation } from "@nestjs/graphql";
+import { Card, CardItem, UpdateCardItemInput } from "./card.types";
 import { CardGraphqlService } from "./card.service";
 
 
@@ -21,8 +21,14 @@ export class CardGraphqlResover {
     return this.cardService.cardItemService(card.card_id);
   }
 
-  // 카드에 아이템을 수정하는 로직 
-
+  // 카드에 아이템을 수정하는 로직 -> 여러개를 수정할 수 있게 하자 ( 하나만 해도 괜찮다. ) 
+  // 만약 데이터중 하나라도 오염된게 있다면 이는 수정하면 안되는 부분인 것이다 따라서 하나의 오류는 업데이트가 안되는 걸로 처리할 예정이다. 
+  @Mutation(() => [CardItem], { name : "update_card_items" })
+  async updateCardItems(
+    @Args("inputs", { type: () => [UpdateCardItemInput] } ) input : UpdateCardItemInput[]
+  ) {
+    
+  }
 
   // 카드에 아이템을 삭제하는 로직
 

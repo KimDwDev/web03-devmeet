@@ -41,3 +41,15 @@ export class UpdateValueToDb<T> extends OutboundBaseDb<T> {
     throw new NullInterfaceError();
   };
 };
+
+// 여러개의 값을 수정하고 싶을때 사용하는 port라고 할 수 있다. 
+@Injectable()
+export class UpdateValuesToDb<T> extends OutboundBaseDb<T> {
+  constructor(db : T) {
+    super(db);
+  };
+
+  public async updates(entities : Array<any>) : Promise<boolean> | never {
+    throw new NullInterfaceError();
+  }
+};
