@@ -98,3 +98,12 @@ export class DontGetCardItemAndAssetData extends BaseError {
     });
   };
 };
+
+export class DontGetCardAndStatData extends BaseError {
+  constructor() {
+    super({
+      message: 'card, card_stat 데이터를 찾지 못했습니다.',
+      status: 500,
+    });
+  };
+};

@@ -37,7 +37,7 @@ export class SelectDatasFromCache<T> extends InboundBaseCache<T> {
     namespaces
   } : {
     namespaces : Array<string>
-  }) : Promise<Array<any> | undefined> | never {
+  }) : Promise<Array<any> | any | undefined>  | never {
     throw new NullInterfaceError();
   }
 };
