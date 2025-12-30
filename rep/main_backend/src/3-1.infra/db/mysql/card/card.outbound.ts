@@ -633,4 +633,5 @@ export class UpdateCardItemsToMysql extends UpdateValuesToDb<Pool> {
     return updated;
   }
 
-}
+};
+

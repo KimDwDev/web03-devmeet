@@ -185,13 +185,19 @@ export class UpdateCardItemOutput {
 };
 
 @InputType()
-export class DeleteCardItemInput {
-
+export class DeleteCardItemItemIds {
   @Field(() => ID)
   item_id : string;
+};
 
-  @Field(() => String)
+@InputType()
+export class DeleteCardItemInput {;
+
+  @Field(() => ID)
   card_id : string;
+
+  @Field(() => [DeleteCardItemItemIds])
+  item_ids : DeleteCardItemItemIds[];
 
 };
 

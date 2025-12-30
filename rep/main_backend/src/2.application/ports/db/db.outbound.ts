@@ -53,3 +53,15 @@ export class UpdateValuesToDb<T> extends OutboundBaseDb<T> {
     throw new NullInterfaceError();
   }
 };
+
+// 여러개의 값을 삭제하고 싶을때 사용하는 port
+@Injectable()
+export class DeleteValuesToDb<T> extends OutboundBaseDb<T> {
+  constructor(db : T) {
+    super(db);
+  };
+
+  public async deletes(keys : Array<{uniqueValue: any, addOption : any | undefined}>) : Promise<boolean> | never {
+    throw new NullInterfaceError();
+  };
+};

@@ -33,9 +33,9 @@ export class CardGraphqlResover {
   // 카드에 아이템을 삭제하는 로직
   @Mutation(() => [CardItem], { name : "delete_card_items" })
   async deleteCardItems(
-    @Args("inputs", { type: () => [ DeleteCardItemInput ] }) inputs : DeleteCardItemInput[]
+    @Args("inputs", { type: () => DeleteCardItemInput  }) inputs : DeleteCardItemInput
   ) {
-    
+
   }
 
 };

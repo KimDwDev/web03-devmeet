@@ -1,7 +1,10 @@
 
 
+type DeleteCardItemIdDto = {
+  item_id : string;
+};
 
 export type DeleteCardItemDtos = {
-  item_id : string;
   card_id : string;
+  item_ids : Array<DeleteCardItemIdDto>;
 };
