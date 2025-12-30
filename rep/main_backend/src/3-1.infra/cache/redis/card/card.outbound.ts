@@ -299,3 +299,5 @@ export class DeleteCardToRedis extends DeleteDataToCache<RedisClientType<any, an
   }
 
 };
+
+// card 리스트를 커스텀해서 보여줄 계회
