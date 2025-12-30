@@ -179,7 +179,26 @@ export class UpdateCardItemInput {
 };
 
 @InputType()
-export class UpdateCardItemClearOutput {
+export class UpdateCardItemOutput {
   @Field(() => Boolean)
   ok : boolean;
 };
+
+@InputType()
+export class DeleteCardItemInput {
+
+  @Field(() => ID)
+  item_id : string;
+
+  @Field(() => String)
+  card_id : string;
+
+};
+
+@InputType()
+export class DeleteCardItemOuput {
+
+  @Field(() => Boolean)
+  ok : boolean
+
+}

@@ -1,6 +1,6 @@
 import { CardMetaDataUsecase, GetCardItemDatasUsecase } from "@app/card/queries/usecase";
 import { HttpException, Injectable } from "@nestjs/common";
-import { Card, CardItem, CardItemAssetStatusType, CardItemType, UpdateCardItemInput } from "./card.types";
+import { Card, CardItem, CardItemAssetStatusType, CardItemType, UpdateCardItemInput, UpdateCardItemOutput } from "./card.types";
 import { UpdateCardItemsUsecase } from "@app/card/commands/usecase";
 
 
@@ -111,9 +111,10 @@ export class CardGraphqlService {
   }
 
   // card_item의 정보를 수정할때 사용하는 service
-  async updateCardItemsService(input : UpdateCardItemInput[]) : Promise<void> {
+  async updateCardItemsService(input : UpdateCardItemInput[]) : Promise<UpdateCardItemOutput> {
     try {
       await this.updateCardItemUsecase.execute(input);
+      return { ok : true };
     } catch (err) {
       throw new HttpException(
         {
