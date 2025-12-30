@@ -45,3 +45,12 @@ export class NotMakeUploadId extends BaseError {
     });
   }
 }
+
+export class NotDeleteCardItem extends BaseError {
+  constructor() {
+    super({
+      message: 'card_item을 삭제하지 못했습니다.',
+      status: 500,
+    });
+  }
+}

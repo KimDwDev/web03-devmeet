@@ -1,11 +1,11 @@
-import { DeleteValueToDb, InsertValueToDb, UpdateValuesToDb, UpdateValueToDb } from "@app/ports/db/db.outbound";
+import { DeleteValuesToDb, DeleteValueToDb, InsertValueToDb, UpdateValuesToDb, UpdateValueToDb } from "@app/ports/db/db.outbound";
 import { Inject, Injectable } from "@nestjs/common";
 import { PoolConnection, ResultSetHeader, type Pool } from "mysql2/promise";
 import { DB_CARD_ITEM_ASSETS_ATTRIBUTE_NAME, DB_CARD_ITEMS_ATTRIBUTE_NAME, DB_CARD_STATS_ATTRIBUTE_NAME, DB_CARDS_ATTRIBUTE_NAME, DB_TABLE_NAME, MYSQL_DB } from "../../db.constants";
 import { InsertCardAndCardStateDataProps, InsertCardItemAndAssetDataProps } from "@app/card/commands/usecase";
 import { DatabaseError } from "@error/infra/infra.error";
 import { CardItemProps } from "@domain/card/vo";
-import { NotFoundRefereceError, NotInsertDatabaseError } from "@error/infra/card/card.error";
+import { NotDeleteCardItem, NotFoundRefereceError, NotInsertDatabaseError } from "@error/infra/card/card.error";
 import { UpdateCardItemAssetValueProps, UpdateCardItemDto } from "@app/card/commands/dto";
 
 
@@ -635,3 +635,68 @@ export class UpdateCardItemsToMysql extends UpdateValuesToDb<Pool> {
 
 };
 
+// 그냥 삭제하는게 아니라 soft update로 삭제할 예정
+@Injectable()
+export class DeleteCardItemsToMySql extends DeleteValuesToDb<Pool> {
+
+  constructor(
+    @Inject(MYSQL_DB) db : Pool,
+  ) { super(db); };
+
+
+  private async deleteDatas({
+    db, keys
+  } : { 
+    db : Pool, keys : Array<{ uniqueValue: string; addOption: undefined; }>
+  }) : Promise<boolean> {
+
+    const connect = await db.getConnection();
+
+    try {
+
+      await connect.beginTransaction();
+
+      const item_ids_set = new Set<string>(); 
+      keys.forEach(key => {
+        const item_id : string = key.uniqueValue;
+        item_ids_set.add(item_id);
+      });
+
+      // 만약 값이 하나도 없다면 스킵
+      const item_ids : Array<string> = [...item_ids_set.values()];
+      if ( item_ids.length === 0 ) {
+        await connect.commit();
+        return true;
+      }
+
+      const cardItemTableName : string = DB_TABLE_NAME.CARD_ITEMS;
+      const playholders : string = item_ids.map(() => `UUID_TO_BIN(?, true)`).join(",");
+
+      const sql : string = `
+      UPDATE \`${cardItemTableName}\`
+      SET 
+        \`${DB_CARD_ITEMS_ATTRIBUTE_NAME.DELETED_AT}\` = NOW(6)
+      WHERE \`${DB_CARD_ITEMS_ATTRIBUTE_NAME.ITEM_ID}\` IN (${playholders})
+      `;
+      const [res] = await connect.execute<ResultSetHeader>(sql,  item_ids);
+
+      await connect.commit();
+
+      return res && res.affectedRows ? true : false;
+    } catch (err) {
+      if ( connect ) await connect.rollback();
+      throw new DatabaseError(err);
+    } finally {
+      if ( connect ) connect.release();
+    };
+  }
+
+  // 여기서 uniqueValue는 item_id 이다.
+  async deletes(keys: Array<{ uniqueValue: string; addOption: undefined; }>): Promise<boolean> {
+    
+    const db : Pool = this.db;
+    const deleted : boolean = await this.deleteDatas({ db, keys }); 
+    return deleted;
+  };
+
+};
