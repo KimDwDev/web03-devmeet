@@ -117,6 +117,9 @@ import { UpdateCardItemsUsecase } from "@/2.application/card/commands/usecase";
       },
       inject : [UpdateCardItemsToMysql]
     },
+
+    // card에 item을 삭제하기 위한 usecase
+
   ]
 })
 export class CardGraphqlModule {};
