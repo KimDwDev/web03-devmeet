@@ -5,8 +5,8 @@ import { DB_CARD_ITEM_ASSETS_ATTRIBUTE_NAME, DB_CARD_ITEMS_ATTRIBUTE_NAME, DB_CA
 import { InsertCardAndCardStateDataProps, InsertCardItemAndAssetDataProps } from "@app/card/commands/usecase";
 import { DatabaseError } from "@error/infra/infra.error";
 import { CardItemProps } from "@domain/card/vo";
-import { NotDeleteCardItem, NotFoundRefereceError, NotInsertDatabaseError } from "@error/infra/card/card.error";
-import { UpdateCardItemAssetValueProps, UpdateCardItemDto } from "@app/card/commands/dto";
+import { NotFoundRefereceError, NotInsertDatabaseError } from "@error/infra/card/card.error";
+import { UpdateCardInputDto, UpdateCardItemAssetValueProps, UpdateCardItemDto } from "@app/card/commands/dto";
 
 
 @Injectable()
@@ -698,5 +698,72 @@ export class DeleteCardItemsToMySql extends DeleteValuesToDb<Pool> {
     const deleted : boolean = await this.deleteDatas({ db, keys }); 
     return deleted;
   };
+
+};
+
+// card를 업데이트 할 때 사용하는 infra 함수
+@Injectable()
+export class UpdateCardToMysql extends UpdateValueToDb<Pool> {
+
+  // 이 열에 해당하는 것만 수정
+  private readonly updateColName = {
+    [ DB_CARDS_ATTRIBUTE_NAME.CATEGORY_ID ] : true,
+    [ DB_CARDS_ATTRIBUTE_NAME.THUMBNAIL_PATH ] : true,
+    [ DB_CARDS_ATTRIBUTE_NAME.TITLE ] : true,
+    [ DB_CARDS_ATTRIBUTE_NAME.WORKSPACE_WIDTH ] : true,
+    [ DB_CARDS_ATTRIBUTE_NAME.WORKSPACE_HEIGHT ] : true,
+    [ DB_CARDS_ATTRIBUTE_NAME.BACKGROUND_COLOR ] : true
+  } as const;
+
+  constructor(
+    @Inject(MYSQL_DB) db : Pool,
+  ) { super(db); };
+
+  private async updateData({
+    db, tableName, uniqueValue, updateValue
+  } : {
+    db : Pool, tableName : string, uniqueValue : string, updateValue : UpdateCardInputDto
+  }) : Promise<boolean> {
+
+    const { card_id, ...etc } = updateValue; // card_id 제외 
+
+    const vals : Array<string | number | null> = [];
+    const cols : Array<string> = [];
+
+    for ( const [ k, v ] of Object.entries(etc) ) {
+      if ( ( k in this.updateColName ) && v !== undefined ) {
+        cols.push(`\`${k}\` = ?`);
+        vals.push(v);
+      };
+    };
+
+    // 수정할 값이 없는 걸로 판별
+    if ( cols.length === 0 ) return true;
+
+    const placeholders : string = cols.join(", ");
+    vals.push(uniqueValue);
+    
+    // pk 인데 limit를 넣는게 의미가 있을까?
+    const sql : string = `
+    UPDATE \`${tableName}\`
+    SET ${placeholders}
+    WHERE \`${DB_CARDS_ATTRIBUTE_NAME.CARD_ID}\` = UUID_TO_BIN(?, true)
+    `;
+
+    const [ result ] = await db.execute<ResultSetHeader>(sql, vals);
+
+    return result && result.affectedRows ? true : false;
+  }
+
+  // 여기서는 uniqueValue는 card_id가 되고 updateValue는 dto가 된다. 
+  async update({ uniqueValue, updateColName, updateValue }: { uniqueValue: string; updateColName: string; updateValue: UpdateCardInputDto; }): Promise<boolean> {
+    
+    const db : Pool = this.db;
+    const tableName : string = DB_TABLE_NAME.CARDS;
+
+    const updated : boolean = await this.updateData({ db, tableName, uniqueValue, updateValue });
+
+    return updated;
+  }
 
 };

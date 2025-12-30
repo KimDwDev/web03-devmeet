@@ -1,3 +1,4 @@
+// card 자체를 수정하기 위한 usecase 라고 할 수 있다. 
 import { UpdateDataToCache } from "@app/ports/cache/cache.outbound";
 import { UpdateValueToDb } from "@app/ports/db/db.outbound";
 import { Injectable } from "@nestjs/common";
@@ -10,8 +11,8 @@ type UpdateCardUsecaseValues = {
 
 type UpdateCardUsecaseProps<T, CT> = {
   usecaseValues : UpdateCardUsecaseValues;
-  updateCardToDb : UpdateValueToDb<T>;
-  updateCardToCache : UpdateDataToCache<CT>;
+  updateCardToDb : UpdateValueToDb<T>; // db에서 card에 정보를 수정할때 사용한다. 
+  updateCardToCache : UpdateDataToCache<CT>; // cache에서 card에 정보를 수정할때 사용한다. ( 없으면 그냥 스킵 -> 하나만 있으면 안되기 때문이다. )
 };
 
 @Injectable()
