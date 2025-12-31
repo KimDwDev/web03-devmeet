@@ -4,7 +4,6 @@ import { type RedisClientType } from "redis";
 import { CACHE_CARD_ITEM_ASSET_KEY_NAME, CACHE_CARD_KEY_NAME, REDIS_SERVER } from "../../cache.constants";
 import { CardItemAssetProps, cardItemAssetStatusList, CardItemAssetStatusProps, CardProps, CardStateProps } from "@domain/card/vo";
 import { GetCardMetaAndStatProps } from "@app/card/queries/usecase";
-import { Card } from "@domain/card/entities";
 
 
 @Injectable()
@@ -95,3 +94,5 @@ export class SelectCardMetaAndStatFromRedis extends SelectDataFromCache<RedisCli
   };
 
 };
+
+// card 정보를 찾아본다. ( cache에서  )
