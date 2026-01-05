@@ -1,0 +1,66 @@
+export const DUMMY_MEMBERS = [
+  {
+    id: '1',
+    name: 'Tony',
+    audio: true,
+    video: false,
+    speaking: true,
+    profileImg: `https://picsum.photos/id/237/200/200`,
+  },
+  {
+    id: '2',
+    name: 'Logan',
+    audio: false,
+    video: false,
+    speaking: false,
+    profileImg: `https://picsum.photos/id/238/200/200`,
+  },
+  {
+    id: '3',
+    name: 'Andrew',
+    audio: true,
+    video: true,
+    speaking: false,
+    profileImg: `https://picsum.photos/id/239/200/200`,
+  },
+  {
+    id: '4',
+    name: 'Lisey',
+    audio: true,
+    video: true,
+    speaking: true,
+    profileImg: `https://picsum.photos/id/240/200/200`,
+  },
+  {
+    id: '5',
+    name: 'Kuma',
+    audio: true,
+    video: true,
+    speaking: false,
+    profileImg: `https://picsum.photos/id/241/200/200`,
+  },
+  {
+    id: '6',
+    name: 'Robert John Downey Junior',
+    audio: false,
+    video: true,
+    speaking: false,
+    profileImg: `https://picsum.photos/id/242/200/200`,
+  },
+  {
+    id: '7',
+    name: 'Crong',
+    audio: true,
+    video: true,
+    speaking: false,
+    profileImg: `https://picsum.photos/id/243/200/200`,
+  },
+];
+
+export const DUMMY_DATA = {
+  page: 1,
+  lastPage: 2,
+  membersPerPage: 6,
+  totalMemberCount: 7,
+  members: DUMMY_MEMBERS,
+};

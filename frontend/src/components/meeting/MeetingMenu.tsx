@@ -35,6 +35,10 @@ export default function MeetingMenu() {
 
   const toggleVideo = () => setVideo(video === 'ON' ? 'OFF' : 'ON');
 
+  const onMemberClick = () => {
+    setIsOpen('isMemberOpen', true);
+  };
+
   const onChatClick = () => {
     setHasNewChat(false);
     setIsOpen('isChatOpen', true);
@@ -86,6 +90,7 @@ export default function MeetingMenu() {
           <MeetingButton
             icon={<MemberIcon className="h-8 w-8" />}
             text="참가자"
+            onClick={onMemberClick}
           />
           <span className="absolute top-0.5 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-neutral-600 text-xs font-bold text-neutral-50">
             {members}

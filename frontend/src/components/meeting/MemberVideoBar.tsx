@@ -1,13 +1,22 @@
 'use client';
 
+import { DUMMY_DATA } from '@/app/[meetingId]/dummy';
 import { ChevronLeftIcon, ChevronRightIcon } from '@/assets/icons/common';
 import SmVideo from '@/components/meeting/SmVideo';
-import { useState } from 'react';
+import { useMeeingStore } from '@/store/useMeetingStore';
+import { useEffect, useState } from 'react';
 
 export default function MemberVideoBar() {
-  const { lastPage, members } = DUMMY_DATA;
+  // 이후 WebRTC로 수정 필요
+  const { lastPage, membersPerPage, totalMemberCount, members } = DUMMY_DATA;
+
+  const { setMembers } = useMeeingStore();
   const [currentPage, setCurrentPage] = useState(1);
   const [hasPrevPage, hasNextPage] = [currentPage > 1, currentPage < lastPage];
+
+  useEffect(() => {
+    setMembers(totalMemberCount);
+  }, [setMembers, totalMemberCount]);
 
   const onPrevClick = () => {
     if (!hasPrevPage) return;
@@ -19,6 +28,10 @@ export default function MemberVideoBar() {
     setCurrentPage((prev) => prev + 1);
   };
 
+  // (프로토타입용) 이후 WebRTC나 API 호출 시 불필요
+  const start = (currentPage - 1) * membersPerPage;
+  const end = (currentPage - 1) * membersPerPage + membersPerPage;
+
   return (
     <header className="flex w-full justify-between px-4 py-2">
       <button
@@ -29,7 +42,8 @@ export default function MemberVideoBar() {
       </button>
 
       <section className="flex gap-4">
-        {members.map((member) => (
+        {/* 이후 백엔드 연동 시 pagination으로 수정, 수동 slice는 불필요 */}
+        {members.slice(start, end).map((member) => (
           <SmVideo key={member.id} {...member} />
         ))}
       </section>
@@ -43,62 +57,3 @@ export default function MemberVideoBar() {
     </header>
   );
 }
-
-// 더미 데이터
-const DUMMY_MEMBERS = [
-  {
-    id: '1',
-    name: 'Tony',
-    audio: true,
-    video: false,
-    speaking: true,
-    profileImg: `https://picsum.photos/id/237/200/200`,
-  },
-  {
-    id: '2',
-    name: 'Logan',
-    audio: false,
-    video: false,
-    speaking: false,
-    profileImg: `https://picsum.photos/id/238/200/200`,
-  },
-  {
-    id: '3',
-    name: 'Andrew',
-    audio: true,
-    video: true,
-    speaking: false,
-    profileImg: `https://picsum.photos/id/239/200/200`,
-  },
-  {
-    id: '4',
-    name: 'Lisey',
-    audio: true,
-    video: true,
-    speaking: true,
-    profileImg: `https://picsum.photos/id/240/200/200`,
-  },
-  {
-    id: '5',
-    name: 'Kuma',
-    audio: true,
-    video: true,
-    speaking: false,
-    profileImg: `https://picsum.photos/id/241/200/200`,
-  },
-  {
-    id: '6',
-    name: 'Robert John Downey Junior',
-    audio: false,
-    video: true,
-    speaking: false,
-    profileImg: `https://picsum.photos/id/242/200/200`,
-  },
-];
-
-const DUMMY_DATA = {
-  page: 1,
-  lastPage: 2,
-  membersPerPage: 6,
-  members: DUMMY_MEMBERS,
-};
