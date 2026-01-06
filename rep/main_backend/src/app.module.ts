@@ -14,6 +14,7 @@ import { RedisModule } from '@infra/cache/redis/cache';
 import { JwtModule } from '@infra/auth/jwt/jwt.module';
 import { S3DiskModule } from '@infra/disk/s3/disk';
 import { RedisChannelModule } from '@infra/channel/redis/channel';
+import { RoomModule } from "./3-2.presentation/http/room/room.module";
 
 
 @Module({
@@ -31,6 +32,7 @@ import { RedisChannelModule } from '@infra/channel/redis/channel';
     // 우리가 집적 만든 모듈
     SettingModule, // 헬스 체크를 위한 모듈
     AuthModule, // 인증과 관련된 모듈
+    RoomModule, // 회의방 생성과 관련된 모듈
 
   ],
   controllers: [],

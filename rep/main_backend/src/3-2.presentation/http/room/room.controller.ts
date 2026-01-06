@@ -3,7 +3,7 @@ import { JwtGuard } from "../auth/guards";
 import { type Request } from "express";
 import { CreateRoomValidate } from "./room.validate";
 import { RoomService } from "./room.service";
-import { CreateRoomDto } from "@app/room/commands/dto";
+import { CreateRoomDto, CreateRoomResult } from "@app/room/commands/dto";
 import { Payload } from "@app/auth/commands/dto";
 
 
@@ -24,13 +24,13 @@ export class RoomController {
   async createRoomController(
     @Req() req : Request,
     @Body() validate : CreateRoomValidate
-  ) {
+  ) : Promise<CreateRoomResult> {
     const payload: Payload = (req as any).user;
     const dto : CreateRoomDto = {
       ...validate,
       user_id : payload.user_id
     };
-    
+    return this.roomService.createRoomService(dto);
   };
 
 };
