@@ -38,7 +38,7 @@ export default function MemberVideoBar() {
         className={`h-full rounded-sm ${hasPrevPage ? 'text-neutral-200 hover:bg-neutral-700' : 'cursor-default! text-neutral-700'}`}
         onClick={onPrevClick}
       >
-        <ChevronLeftIcon className={`h-8 w-8`} />
+        <ChevronLeftIcon className="h-8 w-8" />
       </button>
 
       <section className="flex gap-4">
@@ -52,7 +52,7 @@ export default function MemberVideoBar() {
         className={`h-full rounded-sm ${hasNextPage ? 'text-neutral-200 hover:bg-neutral-700' : 'cursor-default! text-neutral-700'}`}
         onClick={onNextClick}
       >
-        <ChevronRightIcon className={`h-8 w-8`} />
+        <ChevronRightIcon className="h-8 w-8" />
       </button>
     </header>
   );
