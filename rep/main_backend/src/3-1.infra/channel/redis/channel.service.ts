@@ -1,7 +1,11 @@
-import { Inject, Injectable, OnModuleDestroy } from "@nestjs/common";
-import {  type RedisClientType } from "redis";
+import { INestApplicationContext, Inject, Injectable, Logger, OnModuleDestroy } from "@nestjs/common";
+import { createClient, type RedisClientType } from "redis";
 import { REDIS_CHANNEL_PUB, REDIS_CHANNEL_SUB, SsePayload } from "../channel.constants";
 import { filter, map, Observable, share, Subject } from "rxjs";
+import { IoAdapter } from "@nestjs/platform-socket.io"
+import { createAdapter } from "@socket.io/redis-adapter"
+import { ConfigService } from "@nestjs/config";
+import { ServerOptions } from "http";
 
 
 // sse와 관련된 service 
@@ -90,4 +94,54 @@ export class RedisSseBrokerService implements OnModuleDestroy {
 
 };
 
-// 나중에 websocket과 관련된 서비스도 있을 수 있다. 
+// websocket에 adapter 역할을 redis가 대신 하도록 설정
+export class RedisIoAdapter extends IoAdapter {
+
+  private adapterConstructor! : ReturnType<typeof createAdapter>;
+  private readonly logger = new Logger();
+
+  // 기존의 sse에 pub, sub을 사용할 수도 있지만 그러면 sse랑 겹칠 수 있기때문에 websocket용으로 따로 pub, sub을 만드는 것이 안전
+  private pub! : RedisClientType;
+  private sub! : RedisClientType;
+
+  constructor( app : INestApplicationContext, private readonly config : ConfigService ) {
+    // nestapp에 http를 가져오겠다는 말
+    super(app);
+  };
+
+  // websocket으로 redis를 사용
+  async websocketConnectToRedis() : Promise<void> {
+
+    const url : string = this.config.get<string>("NODE_APP_REDIS_URL", "redis://localhost:6379"); // 이건 다른데 할까 고민도 했다.
+    const password : string = this.config.get<string>("NODE_APP_REDIS_PASSWORD", "password");
+
+    this.pub = createClient({ url, password });
+    this.sub = this.pub.duplicate();
+
+    this.pub.on("error", (e) => this.logger.error("websocet에 pub 객체 생성 중 에러", e));
+    this.sub.on("error", (e) => this.logger.error("websocet에 sub 객체 생성 중 에러", e));
+
+    await Promise.all([ this.pub.connect(), this.sub.connect() ]); // 모든 pub, sub이 연결되기 위해서
+
+    this.adapterConstructor = createAdapter(this.pub, this.sub);
+    this.logger.log("websocket adapter가 생성되었습니다.");
+  };
+
+  // server가 io를 생성할때 사용되는 함수
+  createIOServer(port: number, options?: ServerOptions) {
+    const server = super.createIOServer(port, options); // 원래 server에 adapter를 가져와서
+
+    // 만약 constructor가 없을때는 에러를 내야 한다.
+    if ( !this.adapterConstructor ) throw new Error("redis를 이용한 adapter가 없습니다.");
+
+    server.adapter(this.adapterConstructor);
+    return server;
+  };
+
+  // reids가 내려갈때 사용되어 지는 함수 ( 해당 channel을 제대로 내리는 것이 중요하다. )
+  // 모두 실행하는게 중요함으로 중간에 실패해도 모두 실행되도록 해야 함
+  async close() : Promise<void> {
+    await Promise.allSettled([this.pub?.quit(), this.sub?.quit()]);
+  };
+
+};
