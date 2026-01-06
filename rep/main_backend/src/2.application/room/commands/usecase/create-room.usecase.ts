@@ -6,7 +6,7 @@ import { RoomAggregate } from "@domain/room/room.aggregate";
 import { RoomProps } from "@domain/room/vo";
 import { DeleteValueToDb, InsertValueToDb } from "@app/ports/db/db.outbound";
 import { InsertDataToCache } from "@app/ports/cache/cache.outbound";
-import { NotInsertRoomDataToCache } from "@error/application/room/room.error";
+import { NotInsertRoomDataToCache, NotInsertRoomDataToDb } from "@error/application/room/room.error";
 
 
 type CreateRoomUsecaseProps<T, CT> = {
@@ -61,7 +61,8 @@ export class CreateRoomUsecase<T, CT> {
     const room : Required<RoomProps> = roomAggregate.getRoomData(); // room 데이터 가져오기 
 
     // 2. db에 rooms 저장
-    await this.insertRoomDataToDb.insert(room);
+    const inserted = await this.insertRoomDataToDb.insert(room);
+    if ( !inserted ) throw new NotInsertRoomDataToDb();
 
     // 3. cache에 관련 room 관련 info 저장
     try {

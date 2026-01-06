@@ -8,3 +8,12 @@ export class NotInsertRoomDataToCache extends BaseError {
     });
   }
 }
+
+export class NotInsertRoomDataToDb extends BaseError {
+  constructor() {
+    super({
+      message: '데이터가 db에 저장되지 않았습니다.',
+      status: 500,
+    });
+  }
+}

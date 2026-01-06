@@ -53,6 +53,7 @@ export const DB_DELETE_USERS_ATTRIBUTE_NAME = Object.freeze({
 
 // 방과 관련된 테이블 열 이름
 export const DB_ROOMS_ATTRIBUTE_NAME = Object.freeze({
+  ROOM_ID : "room_id",
   CODE : "code",
   TITLE : "title",
   PASSWORD_HASH : "password_hash",

@@ -10,6 +10,7 @@ import {
   InsertOauthAndUserDataToMysql,
   InsertUserDataToMySql,
 } from './user/user.outbound';
+import { InsertRoomDataToMysql } from './room/room.outbound';
 
 @Global()
 @Module({
@@ -59,6 +60,7 @@ import {
     SelectUserAndOauthWhereEmailFromMysql,
     InsertOauthAndUserDataToMysql,
     InsertUserDataToMySql,
+    InsertRoomDataToMysql
 
   ],
   exports: [
@@ -67,6 +69,7 @@ import {
     SelectUserAndOauthWhereEmailFromMysql,
     InsertOauthAndUserDataToMysql,
     InsertUserDataToMySql,
+    InsertRoomDataToMysql
   ],
 })
 export class MysqlModule {}
