@@ -7,7 +7,7 @@ import {
 } from './user/user.outbound';
 import { REDIS_SERVER } from '../cache.constants';
 import { SelectHsetDataFromRedis } from './user/user.inbound';
-import { InsertRoomDatasToRedis, InsertRoomDataToRedis } from './room/room.outbound';
+import { DeleteRoomDatasToRedis, InsertRoomDatasToRedis, InsertRoomDataToRedis } from './room/room.outbound';
 import { SelectRoomInfoFromRedis } from './room/room.inbound';
 
 
@@ -51,6 +51,7 @@ import { SelectRoomInfoFromRedis } from './room/room.inbound';
     InsertRoomDataToRedis, // room data를 생성할때 사용
     SelectRoomInfoFromRedis, // roominfo 정보를 찾을때 사용
     InsertRoomDatasToRedis, // room data들을 저장할때 사용 
+    DeleteRoomDatasToRedis, // room정보들을 삭제하기 위해 사용
   ],
   exports: [
     REDIS_SERVER,
@@ -59,7 +60,8 @@ import { SelectRoomInfoFromRedis } from './room/room.inbound';
     DeleteUserDataToRedis,
     InsertRoomDataToRedis,
     SelectRoomInfoFromRedis,
-    InsertRoomDatasToRedis
+    InsertRoomDatasToRedis,
+    DeleteRoomDatasToRedis
   ],
 })
 export class RedisModule {}
