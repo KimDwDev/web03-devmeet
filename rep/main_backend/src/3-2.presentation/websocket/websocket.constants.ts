@@ -6,11 +6,15 @@ export const WEBSOCKET_NAMESPACE = Object.freeze({
 } as const);
 
 export const WEBSOCKET_AUTH_CLIENT_EVENT_NAME = Object.freeze({
-  ACCESS_TOKEN : "auth:ws:access_token",
-  ERROR : "auth:ws:error"
+  ACCESS_TOKEN : "auth:access_token",
+  ERROR : "auth:error"
 } as const);
 
 // 
-export const WEBSOCKET_SIGNALING_CLIENT_EVENT_NAME = Object.freeze({
+export const WEBSOCKET_SIGNALING_EVENT_NAME = Object.freeze({
+  JOIN_ROOM : "signaling:ws:join_room"
+} as const);
 
+export const WEBSOCKET_SIGNALING_CLIENT_EVENT_NAME = Object.freeze({
+  JOINED : "room:joined"
 } as const);

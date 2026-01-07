@@ -9,3 +9,8 @@ export const REDIS_CHANNEL_SUB = Symbol("REDIS_CHANNEL_SUB");
 export type SsePayload = {
   data : any;
 };
+
+// 웹소켓 채널관련 
+export const CHANNEL_NAMESPACE = Object.freeze({
+  SIGNALING : "signaling:ws"
+} as const);
