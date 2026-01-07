@@ -1,5 +1,4 @@
 import { ConnectRoomUsecase, DisconnectRoomUsecase } from "@app/room/commands/usecase";
-import { AuthModule } from "@present/http/auth/auth.module";
 import { Module } from "@nestjs/common";
 import { SelectRoomDataFromMysql } from "@infra/db/mysql/room/room.inbound";
 import { CompareRoomArgonHash } from "./signaling.interface";
@@ -7,14 +6,17 @@ import { SelectRoomInfoFromRedis } from "@infra/cache/redis/room/room.inbound";
 import { DeleteHardRoomParticipantInfoDataToMysql, InsertRoomParticipantInfoDataToMysql, UpdateRoomParticipantInfoToMysql } from "@infra/db/mysql/room/room.outbound";
 import { DeleteRoomDatasToRedis, InsertRoomDatasToRedis } from "@infra/cache/redis/room/room.outbound";
 import { SignalingWebsocketService } from "./signaling.service";
+import { AuthWebsocketModule } from "../auth/auth.module";
+import { SignalingWebsocketGateway } from "./signaling.gateway";
 
 
 @Module({
   imports : [
-    AuthModule // jwt를 사용하기 위해서
-  ],
+    AuthWebsocketModule
+  ],  
   providers : [
     // sfu 자체적인 모듈
+    SignalingWebsocketGateway,
     SignalingWebsocketService,
     CompareRoomArgonHash,
 
