@@ -26,32 +26,66 @@ export const useMediaPreview = (micId?: string, cameraId?: string) => {
     let cancelled = false;
 
     (async () => {
+      let audioTrack: MediaStreamTrack | null = null;
+      let videoTrack: MediaStreamTrack | null = null;
+
       try {
-        const mediaStream = await navigator.mediaDevices.getUserMedia({
+        const audioStream = await navigator.mediaDevices.getUserMedia({
           audio: micId ? { deviceId: micId } : true,
-          video: cameraId ? { deviceId: cameraId } : true,
+          video: false,
         });
+        audioTrack = audioStream.getAudioTracks()[0];
 
         if (cancelled) return;
-
-        streamRef.current?.getTracks().forEach((t) => t.stop());
-        streamRef.current = mediaStream;
-        setStream(mediaStream);
-
-        setMedia({
-          videoOn: true,
-          audioOn: true,
-          cameraPermission: 'granted',
+        setMedia((prev) => ({
+          ...prev,
           micPermission: 'granted',
-        });
+          audioOn: audioTrack!.enabled,
+        }));
       } catch {
         if (cancelled) return;
+        setMedia((prev) => ({
+          ...prev,
+          micPermission: 'denied',
+          audioOn: false,
+        }));
+      }
 
+      try {
+        const videoStream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: cameraId ? { deviceId: cameraId } : true,
+        });
+        videoTrack = videoStream.getVideoTracks()[0];
+
+        if (cancelled) return;
+        setMedia((prev) => ({
+          ...prev,
+          cameraPermission: 'granted',
+          videoOn: videoTrack!.enabled,
+        }));
+      } catch {
+        if (cancelled) return;
         setMedia((prev) => ({
           ...prev,
           cameraPermission: 'denied',
-          micPermission: 'denied',
+          videoOn: false,
         }));
+      }
+
+      if (cancelled) return;
+
+      // stream 합치기
+      const tracks = [
+        ...(audioTrack ? [audioTrack] : []),
+        ...(videoTrack ? [videoTrack] : []),
+      ];
+
+      if (tracks.length > 0) {
+        const combinedStream = new MediaStream(tracks);
+        streamRef.current?.getTracks().forEach((t) => t.stop());
+        streamRef.current = combinedStream;
+        setStream(combinedStream);
       }
     })();
 
