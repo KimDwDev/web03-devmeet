@@ -19,5 +19,5 @@ export const WEBSOCKET_SIGNALING_EVENT_NAME = Object.freeze({
 } as const);
 
 export const WEBSOCKET_SIGNALING_CLIENT_EVENT_NAME = Object.freeze({
-  JOINED : "room:joined"
+  JOINED : "room:joined",
 } as const);

@@ -83,4 +83,15 @@ export class SfuService {
     return roomEntry;
   };
 
+  // 방이 닫혔을때 로직도 구현해두자
+  closeRoomRouter(room_id : string) {
+    const entry = this.roomRouters.get(room_id);
+    if ( !entry ) return;
+    try {
+      entry.router.close();
+    } finally {
+      this.roomRouters.delete(room_id); // 근데 생각해보면 close를 해두어서 삭제되기는 할거다. 
+    };
+  };  
+
 };

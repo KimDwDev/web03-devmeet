@@ -1,6 +1,6 @@
 // 시그널링 서버의 역할이라고 할 수 있을 것 같다.
 import { Logger, UsePipes, ValidationPipe } from "@nestjs/common";
-import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
+import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer, WsException } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io"
 import { SignalingWebsocketService } from "./signaling.service";
 import { TokenDto } from "@app/auth/commands/dto";
@@ -118,12 +118,23 @@ export class SignalingWebsocketGateway implements OnGatewayInit, OnGatewayConnec
 
   // 방에 가입 한 후 라우터 생성 -> 방에 가입 시킨 다음에 본격적으로 라우터를 생성하는 이벤트를 주어야 한다.
   // 따로 분리해놓은 이유는 -> 정확히 방에 가입한 사람들만 이것을 이용하게 하고 싶기 때문이다.
+  // reture을 안준 이유도 sdp를 하는 방식이 다 다르기 때문이다.
   @SubscribeMessage(WEBSOCKET_SIGNALING_EVENT_NAME.CONNECT_ROUTER)
   async connectRouterGateway(
     @ConnectedSocket() client : Socket
   ) {
-    // 1. sfu 서버에 router 생성 요청
+    const room_id : string = client.data.room_id;
 
+    try {
+      // 1. sfu 서버에 room_id에 router에 설정을 요구한다 이를 바탕으로 SDP를 할 예정
+      const rtpCapabilities = await this.signalingService.sdpNegotiate(room_id);
+
+      // 2. sdp 정보 반환
+      return { ok : true, rtpCapabilities };
+    } catch (err){
+      this.logger.error(err);
+      throw new WsException({ message : err.message ?? "에러 발생", status : err.status ?? 500 });
+    };
   };
 
   

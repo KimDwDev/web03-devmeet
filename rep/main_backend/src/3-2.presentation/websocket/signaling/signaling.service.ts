@@ -8,6 +8,8 @@ import { v7 as uuidV7 } from "uuid";
 import { SocketPayload } from "./signaling.validate";
 import { PayloadRes } from "@app/auth/queries/dto";
 import { UnthorizedError } from "@error/application/user/user.error";
+import { SfuService } from "@present/webrtc/sfu/sfu.service";
+import { NotConnectSignalling } from "@error/presentation/signalling/signalling.error";
 
 
 @Injectable()
@@ -15,7 +17,8 @@ export class SignalingWebsocketService {
 
   constructor(
     private readonly disconnectRoomUsecase : DisconnectRoomUsecase<any, any>,
-    private readonly connectRoomUsecase : ConnectRoomUsecase<any, any>
+    private readonly connectRoomUsecase : ConnectRoomUsecase<any, any>,
+    private readonly sfuServer : SfuService,
   ) {}
 
   parseJwtToken( client : Socket ) : TokenDto | undefined {
@@ -97,6 +100,13 @@ export class SignalingWebsocketService {
     } catch (err) {
       throw err;
     };
+  };
+
+  // sdp 협상에 필요한 함수 
+  async sdpNegotiate( room_id : string ) {
+    if ( !room_id || room_id === "" ) throw new NotConnectSignalling();
+    const entry = await this.sfuServer.getOrCreateRoomRouter(room_id);
+    return entry.router.rtpCapabilities; // sfu 서버에 codex 정보들 ( 나중에 변경 가능성 농후하다. )
   };
 
 };

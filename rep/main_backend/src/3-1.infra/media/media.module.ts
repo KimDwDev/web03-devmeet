@@ -1,7 +1,8 @@
-import { Module } from "@nestjs/common";
+import { Global, Module } from "@nestjs/common";
 import { MediasoupService } from "./mediasoup/media";
 
 
+@Global()
 @Module({
   providers : [
     MediasoupService,
