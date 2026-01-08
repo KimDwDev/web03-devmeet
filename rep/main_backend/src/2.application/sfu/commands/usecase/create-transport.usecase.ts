@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import type { Router } from "mediasoup/types";
-import { SfuError, SfuErrorMessage } from "@error/application/sfu/sfu.error";
+import { SfuErrorMessage } from "@error/application/sfu/sfu.error";
 import type {
   RoomRouterRepositoryPort,
   TransportRepositoryPort,

@@ -6,6 +6,8 @@ import { RoomCreateLockRepo, RoomRouterRepository, TransportRepository } from "@
 import { RoomCreateLockPort, RoomRouterRepositoryPort, RouterFactoryPort, TransportFactoryPort, TransportRepositoryPort } from "@app/sfu/ports";
 import { CreateSfuTransportInfoToRedis, DeleteSfuTransportInfoToRedis } from "@infra/cache/redis/sfu/sfu.outbound";
 import { MediasoupTransportFactory } from "@infra/media/mediasoup/sfu/sfu.outbound";
+import { ConnectTransportUsecase } from "@app/sfu/queries/usecase";
+import { SelectSfuTransportDataFromRedis } from "@infra/cache/redis/sfu/sfu.inbound";
 
 
 @Module({
@@ -34,6 +36,8 @@ import { MediasoupTransportFactory } from "@infra/media/mediasoup/sfu/sfu.outbou
         MediasoupRouterFactory
       ]
     },
+
+    // transport 생성 usecase
     {
       provide : CreateTransportUsecase,
       useFactory : (
@@ -57,6 +61,23 @@ import { MediasoupTransportFactory } from "@infra/media/mediasoup/sfu/sfu.outbou
         MediasoupTransportFactory,
         CreateSfuTransportInfoToRedis,
         DeleteSfuTransportInfoToRedis,
+      ]
+    },
+
+    // transport 연결 usecase
+    {
+      provide : ConnectTransportUsecase,
+      useFactory  : (
+        transportRepo: TransportRepositoryPort,
+        selectSfuTransportInfoFromRedis : SelectSfuTransportDataFromRedis,
+      ) => {
+        return new ConnectTransportUsecase(
+          transportRepo, selectSfuTransportInfoFromRedis
+        )
+      },
+      inject : [
+        TransportRepository,
+        SelectSfuTransportDataFromRedis
       ]
     }
 
