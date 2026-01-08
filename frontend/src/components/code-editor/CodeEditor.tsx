@@ -8,29 +8,27 @@ import { WebsocketProvider } from 'y-websocket';
 
 type CodeEditorProps = {
   language?: string;
-  readOnly?: boolean;
   autoComplete?: boolean;
   minimap?: boolean;
 };
 
 export default function CodeEditor({
   language = 'typescript',
-  readOnly = false,
   autoComplete = true,
   minimap = true,
 }: CodeEditorProps) {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
+  const providerRef = useRef<WebsocketProvider | null>(null);
 
-  // 자동완성 상태
-  const [isAutoCompleted, setIsAutoCompleted] = useState(autoComplete);
+  const [isAutoCompleted, setIsAutoCompleted] = useState<boolean>(autoComplete);
+  const [isPresenter, setIsPresenter] = useState<boolean>(false);
+  const [hasPresenter, setHasPresenter] = useState<boolean>(false);
 
-  // editor onMount
   const handleMount = async (editor: monaco.editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
 
     const ydoc = new Y.Doc();
-
     const { MonacoBinding } = await import('y-monaco');
 
     const provider = new WebsocketProvider(
@@ -38,14 +36,14 @@ export default function CodeEditor({
       'room-1',
       ydoc,
     );
+    providerRef.current = provider;
 
     // 사용자 정보 동적 설정
-    const name = `User-${Math.floor(Math.random() * 100)}`;
-    // TODO: const color = getRandomColor();
+    const userName = `User-${Math.floor(Math.random() * 100)}`;
 
     provider.awareness.setLocalStateField('user', {
-      name,
-      role: 'viewer',
+      name: userName,
+      role: 'viewer', // 기본은 viewer
     });
 
     const yText = ydoc.getText('monaco');
@@ -61,6 +59,29 @@ export default function CodeEditor({
       provider.awareness, // 여기서 다른 유저들의 위치 정보를 받아온다.
     );
 
+    // 발표자 상태 변화 감지
+    provider.awareness.on('change', () => {
+      const states = provider.awareness.getStates(); // Map<clientID, state>
+
+      // 발표자 찾기
+      const presenterEntry = Array.from(states.entries()).find(
+        ([clientId, state]) => state.user?.role === 'presenter',
+      );
+
+      setHasPresenter(Boolean(presenterEntry));
+
+      // presenter의 clientID
+      const presenterClientId = presenterEntry?.[0];
+
+      // 나 자신이 발표자인지
+      const amIPresenter = provider.awareness.clientID === presenterClientId;
+      setIsPresenter(amIPresenter);
+
+      // 발표자가 있으면 다른 사람은 read-only
+      const readOnly = presenterClientId != null && !amIPresenter;
+      editor.updateOptions({ readOnly });
+    });
+
     cleanupRef.current = () => {
       binding.destroy();
       provider.destroy();
@@ -73,8 +94,36 @@ export default function CodeEditor({
   }, []);
 
   // 자동완성 토글
-  const toggleAutoComplete = () => {
-    setIsAutoCompleted((prev) => !prev);
+  const toggleAutoComplete = () => setIsAutoCompleted((prev) => !prev);
+
+  // 발표자 되기
+  const becomePresenter = () => {
+    if (hasPresenter) {
+      alert('이미 누가 발표중이라니까');
+      //   TODO: toast message 띄워주기
+      return;
+    }
+    if (!providerRef.current) return;
+
+    providerRef.current.awareness.setLocalStateField('user', {
+      role: 'presenter',
+      name:
+        providerRef.current.awareness.getLocalState()?.user?.name ??
+        'anonymous',
+    });
+  };
+
+  // 발표자 취소
+  const cancelPresenter = () => {
+    if (!providerRef.current) return;
+
+    // 역할을 viewer로 돌려놓기
+    providerRef.current.awareness.setLocalStateField('user', {
+      role: 'viewer',
+      name:
+        providerRef.current.awareness.getLocalState()?.user?.name ??
+        'anonymous',
+    });
   };
 
   return (
@@ -91,6 +140,30 @@ export default function CodeEditor({
         >
           자동완성 {isAutoCompleted ? 'ON' : 'OFF'}
         </button>
+
+        {!isPresenter && (
+          <button
+            onClick={becomePresenter}
+            className="rounded bg-blue-600 px-3 py-1 text-sm text-white"
+          >
+            발표자 되기
+          </button>
+        )}
+
+        {isPresenter && (
+          <button
+            onClick={cancelPresenter}
+            className="rounded bg-red-600 px-3 py-1 text-sm text-white"
+          >
+            발표자 취소
+          </button>
+        )}
+
+        {hasPresenter && (
+          <span className="text-sm text-neutral-400">
+            {isPresenter ? '편집 가능 (발표자)' : '읽기 전용 (참가자)'}
+          </span>
+        )}
       </div>
 
       {/* 코드에디터 */}
@@ -101,7 +174,6 @@ export default function CodeEditor({
         defaultLanguage={language}
         onMount={handleMount}
         options={{
-          readOnly,
           automaticLayout: true,
 
           // 편집
