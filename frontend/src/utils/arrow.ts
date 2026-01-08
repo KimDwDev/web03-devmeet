@@ -1,7 +1,16 @@
+// 좌표 배열 상수
+const COORDS_PER_POINT = 2; // 각 점은 (x, y) 2개 좌표
+const START_POINT_OFFSET = 2; // 시작점 건너뛰기 (x, y)
+const END_POINT_OFFSET = 2; // 끝점 건너뛰기 (x, y)
+
 // 시작점과 끝점을 제외한 중간점들만 추출
 export const getControlPoints = (points: number[]) => {
   const controlPoints = [];
-  for (let i = 2; i < points.length - 2; i += 2) {
+  for (
+    let i = START_POINT_OFFSET;
+    i < points.length - END_POINT_OFFSET;
+    i += COORDS_PER_POINT
+  ) {
     controlPoints.push({
       x: points[i],
       y: points[i + 1],
