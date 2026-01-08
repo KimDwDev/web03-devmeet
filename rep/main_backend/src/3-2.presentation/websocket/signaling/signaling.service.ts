@@ -109,4 +109,11 @@ export class SignalingWebsocketService {
     return entry.router.rtpCapabilities; // sfu 서버에 codex 정보들 ( 나중에 변경 가능성 농후하다. )
   };
 
+  // ice 협상을 위해 sfu서버에 ice parameter와 후보들을 알려준다 그리고 dtls 핸드세이킹을 위한 파라미터도 전달
+  async iceNegotiate( room_id : string ) {
+    if ( !room_id || room_id === "" ) throw new NotConnectSignalling();
+    const transportOptions = await this.sfuServer.createTransPort(room_id);
+    return transportOptions;
+  };
+
 };

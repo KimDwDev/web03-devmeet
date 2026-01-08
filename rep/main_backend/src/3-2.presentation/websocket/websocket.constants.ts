@@ -15,7 +15,8 @@ export const WEBSOCKET_AUTH_CLIENT_EVENT_NAME = Object.freeze({
 // 
 export const WEBSOCKET_SIGNALING_EVENT_NAME = Object.freeze({
   JOIN_ROOM : "signaling:ws:join_room",
-  NEGOTIATE_SDP : "signaling:ws:negotiate_sdp"
+  NEGOTIATE_SDP : "signaling:ws:negotiate_sdp",
+  NEGOTIATE_ICE : "signaling:ws:negotiate_ice"
 } as const);
 
 export const WEBSOCKET_SIGNALING_CLIENT_EVENT_NAME = Object.freeze({

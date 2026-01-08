@@ -131,12 +131,28 @@ export class SignalingWebsocketGateway implements OnGatewayInit, OnGatewayConnec
 
       // 2. sdp 정보 반환
       return { ok : true, rtpCapabilities };
-    } catch (err){
+    } catch (err) {
       this.logger.error(err);
       throw new WsException({ message : err.message ?? "에러 발생", status : err.status ?? 500 });
     };
   };
 
-  
+  // 여기서 추가할 점은 ( send, recv에 역할을 알 수 있는 매개변수가 있다면 좋을것이다 왜냐하면 이걸 이용해서 두개다 협상을 할거니까 )
+  @SubscribeMessage(WEBSOCKET_SIGNALING_EVENT_NAME.NEGOTIATE_ICE)
+  async iceNegotiateGateway(
+    @ConnectedSocket() client : Socket
+  ) {
+    const room_id : string = client.data.room_id;
+
+    try {
+      // 1. sfu 서버에서 ice 협상에 필요한 정보 요구하고 dtls에 필요한 정보도 요구
+      const transportOptions = await this.signalingService.iceNegotiate(room_id);
+
+      return { ok : true, transportOptions };
+    } catch (err) {
+      this.logger.error(err);
+      throw new WsException({ message : err.message ?? "에러 발생", status : err.status ?? 500 });
+    };
+  };
 
 };
