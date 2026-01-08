@@ -24,7 +24,7 @@ export default function MeetingRoom({ meetingId }: { meetingId: string }) {
 
         {/* 참가자 / 채팅창 */}
         {(isMemberOpen || isChatOpen) && (
-          <div className="absolute top-2 right-2 bottom-2 flex w-80 flex-col gap-2 z-10">
+          <div className="absolute top-2 right-2 bottom-2 flex w-80 flex-col gap-2 z-100">
             {isMemberOpen && <MemberModal />}
             {isChatOpen && <ChatModal />}
           </div>
