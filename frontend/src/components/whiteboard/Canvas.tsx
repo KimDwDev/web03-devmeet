@@ -36,13 +36,14 @@ export default function Canvas() {
   );
 
   const editingItem = useMemo(
-    () => items.find((item) => item.id === editingTextId) as TextItem | undefined,
-    [items, editingTextId]
+    () =>
+      items.find((item) => item.id === editingTextId) as TextItem | undefined,
+    [items, editingTextId],
   );
 
   const selectedItem = useMemo(
     () => items.find((item) => item.id === selectedId),
-    [items, selectedId]
+    [items, selectedId],
   );
 
   const isArrowSelected = selectedItem?.type === 'arrow';
@@ -83,7 +84,14 @@ export default function Canvas() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedId, editingTextId, deleteItem, isArrowSelected, selectedHandleIndex, deleteControlPoint]);
+  }, [
+    selectedId,
+    editingTextId,
+    deleteItem,
+    isArrowSelected,
+    selectedHandleIndex,
+    deleteControlPoint,
+  ]);
 
   // 선택 해제
   const handleCheckDeselect = (
@@ -111,7 +119,7 @@ export default function Canvas() {
   if (size.width === 0 || size.height === 0) return null;
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-neutral-100">
+    <div className="h-full w-full overflow-hidden bg-neutral-100">
       <Stage
         ref={stageRef}
         width={size.width}

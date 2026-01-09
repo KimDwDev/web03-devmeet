@@ -1,8 +1,8 @@
 'use client';
 
 import NavButton from '@/components/whiteboard/common/NavButton';
-
 import { PanelProps } from '@/types/whiteboardUI';
+import { useAddWhiteboardItem } from '@/hooks/useAddWhiteboardItem';
 
 // ArrowRight -> / doubleArrow <-> / ChevronArrow >>
 import {
@@ -12,6 +12,8 @@ import {
 } from '@/assets/icons/whiteboard';
 
 export default function ArrowPanel({ selectedTool, onSelect }: PanelProps) {
+  const { handleAddArrow } = useAddWhiteboardItem();
+
   const commonProps = {
     bgColor: 'bg-white',
     activeBgColor: 'bg-sky-100 text-sky-600',
@@ -23,7 +25,10 @@ export default function ArrowPanel({ selectedTool, onSelect }: PanelProps) {
         icon={ArrowIcon}
         label="화살표"
         isActive={selectedTool === 'arrow'}
-        onClick={() => onSelect('arrow')}
+        onClick={() => {
+          onSelect('arrow');
+          handleAddArrow();
+        }}
         {...commonProps}
       />
       <NavButton
