@@ -1,5 +1,10 @@
-import { Controller } from "@nestjs/common";
+import { Controller, Get } from "@nestjs/common";
 
 
-@Controller("/tool/health")
-export class HealthController {};
+@Controller("health")
+export class HealthController {
+  @Get("")
+  healthCheck(): Record<string, number> {
+    return { status: 200 };
+  }
+};
