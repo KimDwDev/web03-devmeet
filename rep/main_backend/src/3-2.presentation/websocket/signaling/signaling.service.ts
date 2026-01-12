@@ -12,6 +12,8 @@ import { NotConnectSignalling } from "@error/presentation/signalling/signalling.
 import { CHANNEL_NAMESPACE } from "@infra/channel/channel.constants";
 import { CreateConsumerDto, CreateConsumerResult, CreateProduceResult, CreatePropduceDto, CreateTransportDto, ResumeConsumerDto } from "@app/sfu/commands/dto";
 import { ConnectTransportType } from "@app/sfu/queries/dto";
+import { GetRoomMembersResult } from "@app/room/queries/dto";
+import { GetRoomMembersUsecase } from "@app/room/queries/usecase";
 
 
 @Injectable()
@@ -20,6 +22,7 @@ export class SignalingWebsocketService {
   constructor(
     private readonly disconnectRoomUsecase : DisconnectRoomUsecase<any, any>,
     private readonly connectRoomUsecase : ConnectRoomUsecase<any, any>,
+    private readonly getMembersUsecase : GetRoomMembersUsecase<any>,
     private readonly sfuServer : SfuService,
   ) {}
 
@@ -179,6 +182,9 @@ export class SignalingWebsocketService {
   };
 
   // 회의방에 모든 유저를 가져오고 싶을때 사용하는 로직 
-  
+  async getMemberData( client : Socket ) : Promise<GetRoomMembersResult> {
+    const room_id : string = client.data.room_id;
+    return this.getMembersUsecase.execute({room_id});
+  };
 
 };

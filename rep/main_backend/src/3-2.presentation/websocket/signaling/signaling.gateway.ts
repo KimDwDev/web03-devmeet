@@ -10,6 +10,7 @@ import { WEBSOCKET_AUTH_CLIENT_EVENT_NAME, WEBSOCKET_NAMESPACE, WEBSOCKET_PATH, 
 import { DtlsHandshakeValidate, JoinRoomValidate, NegotiateIceValidate, OnConsumeValidate, OnProduceValidate, ResumeConsumersValidate, SocketPayload } from "./signaling.validate";
 import { ConnectResult, ConnectRoomDto } from "@app/room/commands/dto";
 import { CHANNEL_NAMESPACE } from "@infra/channel/channel.constants";
+import { GetRoomMembersResult } from "@app/room/queries/dto";
 
 
 @WebSocketGateway({
@@ -254,10 +255,9 @@ export class SignalingWebsocketGateway implements OnGatewayInit, OnGatewayConnec
   @SubscribeMessage(WEBSOCKET_SIGNALING_EVENT_NAME.ROOM_MEMBERS)
   async getRoomMembersGateway(
     @ConnectedSocket() client : Socket
-  ) {
+  ) : Promise<GetRoomMembersResult> {
     try { 
-      
-
+      return this.signalingService.getMemberData(client);
     } catch (err) {
       this.logger.error(err);
       throw new WsException({ message : err.message ?? "에러 발생", status : err.status ?? 500 });            

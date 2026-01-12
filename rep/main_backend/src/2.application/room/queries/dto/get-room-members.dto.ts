@@ -11,23 +11,24 @@ type MemberProviderInfo = {
   type : "mic" | "cam";
 };
 
-type ProviderInfo = {
+export type ProviderInfo = {
   user_id : string;
-  nickname : string;
+  nickname : string; // 이거 추가하려면 하나에 로직이 더 들어가는데... 
   provider_id : string;
   kind: "audio" | "video";
   type : "mic" | "cam" | "screen_video" | "screen_audio";
 } 
 
-type GetRoomMainInfo = {
+export type GetRoomMainInfo = {
   main : ProviderInfo | null;
   sub : ProviderInfo | null;
 };
 
-type MembersInfo = {
+export type MembersInfo = {
   user_id : string;
   nickname : string;
   profile_path : string | null;
+  is_guest : boolean;
   cam : MemberProviderInfo | null;
   mic : MemberProviderInfo | null
 };
