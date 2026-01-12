@@ -44,7 +44,7 @@ export class AuthController {
   ): Promise<Record<string, string>> {
     await this.authService.signUpService(dto);
     return { status: 'ok' };
-  }
+  };
 
   // kakao 회원가입
   @Post('signup/kakao')
@@ -58,21 +58,24 @@ export class AuthController {
     const redirect_url: string = `${backend_url}/api/auth/signup/kakao/redirect`;
     const url: string = this.authService.getAuthTokenKakaoUrl(redirect_url);
     res.redirect(url);
-  }
+  };
 
   // kakao 회원가입 리다이렉트
   @Get('signup/kakao/redirect')
   @HttpCode(201)
   public async signUpForKakaoRedirectController(
     @Req() req: Request,
-  ): Promise<Record<string, string>> {
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
     const code = (req as any).query?.code; // code 읽어오기
     if (!code) throw new EmptyAuthCode();
     const signUpData: CreateUserOauthDto =
       await this.authService.getDataKakaoLogicVerSignUp(code);
     await this.authService.signUpVerOauthService(signUpData); // 실제 로그인
-    return { status: 'ok' };
-  }
+    
+    const frontend = this.config.get<string>('NODE_FRONTEND_SERVER', 'http://localhost:3000');
+    res.redirect(`${frontend}`);
+  };
 
   // 로그인 관련 - local
   @Post('login')
@@ -99,7 +102,7 @@ export class AuthController {
 
     // access_token은 body로
     return { access_token: tokens.access_token };
-  }
+  };
 
   // 로그인 관련 - kakao
   @Post('login/kakao')
@@ -113,13 +116,13 @@ export class AuthController {
     const redirect_url: string = `${backend_url}/api/auth/login/kakao/redirect`;
     const url: string = this.authService.getAuthTokenKakaoUrl(redirect_url);
     res.redirect(url);
-  }
+  };
 
   @Get('login/kakao/redirect')
   public async loginForKakaoRedirectController(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<Record<string, string>> {
+  ): Promise<void> {
     const code = (req as any).query?.code; // 코드확인
     if (!code) throw new EmptyAuthCode();
     const loginData: LoginOauthUserDto =
@@ -136,8 +139,9 @@ export class AuthController {
     });
 
     // access_token은 body로
-    return { access_token: tokens.access_token };
-  }
+    const frontend = this.config.get<string>('NODE_FRONTEND_SERVER', 'http://localhost:3000');
+    res.redirect(`${frontend}?access_token=${encodeURIComponent(tokens.access_token)}`); // 여기서 frontend 뒤에 원하는 부분으로 리다이렉트 시켜주면 될겁니다. 
+  };
 
   // 로그아웃과 관련
   @UseGuards(JwtGuard)

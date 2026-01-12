@@ -99,3 +99,12 @@ export class OnConsumeValidate {
   @IsIn([ "user", "main" ])
   status : "user" | "main";
 };  
+
+// resume에 쓰이는 consume validate
+export class ResumeConsumersValidate {
+
+  @IsNotEmpty()
+  @IsString()
+  consumer_id : string;
+
+};
