@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { useCanvasStore } from '@/store/useCanvasStore';
+import { useToolbarMode } from '@/hooks/useToolbarMode';
 
 import NavButton from '@/components/whiteboard/common/NavButton';
 
@@ -51,45 +52,22 @@ export default function ToolbarContainer() {
   const cursorMode = useCanvasStore((state) => state.cursorMode);
   const setCursorMode = useCanvasStore((state) => state.setCursorMode);
 
+  // 툴바 모드 전환 훅
+  const { updateModeForTool, updateModeForPanel } = useToolbarMode();
+
   // 핸들러 로직
   // 하위 패널에서 구체적인 도구 선택
   const handleToolSelect = (tool: ToolType) => {
     setActiveTool(tool);
     setActivePanel(null);
-
-    // 도구에 따라 cursorMode 변경
-    if (tool === 'select' || tool === 'move') {
-      setCursorMode('select');
-    } else if (tool === 'draw') {
-      setCursorMode('draw');
-    } else if (tool === 'eraser') {
-      setCursorMode('eraser');
-    } else if (
-      tool === 'text' ||
-      tool === 'arrow' ||
-      tool === 'doubleArrow' ||
-      tool === 'chevronArrow'
-    ) {
-      setCursorMode('select');
-    }
+    updateModeForTool(tool);
     // TODO: useWorkspaceStore.getState().setTool(tool);
   };
 
   // 메인 툴바 버튼을 눌렀을 때 (패널 토글/즉시 선택)
   const togglePanel = (panel: PanelType) => {
     setActivePanel((prev) => (prev === panel ? null : panel));
-
-    if (panel === 'cursor') {
-      setCursorMode('select');
-    } else if (
-      panel === 'text' ||
-      panel === 'arrow' ||
-      panel === 'shape' ||
-      panel === 'line' ||
-      panel === 'media'
-    ) {
-      setCursorMode('select'); // 요소 추가 관련은 select 모드
-    }
+    updateModeForPanel(panel);
   };
 
   return (

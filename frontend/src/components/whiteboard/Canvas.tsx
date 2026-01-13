@@ -13,8 +13,7 @@ import { useWindowSize } from '@/hooks/useWindowSize';
 import { useCanvasInteraction } from '@/hooks/useCanvasInteraction';
 import { useCanvasShortcuts } from '@/hooks/useCanvasShortcuts';
 import { useArrowHandles } from '@/hooks/useArrowHandles';
-import { useDrawing } from '@/hooks/useDrawing';
-import { useEraser } from '@/hooks/useEraser';
+import { useCanvasMouseEvents } from '@/hooks/useCanvasMouseEvents';
 
 import RenderItem from '@/components/whiteboard/items/RenderItem';
 import TextArea from '@/components/whiteboard/items/text/TextArea';
@@ -32,7 +31,6 @@ export default function Canvas() {
   const selectItem = useCanvasStore((state) => state.selectItem);
   const updateItem = useCanvasStore((state) => state.updateItem);
   const setEditingTextId = useCanvasStore((state) => state.setEditingTextId);
-  const cursorMode = useCanvasStore((state) => state.cursorMode);
 
   const stageRef = useRef<Konva.Stage | null>(null);
   const [isDraggingArrow, setIsDraggingArrow] = useState(false);
@@ -56,6 +54,7 @@ export default function Canvas() {
 
   const isArrowSelected = selectedItem?.type === 'arrow';
 
+  // 화살표 훅
   const {
     selectedHandleIndex,
     setSelectedHandleIndex,
@@ -71,24 +70,7 @@ export default function Canvas() {
     updateItem,
   });
 
-  // 그리기 훅
-  const {
-    handleDrawingMouseDown,
-    handleDrawingMouseMove,
-    handleDrawingMouseUp,
-    currentDrawing,
-  } = useDrawing();
-
-  // 지우개 훅
-  const { handleEraserMouseDown, handleEraserMouseMove, handleEraserMouseUp } =
-    useEraser();
-
-  useCanvasShortcuts({
-    isArrowSelected,
-    selectedHandleIndex,
-    deleteControlPoint,
-  });
-
+  // 선택 해제 핸들러
   const handleCheckDeselect = (
     e: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
   ) => {
@@ -103,32 +85,22 @@ export default function Canvas() {
     }
   };
 
-  // 마우스 이벤트
-  const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
-    if (cursorMode === 'draw') {
-      handleDrawingMouseDown(e);
-    } else if (cursorMode === 'eraser') {
-      handleEraserMouseDown(e);
-    } else {
-      handleCheckDeselect(e);
-    }
-  };
+  // 마우스 이벤트 통합 훅
+  const { handleMouseDown, handleMouseMove, handleMouseUp, currentDrawing } =
+    useCanvasMouseEvents({
+      onDeselect: handleCheckDeselect,
+    });
 
-  const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
-    if (cursorMode === 'draw') {
-      handleDrawingMouseMove(e);
-    } else if (cursorMode === 'eraser') {
-      handleEraserMouseMove(e);
-    }
-  };
+  // 캔버스 드래그 가능 여부 (그리기/지우개 모드에서는 비활성화)
+  const isDraggable = useCanvasStore(
+    (state) => state.cursorMode !== 'draw' && state.cursorMode !== 'eraser',
+  );
 
-  const handleMouseUp = () => {
-    if (cursorMode === 'draw') {
-      handleDrawingMouseUp();
-    } else if (cursorMode === 'eraser') {
-      handleEraserMouseUp();
-    }
-  };
+  useCanvasShortcuts({
+    isArrowSelected,
+    selectedHandleIndex,
+    deleteControlPoint,
+  });
 
   const handleItemChange = (
     id: string,
@@ -145,7 +117,7 @@ export default function Canvas() {
         ref={stageRef}
         width={size.width}
         height={size.height}
-        draggable={cursorMode !== 'draw' && cursorMode !== 'eraser'}
+        draggable={isDraggable}
         x={stagePos.x}
         y={stagePos.y}
         scaleX={stageScale}

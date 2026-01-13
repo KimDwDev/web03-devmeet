@@ -2,6 +2,8 @@
 
 import { Text, Arrow, Line } from 'react-konva';
 import { useCanvasStore } from '@/store/useCanvasStore';
+import { useCursorStyle } from '@/hooks/useCursorStyle';
+import { useItemInteraction } from '@/hooks/useItemInteraction';
 import type {
   TextItem,
   ArrowItem,
@@ -28,11 +30,13 @@ export default function RenderItem({
   onArrowDblClick,
 }: RenderItemProps) {
   const setEditingTextId = useCanvasStore((state) => state.setEditingTextId);
-  const cursorMode = useCanvasStore((state) => state.cursorMode);
 
-  // 그리기 모드일 때는 아이템 조작 불가
-  const isInteractive = cursorMode !== 'draw';
-  const isEraserMode = cursorMode === 'eraser';
+  // 아이템 인터랙션 상태
+  const { isInteractive, isEraserMode, isDraggable, isListening } =
+    useItemInteraction();
+
+  // 커서 스타일 훅
+  const { handleMouseEnter, handleMouseLeave } = useCursorStyle('move');
 
   // 텍스트 렌더링
   if (item.type === 'text') {
@@ -41,22 +45,12 @@ export default function RenderItem({
       <Text
         {...textItem}
         id={item.id}
-        draggable={isInteractive && !isEraserMode}
-        listening={isInteractive || isEraserMode}
+        draggable={isDraggable}
+        listening={isListening}
         onMouseDown={() => isInteractive && !isEraserMode && onSelect(item.id)}
         onTouchStart={() => isInteractive && !isEraserMode && onSelect(item.id)}
-        onMouseEnter={(e) => {
-          const container = e.target.getStage()?.container();
-          if (container) {
-            container.style.cursor = 'move';
-          }
-        }}
-        onMouseLeave={(e) => {
-          const container = e.target.getStage()?.container();
-          if (container) {
-            container.style.cursor = 'default';
-          }
-        }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         onDblClick={() => {
           if (!isInteractive || isEraserMode) return;
           setEditingTextId(item.id);
@@ -95,25 +89,15 @@ export default function RenderItem({
       <Arrow
         {...arrowItem}
         id={item.id}
-        draggable={isInteractive && !isEraserMode}
-        listening={isInteractive || isEraserMode}
+        draggable={isDraggable}
+        listening={isListening}
         hitStrokeWidth={30}
         tension={0.5}
         lineCap="round"
         lineJoin="round"
         onMouseDown={() => isInteractive && !isEraserMode && onSelect(item.id)}
-        onMouseEnter={(e) => {
-          const container = e.target.getStage()?.container();
-          if (container) {
-            container.style.cursor = 'move';
-          }
-        }}
-        onMouseLeave={(e) => {
-          const container = e.target.getStage()?.container();
-          if (container) {
-            container.style.cursor = 'default';
-          }
-        }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         onDblClick={() => {
           if (!isInteractive || isEraserMode) return;
           onArrowDblClick?.(item.id);
@@ -148,25 +132,15 @@ export default function RenderItem({
       <Line
         {...drawingItem}
         id={item.id}
-        draggable={isInteractive && !isEraserMode}
-        listening={isInteractive || isEraserMode}
+        draggable={isDraggable}
+        listening={isListening}
         hitStrokeWidth={30}
         tension={0.5}
         lineCap="round"
         lineJoin="round"
         onMouseDown={() => isInteractive && !isEraserMode && onSelect(item.id)}
-        onMouseEnter={(e) => {
-          const container = e.target.getStage()?.container();
-          if (container) {
-            container.style.cursor = 'move';
-          }
-        }}
-        onMouseLeave={(e) => {
-          const container = e.target.getStage()?.container();
-          if (container) {
-            container.style.cursor = 'default';
-          }
-        }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         onDragEnd={(e) => {
           if (!isInteractive || isEraserMode) return;
           const pos = e.target.position();
