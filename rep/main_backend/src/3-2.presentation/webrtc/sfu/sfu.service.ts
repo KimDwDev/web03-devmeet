@@ -2,8 +2,8 @@ import { Injectable } from "@nestjs/common";
 import { CreateConsumerDto, CreateConsumerResult, CreateConsumerResults, CreateConsumersDto, CreateProduceResult, CreatePropduceDto, CreateTransportDto, RoomEntry, TransportEntry } from "@app/sfu/commands/dto";
 import { CreateConsumersUsecase, CreateConsumerUsecase, CreateProduceUsecase, CreateRouterUsecase, CreateTransportUsecase, DisconnectUserUsecase } from "@app/sfu/commands/usecase";
 import { RoomRouterRepository, TransportRepository } from "@infra/memory/sfu";
-import { ConnectTransportUsecase,  PauseConsumerUsecase, ResumeConsumerUsecase } from "@app/sfu/queries/usecase";
-import { ConnectTransportType, PauseConsumerDto, ResumeConsumerDto, } from "@app/sfu/queries/dto";
+import { ConnectTransportUsecase,  PauseConsumerUsecase, PauseConsumesUsecase, ResumeConsumersUsecase, ResumeConsumerUsecase } from "@app/sfu/queries/usecase";
+import { ConnectTransportType, PauseConsumerDto, PauseConsumesDto, ResumeConsumerDto, ResumeConsumersDto, } from "@app/sfu/queries/dto";
 
 
 @Injectable()
@@ -20,6 +20,8 @@ export class SfuService {
     private readonly resumeConsumerUsecase : ResumeConsumerUsecase<any>,
     private readonly pauseConsumerUsecase : PauseConsumerUsecase<any>,
     private readonly createConsumersUsecase : CreateConsumersUsecase<any>,
+    private readonly resumeConsumersUsecase : ResumeConsumersUsecase<any>,
+    private readonly pauseConsumersUsecase : PauseConsumesUsecase<any>,
     // infra
     private readonly roomRouters : RoomRouterRepository,
     private readonly transports : TransportRepository,
@@ -90,6 +92,16 @@ export class SfuService {
   // 8. 여러개의 consumer를 만듬
   async createConsumers(dto : CreateConsumersDto) : Promise<CreateConsumerResults> {
     return this.createConsumersUsecase.execute(dto);
+  };
+
+  // 9. consumer를 재개함 
+  async resumeConsumers(dto : ResumeConsumersDto) : Promise<void> {
+    await this.resumeConsumersUsecase.execute(dto);
+  };
+
+  // 10. resumer를 멈춤
+  async pauseConsumers(dto : PauseConsumesDto) : Promise<void> {
+    await this.pauseConsumersUsecase.execute(dto);
   };
 
 };

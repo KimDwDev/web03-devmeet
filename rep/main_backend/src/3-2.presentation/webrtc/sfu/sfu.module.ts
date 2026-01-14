@@ -6,8 +6,8 @@ import { ConsumerRepository, ProducerRepository, RoomCreateLockRepo, RoomRouterR
 import { ConsumerRepositoryPort, ProducerRepositoryPort, RoomCreateLockPort, RoomRouterRepositoryPort, RouterFactoryPort, TransportFactoryPort, TransportRepositoryPort } from "@app/sfu/ports";
 import { CreateSfuTransportInfoToRedis, DeleteConsumerDataToRedis, DeleteMainProducerDataToRedis, DeleteSfuTransportInfoToRedis, DeleteUserProducerDataToRedis, InsertConsumerDatasToRedis, InsertConsumerDataToRedis, InsertMainProducerDataToRedis, InsertUserProducerDataToRedis } from "@infra/cache/redis/sfu/sfu.outbound";
 import { MediasoupTransportFactory } from "@infra/media/mediasoup/sfu/sfu.outbound";
-import { ConnectTransportUsecase, PauseConsumerUsecase, ResumeConsumerUsecase } from "@app/sfu/queries/usecase";
-import { SelectConsumerInfoFromRedis, SelectMainProducerDataFromRedis, SelectSfuTransportDataFromRedis, SelectUserProducerDataFromRedis, SelectUserTransportFromRedis } from "@infra/cache/redis/sfu/sfu.inbound";
+import { ConnectTransportUsecase, PauseConsumerUsecase, PauseConsumesUsecase, ResumeConsumersUsecase, ResumeConsumerUsecase } from "@app/sfu/queries/usecase";
+import { SelectConsumerInfoFromRedis, SelectConsumerInfosFromRedis, SelectMainProducerDataFromRedis, SelectSfuTransportDataFromRedis, SelectUserProducerDataFromRedis, SelectUserTransportFromRedis } from "@infra/cache/redis/sfu/sfu.inbound";
 
 
 @Module({
@@ -226,6 +226,42 @@ import { SelectConsumerInfoFromRedis, SelectMainProducerDataFromRedis, SelectSfu
         SelectSfuTransportDataFromRedis, 
         InsertConsumerDatasToRedis, 
         DeleteConsumerDataToRedis
+      ]
+    },
+
+    // 여러개의 consumers를 재개 하는 usecase
+    {
+      provide : ResumeConsumersUsecase,
+      useFactory : (
+        consumerRepo : ConsumerRepositoryPort,
+        selectConsumerInfosFromCache : SelectConsumerInfosFromRedis
+      ) => {
+        return new ResumeConsumersUsecase(
+          consumerRepo,
+          {selectConsumerInfosFromCache}
+        )
+      },
+      inject : [
+        ConsumerRepository,
+        SelectConsumerInfosFromRedis
+      ]
+    },
+
+    // 여러개의 consumers를 멈추는 usecase
+    {
+      provide : PauseConsumesUsecase,
+      useFactory : (
+        consumerRepo : ConsumerRepositoryPort,
+        selectConsumerInfosFromCache : SelectConsumerInfosFromRedis        
+      ) => {
+        return new PauseConsumesUsecase(
+          consumerRepo,
+          {selectConsumerInfosFromCache}
+        )
+      },
+      inject : [
+        ConsumerRepository,
+        SelectConsumerInfosFromRedis
       ]
     }
 
