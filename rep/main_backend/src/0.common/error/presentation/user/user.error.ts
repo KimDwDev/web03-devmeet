@@ -18,3 +18,12 @@ export class NotGenerateUser extends BaseError {
     });
   }
 }
+
+export class NotAllowState extends BaseError {
+  constructor() {
+    super({
+      message: 'state 정보를 다시 확인해주시길 바랍니다.',
+      status: 500,
+    });
+  }
+}

@@ -150,6 +150,23 @@ export class AuthService {
     return loginData;
   };
 
+  // kakao에 인증서버에 코드 요청
+  public getKakaoUrl(redirct_url: string, state : string): string {
+    const rest_api_key: string = this.config.get<string>(
+      'NODE_APP_KAKAO_REST_API_KEY',
+      'rest_api_key',
+    );
+
+    const url: string =
+      'https://kauth.kakao.com/oauth/authorize' +
+      '?response_type=code' +
+      `&client_id=${encodeURIComponent(rest_api_key)}` +
+      `&redirect_uri=${encodeURIComponent(redirct_url)}` + 
+      `&state=${encodeURIComponent(state)}`; // frontend에서 이를 검증할 예정이다. 
+
+    return url;
+  }
+
   public async getDataKakaoLogic(
     code : string
   ) : Promise<UserOauthDto> {

@@ -1,4 +1,4 @@
-import { EmptyAuthCode } from '@error/presentation/user/user.error';
+import { EmptyAuthCode, NotAllowState } from '@error/presentation/user/user.error';
 import {
   Body,
   Controller,
@@ -24,6 +24,7 @@ import {
 } from '@app/auth/commands/dto';
 import { JwtGuard } from './guards';
 import { LoginValidate, SignUpValidate } from './auth.validate';
+import { randomBytes } from 'crypto';
 
 @Controller('auth')
 export class AuthController {
@@ -146,15 +147,29 @@ export class AuthController {
 
   // BFF 방식 oauth2 인증
   @Get('kakao/url')
-  public authKakaoController() {
+  public authKakaoController(
+    @Res({ passthrough : true }) res : Response
+  ) {
     const backend_url: string = this.config.get<string>(
       'NODE_BACKEND_SERVER',
       'redirctUrl',
     );
     const redirect_url: string = `${backend_url}/api/auth/kakao/redirect`;
 
+    // state를 프론트에게 쿠키로 보낸다. 
+    const state : string = randomBytes(32).toString("hex"); 
+
+    // cookie로 전달
+    res.cookie("oauth_state", state, {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 5 * 60 * 1000,
+      path: "/",
+    });
+
     // 프론트엔드는 지금 카카오에게 집적 이야기 하기 위해서 url을 요청한다. 
-    const url : string = this.authService.getAuthTokenKakaoUrl(redirect_url);
+    const url : string = this.authService.getKakaoUrl(redirect_url, state);
+
     return { url };
   }
 
@@ -169,6 +184,14 @@ export class AuthController {
     try {
       const code = (req as any).query?.code; 
       if (!code) throw new EmptyAuthCode();
+
+      // state 검증 -> 이를 이용해서 검증할 수 있다. 
+      const state = (req as any).query?.state;
+      if ( !state ) throw new NotAllowState();
+      const cookieState = (req as any).cookies?.oauth_state;
+      if (!cookieState || cookieState !== state) throw new NotAllowState();
+      res.clearCookie("oauth_state", { path: "/" });
+
       const oauthData: UserOauthDto = await this.authService.getDataKakaoLogic(code);
       
       const tokens: TokenDto = await this.authService.authKakaoService(oauthData);
