@@ -10,8 +10,8 @@ import { PayloadRes } from "@app/auth/queries/dto";
 import { SfuService } from "@present/webrtc/sfu/sfu.service";
 import { NotConnectSignalling } from "@error/presentation/signalling/signalling.error";
 import { CHANNEL_NAMESPACE } from "@infra/channel/channel.constants";
-import { CreateConsumerDto, CreateConsumerResult, CreateProduceResult, CreatePropduceDto, CreateTransportDto, ResumeConsumerDto } from "@app/sfu/commands/dto";
-import { ConnectTransportType } from "@app/sfu/queries/dto";
+import { CreateConsumerDto, CreateConsumerResult, CreateProduceResult, CreatePropduceDto, CreateTransportDto } from "@app/sfu/commands/dto";
+import { ConnectTransportType, ResumeConsumerDto } from "@app/sfu/queries/dto";
 import { GetRoomMembersResult, MembersInfo } from "@app/room/queries/dto";
 import { GetRoomMembersUsecase } from "@app/room/queries/usecase";
 

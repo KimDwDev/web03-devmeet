@@ -287,6 +287,9 @@ export class SignalingWebsocketGateway implements OnGatewayInit, OnGatewayConnec
     };
   };
 
+  // 여러개의 producer_id를 한번에 구독하겠다는 로직도 넣고 한번에 재개 + 한번에 paused도 좋아보인다.
+  
+
   // producer가 이제 더이상 데이터를 보내지 않겠다고 이야기하는 이벤트
   
 

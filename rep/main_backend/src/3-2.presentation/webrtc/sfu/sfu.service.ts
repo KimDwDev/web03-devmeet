@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
-import { CreateConsumerDto, CreateConsumerResult, CreateProduceResult, CreatePropduceDto, CreateTransportDto, PauseConsumerDto, ResumeConsumerDto, RoomEntry, TransportEntry } from "@app/sfu/commands/dto";
-import { CreateConsumerUsecase, CreateProduceUsecase, CreateRouterUsecase, CreateTransportUsecase, DisconnectUserUsecase, PauseConsumerUsecase, ResumeConsumerUsecase } from "@app/sfu/commands/usecase";
+import { CreateConsumerDto, CreateConsumerResult, CreateProduceResult, CreatePropduceDto, CreateTransportDto, RoomEntry, TransportEntry } from "@app/sfu/commands/dto";
+import { CreateConsumerUsecase, CreateProduceUsecase, CreateRouterUsecase, CreateTransportUsecase, DisconnectUserUsecase } from "@app/sfu/commands/usecase";
 import { RoomRouterRepository, TransportRepository } from "@infra/memory/sfu";
-import { ConnectTransportUsecase } from "@app/sfu/queries/usecase";
-import { ConnectTransportType } from "@app/sfu/queries/dto";
+import { ConnectTransportUsecase,  PauseConsumerUsecase, ResumeConsumerUsecase } from "@app/sfu/queries/usecase";
+import { ConnectTransportType, PauseConsumerDto, ResumeConsumerDto, } from "@app/sfu/queries/dto";
 
 
 @Injectable()

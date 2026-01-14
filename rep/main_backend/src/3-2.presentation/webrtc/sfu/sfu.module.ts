@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common";
 import { SfuService } from "./sfu.service";
 import { MediasoupRouterFactory } from "./sfu.interface";
-import { CreateConsumerUsecase, CreateProduceUsecase, CreateRouterUsecase, CreateTransportUsecase, DisconnectUserUsecase, PauseConsumerUsecase, ResumeConsumerUsecase } from "@app/sfu/commands/usecase";
+import { CreateConsumerUsecase, CreateProduceUsecase, CreateRouterUsecase, CreateTransportUsecase, DisconnectUserUsecase } from "@app/sfu/commands/usecase";
 import { ConsumerRepository, ProducerRepository, RoomCreateLockRepo, RoomRouterRepository, TransportRepository } from "@infra/memory/sfu";
 import { ConsumerRepositoryPort, ProducerRepositoryPort, RoomCreateLockPort, RoomRouterRepositoryPort, RouterFactoryPort, TransportFactoryPort, TransportRepositoryPort } from "@app/sfu/ports";
 import { CreateSfuTransportInfoToRedis, DeleteConsumerDataToRedis, DeleteMainProducerDataToRedis, DeleteSfuTransportInfoToRedis, DeleteUserProducerDataToRedis, InsertConsumerDataToRedis, InsertMainProducerDataToRedis, InsertUserProducerDataToRedis } from "@infra/cache/redis/sfu/sfu.outbound";
 import { MediasoupTransportFactory } from "@infra/media/mediasoup/sfu/sfu.outbound";
-import { ConnectTransportUsecase } from "@app/sfu/queries/usecase";
+import { ConnectTransportUsecase, PauseConsumerUsecase, ResumeConsumerUsecase } from "@app/sfu/queries/usecase";
 import { SelectConsumerInfoFromRedis, SelectMainProducerDataFromRedis, SelectSfuTransportDataFromRedis, SelectUserProducerDataFromRedis, SelectUserTransportFromRedis } from "@infra/cache/redis/sfu/sfu.inbound";
 
 
