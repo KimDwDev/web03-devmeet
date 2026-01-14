@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
+import { RedisIoAdapter } from '@infra/channel/redis/channel.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -28,6 +29,11 @@ async function bootstrap() {
   app.enableCors({
     origin, methods, allowedHeaders, credentials
   });
+
+  // 웹소켓 adapter를 설정
+  const redisAdapter = new RedisIoAdapter(app, config);
+  await redisAdapter.websocketConnectToRedis(); // websocket을 redis로 연결
+  app.useWebSocketAdapter(redisAdapter);
 
   // 기본 설정
   const port: number = config.get<number>('NODE_PORT', 8080);
