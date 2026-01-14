@@ -27,20 +27,12 @@ export default function ItemTransformer({
   useEffect(() => {
     if (transformerRef.current && stageRef.current) {
       const stage = stageRef.current;
-
-      // 선택된 아이디
-      // Arrow 아이템 선택 : Transformer 비활성화
-      // Arrow 외 아이템 선택 : Transformer 활성화
       if (selectedId && !isArrowSelected) {
-        // 해당 ID 노드 확인
         const selectedNode = stage.findOne('#' + selectedId);
-        // 노드가 존재하면 Transformer에 연결
         if (selectedNode) {
           transformerRef.current.nodes([selectedNode]);
           transformerRef.current.getLayer()?.batchDraw();
-        }
-        // 노드 존재하지 않으면 Transformer 해제
-        else {
+        } else {
           transformerRef.current.nodes([]);
         }
       } else {
@@ -53,8 +45,6 @@ export default function ItemTransformer({
     <Transformer
       ref={transformerRef}
       enabledAnchors={
-        // Text : 좌우 활성화
-        // Text제외 나머지 : 모든 방향 활성화
         isTextSelected
           ? ['middle-left', 'middle-right']
           : [
@@ -81,8 +71,12 @@ export default function ItemTransformer({
       keepRatio={false}
       boundBoxFunc={(oldBox, newBox) => {
         // 최소 크기 제한
-        const minWidth = 30;
-        const minHeight = 30;
+        const stage = stageRef.current;
+        const stageScale = stage ? stage.scaleX() : 1;
+
+        // 화면 확대 시 최소 크기도 함께 증가시켜야 더 못줄임
+        const minWidth = 30 * stageScale;
+        const minHeight = 30 * stageScale;
 
         // 너비가 최소값보다 작으면 제한하고 위치 보정
         if (newBox.width < minWidth) {
