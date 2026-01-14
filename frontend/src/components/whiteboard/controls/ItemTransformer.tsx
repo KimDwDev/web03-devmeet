@@ -27,6 +27,7 @@ export default function ItemTransformer({
   useEffect(() => {
     if (transformerRef.current && stageRef.current) {
       const stage = stageRef.current;
+      // 선택된 요소가 arrow 라면 Transformer 연결 안함(arrow는 자체 핸들 사용)
       if (selectedId && !isArrowSelected) {
         const selectedNode = stage.findOne('#' + selectedId);
         if (selectedNode) {
