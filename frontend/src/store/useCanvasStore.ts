@@ -116,6 +116,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
       return {
         items: [...state.items, newText],
+        selectedId: id,
       };
     });
 
@@ -146,6 +147,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
       return {
         items: [...state.items, newArrow],
+        selectedId: id,
       };
     }),
 
@@ -169,6 +171,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
       return {
         items: [...state.items, newLine],
+        selectedId: id,
       };
     }),
 

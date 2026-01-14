@@ -10,15 +10,13 @@ export const useAddWhiteboardItem = () => {
   const addShape = useCanvasStore((state) => state.addShape);
 
   // Canvas Store 상태
-  const selectItem = useCanvasStore((state) => state.selectItem);
   const stagePos = useCanvasStore((state) => state.stagePos);
   const stageScale = useCanvasStore((state) => state.stageScale);
 
   // Text Item 추가 핸들러
   const handleAddText = () => {
     const worldPos = getCenterWorldPos(stagePos, stageScale);
-    const textId = addText({ x: worldPos.x, y: worldPos.y });
-    selectItem(textId);
+    addText({ x: worldPos.x, y: worldPos.y });
   };
 
   // Arrow Item 추가 핸들러
