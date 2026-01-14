@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 import { colorFromClientId, injectCursorStyles } from '@/utils/code-editor';
-import { AwarenessState } from '@/types/code-editor';
+import { AwarenessState, LanguageState } from '@/types/code-editor';
 import CodeEditorToolbar from './CodeEditorToolbar';
 import { EditorLanguage } from '@/constants/code-editor';
 
@@ -44,6 +44,7 @@ export default function CodeEditor({
     }
 
     const ydoc = new Y.Doc();
+    const yLanguage = ydoc.getMap<LanguageState>('language');
     const { MonacoBinding } = await import('y-monaco');
 
     const provider = new WebsocketProvider(
@@ -147,6 +148,16 @@ export default function CodeEditor({
       updatePresenterState(states);
     });
 
+    yLanguage.observe(() => {
+      const lang = yLanguage.get('current');
+      if (!lang) return;
+
+      if (model.getLanguageId() !== lang.value) {
+        monaco.editor.setModelLanguage(model, lang.value);
+        setCodeLanguage(lang.value);
+      }
+    });
+
     cleanupRef.current = () => {
       binding.destroy();
       provider.destroy();
@@ -194,15 +205,26 @@ export default function CodeEditor({
   };
 
   const changeLanguage = useCallback((lang: EditorLanguage) => {
-    setCodeLanguage(lang);
-
     const editor = editorRef.current;
     const monaco = monacoRef.current;
     const model = editor?.getModel();
+    const provider = providerRef.current;
 
-    if (!editor || !monaco || !model) return;
+    if (!editor || !monaco || !model || !provider) return;
 
+    if (model.getLanguageId() === lang) return;
+
+    // 로컬 반영
     monaco.editor.setModelLanguage(model, lang);
+    setCodeLanguage(lang);
+
+    const yLanguage = provider.doc.getMap<LanguageState>('language');
+
+    yLanguage.set('current', {
+      value: lang,
+      updatedAt: Date.now(),
+      updatedBy: provider.awareness.clientID,
+    });
   }, []);
 
   return (

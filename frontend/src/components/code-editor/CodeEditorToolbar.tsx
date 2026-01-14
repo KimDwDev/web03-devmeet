@@ -74,8 +74,9 @@ function CodeEditorToolbar({
         <select
           id="lang"
           value={language}
+          disabled={disabledPresenter}
           onChange={(e) => onLanguageChange(e.target.value as EditorLanguage)}
-          className="appearance-none rounded-md bg-neutral-800 px-3 py-1 pr-9 text-sm text-white focus:outline-none"
+          className={`appearance-none rounded-md px-3 py-1 pr-9 text-sm focus:outline-none ${disabledPresenter ? 'bg-neutral-100 text-neutral-400' : 'bg-neutral-800 text-white'}`}
         >
           {LANGUAGE_OPTIONS.map((lang) => (
             <option key={lang.value} value={lang.value}>
