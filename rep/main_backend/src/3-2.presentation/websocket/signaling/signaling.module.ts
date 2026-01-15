@@ -1,7 +1,7 @@
 import { ConnectRoomUsecase, DisconnectRoomUsecase } from "@app/room/commands/usecase";
 import { Module } from "@nestjs/common";
 import { SelectRoomDataFromMysql } from "@infra/db/mysql/room/room.inbound";
-import { CompareRoomArgonHash } from "./signaling.interface";
+import { CompareRoomArgonHash, MakeIssueToolTicket } from "./signaling.interface";
 import { SelectRoomInfoFromRedis, SelectRoomMemberInfosFromRedis } from "@infra/cache/redis/room/room.inbound";
 import { DeleteHardRoomParticipantInfoDataToMysql, InsertRoomParticipantInfoDataToMysql, UpdateRoomParticipantInfoToMysql } from "@infra/db/mysql/room/room.outbound";
 import { DeleteRoomDatasToRedis, InsertRoomDatasToRedis } from "@infra/cache/redis/room/room.outbound";
@@ -22,6 +22,7 @@ import { GetRoomMembersUsecase } from "@/2.application/room/queries/usecase";
     SignalingWebsocketGateway,
     SignalingWebsocketService,
     CompareRoomArgonHash,
+    MakeIssueToolTicket,
 
     // usecase 모아두기
 
