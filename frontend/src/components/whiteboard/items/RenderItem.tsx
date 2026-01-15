@@ -1,9 +1,28 @@
 'use client';
 
-import { Text, Arrow } from 'react-konva';
+import Konva from 'konva';
+import { Text, Arrow, Line } from 'react-konva';
 import { useCanvasStore } from '@/store/useCanvasStore';
-import type { TextItem, ArrowItem, WhiteboardItem } from '@/types/whiteboard';
+import { useCursorStyle } from '@/hooks/useCursorStyle';
+import { useItemInteraction } from '@/hooks/useItemInteraction';
+import ShapeItem from '@/components/whiteboard/items/shape/ShapeItem';
+import ImageItem from '@/components/whiteboard/items/image/ImageItem';
+import VideoItem from '@/components/whiteboard/items/video/VideoItem';
+import YoutubeItem from '@/components/whiteboard/items/youtube/YoutubeItem';
 
+import type {
+  TextItem,
+  ArrowItem,
+  DrawingItem,
+  ShapeItem as ShapeItemType,
+  ImageItem as ImageItemType,
+  VideoItem as VideoItemType,
+  YoutubeItem as YoutubeItemType,
+  WhiteboardItem,
+} from '@/types/whiteboard';
+
+
+// RenderItem Props
 interface RenderItemProps {
   item: WhiteboardItem;
   isSelected: boolean;
@@ -14,6 +33,7 @@ interface RenderItemProps {
   onArrowDblClick?: (id: string) => void;
 }
 
+// RenderItem Component
 export default function RenderItem({
   item,
   onSelect,
@@ -24,6 +44,13 @@ export default function RenderItem({
 }: RenderItemProps) {
   const setEditingTextId = useCanvasStore((state) => state.setEditingTextId);
 
+  // 아이템 인터랙션 상태
+  const { isInteractive, isEraserMode, isDraggable, isListening } =
+    useItemInteraction();
+
+  // 커서 스타일 훅
+  const { handleMouseEnter, handleMouseLeave } = useCursorStyle('move');
+
   // 텍스트 렌더링
   if (item.type === 'text') {
     const textItem = item as TextItem;
@@ -31,38 +58,43 @@ export default function RenderItem({
       <Text
         {...textItem}
         id={item.id}
-        draggable
-        onMouseDown={() => onSelect(item.id)}
-        onTouchStart={() => onSelect(item.id)}
-        onMouseEnter={(e) => {
-          const container = e.target.getStage()?.container();
-          if (container) {
-            container.style.cursor = 'move';
-          }
-        }}
-        onMouseLeave={(e) => {
-          const container = e.target.getStage()?.container();
-          if (container) {
-            container.style.cursor = 'default';
-          }
-        }}
+        draggable={isDraggable}
+        listening={isListening}
+        onMouseDown={() => isInteractive && !isEraserMode && onSelect(item.id)}
+        onTouchStart={() => isInteractive && !isEraserMode && onSelect(item.id)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         onDblClick={() => {
+          if (!isInteractive || isEraserMode) return;
           setEditingTextId(item.id);
           onSelect(item.id);
         }}
         onDragEnd={(e) => {
+          if (!isInteractive || isEraserMode) return;
           onChange({
             x: e.target.x(),
             y: e.target.y(),
           });
         }}
-        onTransformEnd={(e) => {
+        onTransform={(e) => {
+          if (!isInteractive || isEraserMode) return;
           const node = e.target;
           const scaleX = node.scaleX();
+          const scaleY = node.scaleY();
 
+          // Transform 중에도 스케일 보정
+          if (scaleX !== 1 || scaleY !== 1) {
+            node.scaleX(1);
+            node.scaleY(1);
+            node.width(node.width() * scaleX);
+          }
+        }}
+        onTransformEnd={(e) => {
+          if (!isInteractive || isEraserMode) return;
+          const node = e.target;
+          const scaleX = node.scaleX();
           node.scaleX(1);
           node.scaleY(1);
-
           onChange({
             x: node.x(),
             y: node.y(),
@@ -74,37 +106,65 @@ export default function RenderItem({
     );
   }
 
-  // 화살표 렌더링
+  // Arrow Rendering
   if (item.type === 'arrow') {
     const arrowItem = item as ArrowItem;
     return (
       <Arrow
         {...arrowItem}
         id={item.id}
-        draggable
+        draggable={isDraggable}
+        listening={isListening}
         hitStrokeWidth={30}
-        onMouseDown={() => onSelect(item.id)}
-        onMouseEnter={(e) => {
-          const container = e.target.getStage()?.container();
-          if (container) {
-            container.style.cursor = 'move';
-          }
-        }}
-        onMouseLeave={(e) => {
-          const container = e.target.getStage()?.container();
-          if (container) {
-            container.style.cursor = 'default';
-          }
-        }}
+        tension={0.5}
+        lineCap="round"
+        lineJoin="round"
+        onMouseDown={() => isInteractive && !isEraserMode && onSelect(item.id)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         onDblClick={() => {
+          if (!isInteractive || isEraserMode) return;
           onArrowDblClick?.(item.id);
         }}
         onDragStart={() => {
+          if (!isInteractive || isEraserMode) return;
           onDragStart?.();
         }}
         onDragEnd={(e) => {
+          if (!isInteractive || isEraserMode) return;
           const pos = e.target.position();
           const newPoints = arrowItem.points.map((p, i) =>
+            i % 2 === 0 ? p + pos.x : p + pos.y,
+          );
+          e.target.position({ x: 0, y: 0 });
+          onChange({ points: newPoints });
+          onDragEnd?.();
+        }}
+      />
+    );
+  }
+
+  // 그리기 렌더링
+  if (item.type === 'drawing') {
+    const drawingItem = item as DrawingItem;
+    return (
+      <Line
+        {...drawingItem}
+        id={item.id}
+        draggable={isDraggable}
+        listening={isListening}
+        hitStrokeWidth={30}
+        tension={0.4}
+        lineCap="round"
+        lineJoin="round"
+        strokeScaleEnabled={true}
+        onMouseDown={() => isInteractive && !isEraserMode && onSelect(item.id)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onDragEnd={(e) => {
+          if (!isInteractive || isEraserMode) return;
+          const pos = e.target.position();
+          const newPoints = drawingItem.points.map((p, i) =>
             i % 2 === 0 ? p + pos.x : p + pos.y,
           );
 
@@ -113,9 +173,107 @@ export default function RenderItem({
           onChange({
             points: newPoints,
           });
-
-          onDragEnd?.();
         }}
+        onTransform={(e) => {
+          if (!isInteractive || isEraserMode) return;
+          const node = e.target;
+
+          if (node.getClassName() !== 'Line') return;
+          const lineNode = node as Konva.Line;
+
+          const scaleX = lineNode.scaleX();
+          const scaleY = lineNode.scaleY();
+
+          // 현재 points를 가져와서 scale 적용
+          const currentPoints = lineNode.points();
+          const newPoints = currentPoints.map((p, i) =>
+            i % 2 === 0 ? p * scaleX : p * scaleY,
+          );
+
+          lineNode.points(newPoints);
+          lineNode.scaleX(1);
+          lineNode.scaleY(1);
+        }}
+        onTransformEnd={(e) => {
+          if (!isInteractive || isEraserMode) return;
+          const node = e.target;
+
+          if (node.getClassName() !== 'Line') return;
+          const lineNode = node as Konva.Line;
+
+          onChange({
+            points: lineNode.points(),
+            rotation: lineNode.rotation(),
+            scaleX: 1,
+            scaleY: 1,
+          });
+        }}
+      />
+    );
+  }
+
+  // Shape Rendering
+  if (item.type === 'shape') {
+    const shapeItem = item as ShapeItemType;
+    return (
+      <ShapeItem
+        shapeItem={shapeItem}
+        isDraggable={isDraggable}
+        isListening={isListening}
+        onSelect={() => isInteractive && !isEraserMode && onSelect(item.id)}
+        onChange={onChange}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+      />
+    );
+  }
+
+  // Image Rendering
+  if (item.type === 'image') {
+    const imageItem = item as ImageItemType;
+    return (
+      <ImageItem
+        imageItem={imageItem}
+        onSelect={() => onSelect(item.id)}
+        onChange={onChange}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+      />
+    );
+  }
+
+  // Video Rendering
+  if (item.type === 'video') {
+    const videoItem = item as VideoItemType;
+    return (
+      <VideoItem
+        videoItem={videoItem}
+        onSelect={() => onSelect(item.id)}
+        onChange={onChange}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+      />
+    );
+  }
+
+  // Youtube Rendering
+  if (item.type === 'youtube') {
+    const youtubeItem = item as YoutubeItemType;
+    return (
+      <YoutubeItem
+        youtubeItem={youtubeItem}
+        onSelect={() => onSelect(item.id)}
+        onChange={onChange}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
       />
     );
   }

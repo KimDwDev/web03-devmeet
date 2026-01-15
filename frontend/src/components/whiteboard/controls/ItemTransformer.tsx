@@ -21,12 +21,13 @@ export default function ItemTransformer({
   const selectedItem = items.find((item) => item.id === selectedId);
   const isTextSelected = selectedItem?.type === 'text';
   const isArrowSelected = selectedItem?.type === 'arrow';
+  const isDrawingSelected = selectedItem?.type === 'drawing';
 
-  // Transformer 연결 (화살표는 제외)
+  // Transformer 연결
   useEffect(() => {
     if (transformerRef.current && stageRef.current) {
       const stage = stageRef.current;
-
+      // 선택된 요소가 arrow 라면 Transformer 연결 안함(arrow는 자체 핸들 사용)
       if (selectedId && !isArrowSelected) {
         const selectedNode = stage.findOne('#' + selectedId);
         if (selectedNode) {
@@ -58,33 +59,43 @@ export default function ItemTransformer({
               'middle-right',
             ]
       }
+      rotateEnabled={!isDrawingSelected}
       anchorSize={10}
       anchorCornerRadius={5}
       anchorStrokeWidth={1.5}
       anchorStroke="#0369A1"
+      anchorFill="#ffffff"
       borderStroke="#0369A1"
       borderStrokeWidth={1.5}
       rotationSnaps={[0, 90, 180, 270]}
       rotationSnapTolerance={10}
       keepRatio={false}
-      boundBoxFunc={(_oldBox, newBox) => {
-        newBox.width = Math.max(30, newBox.width);
-        return newBox;
-      }}
-      onTransform={(e) => {
-        // Transform 중에도 스케일 보정
-        const node = e.target;
-        const scaleX = node.scaleX();
-        const scaleY = node.scaleY();
+      boundBoxFunc={(oldBox, newBox) => {
+        // 최소 크기 제한
+        const stage = stageRef.current;
+        const stageScale = stage ? stage.scaleX() : 1;
 
-        if (scaleX !== 1 || scaleY !== 1) {
-          node.scaleX(1);
-          node.scaleY(1);
+        // 화면 확대 시 최소 크기도 함께 증가시켜야 더 못줄임
+        const minWidth = 30 * stageScale;
+        const minHeight = 30 * stageScale;
 
-          if (node.getClassName() === 'Text') {
-            node.width(node.width() * scaleX);
+        // 너비가 최소값보다 작으면 제한하고 위치 보정
+        if (newBox.width < minWidth) {
+          if (newBox.x !== oldBox.x) {
+            newBox.x = oldBox.x + oldBox.width - minWidth;
           }
+          newBox.width = minWidth;
         }
+
+        // 높이가 최소값보다 작으면 제한하고 위치 보정
+        if (newBox.height < minHeight) {
+          if (newBox.y !== oldBox.y) {
+            newBox.y = oldBox.y + oldBox.height - minHeight;
+          }
+          newBox.height = minHeight;
+        }
+
+        return newBox;
       }}
     />
   );
