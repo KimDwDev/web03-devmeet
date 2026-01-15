@@ -1,9 +1,9 @@
 import { initSocket } from '@/socket/socket';
-import { useSocketStore } from '@/store/useSocketStore';
+import { useMeetingSocketStore } from '@/store/useMeetingSocketStore';
 import { useEffect } from 'react';
 
 export const useMeetingSocket = () => {
-  const { socket, setSocket } = useSocketStore();
+  const { socket, setSocket } = useMeetingSocketStore();
 
   useEffect(() => {
     // 브라우저 환경인지(sessionStorage 준비 여부)

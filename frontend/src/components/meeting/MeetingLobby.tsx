@@ -3,7 +3,7 @@ import Button from '../common/button';
 import Header from '@/components/layout/Header';
 import MediaSettingSection from '@/components/meeting/media/MediaSettingSection';
 import TempMeetingLobby from '@/components/meeting/TempMeetingLobby';
-import { useSocketStore } from '@/store/useSocketStore';
+import { useMeetingSocketStore } from '@/store/useMeetingSocketStore';
 import { useUserStore } from '@/store/useUserStore';
 import { useRef, useState } from 'react';
 
@@ -17,7 +17,7 @@ export default function MeetingLobby({
   const meetingLeader = 'Tony';
   const meetingMemberCnt = 9;
 
-  const { socket } = useSocketStore();
+  const { socket } = useMeetingSocketStore();
   const { isLoaded, isLoggedIn, nickname } = useUserStore();
 
   const inputRef = useRef<HTMLInputElement>(null);
