@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 import { useCanvasStore } from '@/store/useCanvasStore';
 import { useToolbarMode } from '@/hooks/useToolbarMode';
 import { useAddWhiteboardItem } from '@/hooks/useAddWhiteboardItem';
+import { useClickOutside } from '@/hooks/useClickOutside';
 
 import NavButton from '@/components/whiteboard/common/NavButton';
 
@@ -39,6 +40,8 @@ export default function ToolbarContainer() {
   const [activePanel, setActivePanel] = useState<PanelType>(null);
   const [panelLeft, setPanelLeft] = useState<number>(0);
 
+  const toolbarRef = useRef<HTMLDivElement>(null);
+
   // 커서 모드 상태
   const cursorMode = useCanvasStore((state) => state.cursorMode);
   const setCursorMode = useCanvasStore((state) => state.setCursorMode);
@@ -48,6 +51,9 @@ export default function ToolbarContainer() {
 
   // 아이템 추가 훅
   const { handleAddText, handleAddArrow } = useAddWhiteboardItem();
+
+  // 외부 클릭 시 패널 닫기
+  useClickOutside(toolbarRef, () => setActivePanel(null), !!activePanel);
 
   // 핸들러 로직
   // 하위 패널에서 구체적인 도구 선택
@@ -78,7 +84,10 @@ export default function ToolbarContainer() {
   };
 
   return (
-    <div className="absolute top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
+    <div
+      ref={toolbarRef}
+      className="absolute top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2"
+    >
       <div className="flex items-center gap-1 rounded-lg border border-neutral-200 bg-white p-2 shadow-sm">
         <NavButton
           icon={CursorIcon}
