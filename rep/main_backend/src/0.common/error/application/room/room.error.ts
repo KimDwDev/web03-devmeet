@@ -80,3 +80,21 @@ export class NotAllowRoomDataUpdate extends BaseError {
     });
   }
 }
+
+export class NotAllowRoomMember extends BaseError {
+  constructor() {
+    super({
+      message: "현재 방에 위치에 있지 않습니다.",
+      status: 500,
+    });
+  }
+}
+
+export class NotInsertRoomTicketData extends BaseError {
+  constructor() {
+    super({
+      message: '방에 ticket정보가 저장되지 않았습니다.',
+      status: 500,
+    });
+  }
+}

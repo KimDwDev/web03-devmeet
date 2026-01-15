@@ -31,6 +31,7 @@ export const CACHE_ROOM_INFO_KEY_NAME = Object.freeze({
   MAX_PARTICIANTS : "max_particiants",
   CURRENT_PARTICIANTS : "current_particiants",
   PASSWORD_HASH : "password_hash",
+  TOOL_TICKET : "tool_ticket", // 현재 저장된 tool_ticket ( tool 상태를 만들기 전에 존재 )
   MAIN_PRODUCER : "main_producer", // 현재 방에서 가장 메인이 되는 produce가 뭔지
   SUB_PRODUCER : "sub_producer" // main_produce를 도와주는 sub_produce가 뭔지 -> audio 같은것이 위치할 예정
 } as const);
