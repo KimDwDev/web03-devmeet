@@ -34,20 +34,55 @@ export default function CustomArrow({
   const { handleMouseEnter, handleMouseLeave } = useCursorStyle('move');
 
   const points = item.points;
+  const n = points.length;
 
   // 시작점과 각도 계산
   const startX = points[0];
   const startY = points[1];
   const nextX = points[2] ?? points[0];
   const nextY = points[3] ?? points[1];
-  const startAngle = Math.atan2(nextY - startY, nextX - startX);
+  const dx1 = nextX - startX;
+  const dy1 = nextY - startY;
+  const startAngle = Math.atan2(dy1, dx1);
 
   // 끝점과 각도 계산
-  const endX = points[points.length - 2];
-  const endY = points[points.length - 1];
-  const prevX = points[points.length - 4] ?? endX;
-  const prevY = points[points.length - 3] ?? endY;
-  const endAngle = Math.atan2(endY - prevY, endX - prevX);
+  const endX = points[n - 2];
+  const endY = points[n - 1];
+  const prevX = points[n - 4] ?? endX;
+  const prevY = points[n - 3] ?? endY;
+  const dx2 = endX - prevX;
+  const dy2 = endY - prevY;
+  const endAngle = Math.atan2(dy2, dx2);
+
+  // Line(화살표 선)을 화살표 머리 길이만큼 뒤에서 시작
+  const adjustedPoints = [...points];
+  const pointerLength = item.pointerLength;
+
+  // 시작점 조정 (triangle, doubleChevron)
+  if (
+    (startHeadType === 'triangle' || startHeadType === 'doubleChevron') &&
+    n >= 4
+  ) {
+    const distance = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+    if (distance > pointerLength) {
+      const ratio = pointerLength / distance;
+      adjustedPoints[0] = points[0] + dx1 * ratio;
+      adjustedPoints[1] = points[1] + dy1 * ratio;
+    }
+  }
+
+  // 끝점 조정 (triangle, doubleChevron)
+  if (
+    (endHeadType === 'triangle' || endHeadType === 'doubleChevron') &&
+    n >= 4
+  ) {
+    const distance = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+    if (distance > pointerLength) {
+      const ratio = pointerLength / distance;
+      adjustedPoints[n - 2] = points[n - 2] - dx2 * ratio;
+      adjustedPoints[n - 1] = points[n - 1] - dy2 * ratio;
+    }
+  }
 
   return (
     <Group
