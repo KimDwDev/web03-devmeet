@@ -84,13 +84,23 @@ export default function Sidebar() {
         {/* shape */}
         {selectionType === 'shape' && (
           <ShapePanel
-            strokeColor={(selectedItem as ShapeItem).stroke}
-            backgroundColor={(selectedItem as ShapeItem).fill}
+            // 테두리 색상
+            strokeColor={(selectedItem as ShapeItem).stroke ?? '#000000'}
+            // 배경 색상
+            backgroundColor={(selectedItem as ShapeItem).fill ?? 'transparent'}
+            // 테두리 두께
+            strokeWidth={(selectedItem as ShapeItem).strokeWidth ?? 2}
+            // 테두리 색상 변경 핸들러 연결
             onChangeStrokeColor={(color) =>
               updateItem(selectedId!, { stroke: color })
             }
+            // 배경 색상 변경 핸들러 연결
             onChangeBackgroundColor={(color) =>
               updateItem(selectedId!, { fill: color })
+            }
+            // 테두리 두께 변경 핸들러 연결
+            onChangeStrokeWidth={(width) =>
+              updateItem(selectedId!, { strokeWidth: width })
             }
           />
         )}
