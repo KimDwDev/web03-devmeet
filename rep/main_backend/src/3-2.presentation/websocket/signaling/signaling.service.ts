@@ -2,10 +2,10 @@ import { TokenDto } from "@app/auth/commands/dto";
 import { Injectable } from "@nestjs/common";
 import { Socket } from "socket.io";
 import * as cookie from "cookie";
-import { ConnectResult, ConnectRoomDto, DisconnectRoomDto, OpenToolDto } from "@app/room/commands/dto";
+import { ConnectResult, ConnectRoomDto, DisconnectRoomDto, InsertToolInfoData, OpenToolDto } from "@app/room/commands/dto";
 import { ConnectRoomUsecase, DisconnectRoomUsecase, OpenToolUsecase } from "@app/room/commands/usecase";
 import { v7 as uuidV7 } from "uuid";
-import { DtlsHandshakeValidate, OnConsumesValidate, OnConsumeValidate, OnProduceValidate, pauseConsumersValidate, pauseConsumerValidate, ResumeConsumersValidate, ResumeConsumerValidate, SocketPayload } from "./signaling.validate";
+import { DtlsHandshakeValidate, OnConsumesValidate, OnConsumeValidate, OnProduceValidate, PauseConsumersValidate, pauseConsumerValidate, ResumeConsumersValidate, ResumeConsumerValidate, SocketPayload } from "./signaling.validate";
 import { PayloadRes } from "@app/auth/queries/dto";
 import { SfuService } from "@present/webrtc/sfu/sfu.service";
 import { NotConnectSignalling } from "@error/presentation/signalling/signalling.error";
@@ -14,6 +14,8 @@ import { CreateConsumerDto, CreateConsumerResult, CreateConsumerResults, CreateC
 import { ConnectTransportType, PauseConsumesDto, ResumeConsumerDto, ResumeConsumersDto } from "@app/sfu/queries/dto";
 import { GetRoomMembersResult, MembersInfo } from "@app/room/queries/dto";
 import { GetRoomMembersUsecase } from "@app/room/queries/usecase";
+import { MakeIssueToolTicket } from "./signaling.interface";
+import { ConnectToolDto } from "@/2.application/room/queries/dto/connect-tool.usecase";
 
 
 @Injectable()
@@ -25,6 +27,7 @@ export class SignalingWebsocketService {
     private readonly getMembersUsecase : GetRoomMembersUsecase<any>,
     private readonly openToolUsecase : OpenToolUsecase<any>,
     private readonly sfuServer : SfuService,
+    private readonly makeJwkService : MakeIssueToolTicket,
   ) {}
 
   parseJwtToken( client : Socket ) : TokenDto | undefined {
@@ -238,7 +241,7 @@ export class SignalingWebsocketService {
   };
 
   // 여라개의 consume을 멈춘다.
-  async pauseConsumers( client : Socket, validate : pauseConsumersValidate ) : Promise<void> {
+  async pauseConsumers( client : Socket, validate : PauseConsumersValidate ) : Promise<void> {
     const room_id : string = client.data.room_id;
     const payload : SocketPayload = client.data.user;
     const dto : PauseConsumesDto = {
@@ -250,7 +253,7 @@ export class SignalingWebsocketService {
   };
 
   // tool open에 대해서 요청한다. 
-  async openTool(client : Socket , tool : "whiteboard" | "codeeditor") {
+  async openTool(client : Socket , tool : "whiteboard" | "codeeditor") : Promise<string> {
     const room_id : string = client.data.room_id;
     const payload : SocketPayload = client.data.user;
     const dto : OpenToolDto = {
@@ -258,5 +261,15 @@ export class SignalingWebsocketService {
     };
     return this.openToolUsecase.execute(dto);
   }
+
+  // tool에 connect 요청을 보낸다.
+  async connectTool(client : Socket, tool : "whiteboard" | "codeeditor") : Promise<string> {
+    const room_id : string = client.data.room_id;
+    const payload : SocketPayload = client.data.user;
+    const dto : ConnectToolDto = {
+      ...payload, room_id, tool
+    };
+    return this.makeJwkService.make(dto);
+  };
 
 };

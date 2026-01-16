@@ -12,5 +12,5 @@ export type InsertToolInfoData = {
   user_id : string;
   socket_id : string;
   tool : "whiteboard" | "codeeditor"
-  ticket : string;  
+  ticket : string;
 };

@@ -154,7 +154,7 @@ export class ResumeConsumersValidate {
 
 };
 
-export class pauseConsumersValidate {
+export class PauseConsumersValidate {
 
   @IsNotEmpty()
   @IsArray()
@@ -162,4 +162,12 @@ export class pauseConsumersValidate {
   @IsString({ each: true })
   consumer_ids : Array<string>;
 
+};
+
+export class ConnectToolTypeValidate {
+
+  @IsNotEmpty()
+  @IsIn(["whiteboard", "codeeditor"])
+  tool : "whiteboard" | "codeeditor";
+  
 };

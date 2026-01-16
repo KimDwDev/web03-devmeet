@@ -7,7 +7,7 @@ import { TokenDto } from "@app/auth/commands/dto";
 import { PayloadRes } from "@app/auth/queries/dto";
 import { JwtWsGuard } from "../auth/guards/jwt.guard";
 import { WEBSOCKET_AUTH_CLIENT_EVENT_NAME, WEBSOCKET_NAMESPACE, WEBSOCKET_PATH, WEBSOCKET_SIGNALING_CLIENT_EVENT_NAME, WEBSOCKET_SIGNALING_EVENT_NAME } from "../websocket.constants";
-import { DtlsHandshakeValidate, JoinRoomValidate, NegotiateIceValidate, OnConsumesValidate, OnConsumeValidate, OnProduceValidate, pauseConsumersValidate, pauseConsumerValidate,  ResumeConsumersValidate,  ResumeConsumerValidate, SocketPayload } from "./signaling.validate";
+import { ConnectToolTypeValidate, DtlsHandshakeValidate, JoinRoomValidate, NegotiateIceValidate, OnConsumesValidate, OnConsumeValidate, OnProduceValidate, PauseConsumersValidate, pauseConsumerValidate,  ResumeConsumersValidate,  ResumeConsumerValidate, SocketPayload } from "./signaling.validate";
 import { ConnectResult, ConnectRoomDto } from "@app/room/commands/dto";
 import { CHANNEL_NAMESPACE } from "@infra/channel/channel.constants";
 import { GetRoomMembersResult } from "@app/room/queries/dto";
@@ -336,7 +336,7 @@ export class SignalingWebsocketGateway implements OnGatewayInit, OnGatewayConnec
   @SubscribeMessage(WEBSOCKET_SIGNALING_EVENT_NAME.PAUSES)
   async pauseConsumersGateway(
     @ConnectedSocket() client : Socket,
-    @MessageBody() validate : pauseConsumersValidate
+    @MessageBody() validate : PauseConsumersValidate
   ) {
     try {
       // 1. 여러개의 consumer 멈춤
@@ -372,6 +372,21 @@ export class SignalingWebsocketGateway implements OnGatewayInit, OnGatewayConnec
       const ticket : string = await this.signalingService.openTool(client, "codeeditor");
       
       return { ticket, tool : "codeeditor" };
+    } catch (err) {
+      this.logger.error(err);
+      throw new WsException({ message : err.message ?? "에러 발생", status : err.status ?? 500 });          
+    };
+  };
+
+  @SubscribeMessage(WEBSOCKET_SIGNALING_EVENT_NAME.CONNECT_TOOL)
+  async connectToolGateway(
+    @ConnectedSocket() client : Socket,
+    @MessageBody() validate : ConnectToolTypeValidate
+  ) {
+    try {
+      const ticket : string = await this.signalingService.connectTool(client, validate.tool);
+
+      return { ticket, tool : validate.tool };
     } catch (err) {
       this.logger.error(err);
       throw new WsException({ message : err.message ?? "에러 발생", status : err.status ?? 500 });          

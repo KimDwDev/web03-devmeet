@@ -1,4 +1,4 @@
-import { InsertToolInfoData } from "@app/room/commands/dto";
+import { InsertToolInfoData, OpenToolDto } from "@app/room/commands/dto";
 import { MakeToken } from "@app/ports/share";
 import { CompareHash } from "@domain/shared";
 import { Injectable } from "@nestjs/common";
@@ -33,7 +33,7 @@ export class MakeIssueToolTicket extends MakeToken {
     private readonly config: ConfigService
   ) { super(); };
 
-  async make(payload: InsertToolInfoData): Promise<string> {
+  async make(payload: OpenToolDto): Promise<string> {
     
     const privateJwkRaw : string | undefined = this.config.get<string>("NODE_APP_TICKET_PRIVATE_JWK")
     if ( !privateJwkRaw ) throw new NotValiedTickeKey();
@@ -53,7 +53,6 @@ export class MakeIssueToolTicket extends MakeToken {
       room_id : payload.room_id,
       tool : payload.tool,
       socket_id : payload.socket_id,
-      ticket : payload.ticket,
       scope : ["tool:open"]
     })
     .setProtectedHeader({
