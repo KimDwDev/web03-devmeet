@@ -8,7 +8,7 @@ export const mediaSoupWorkerConfig : WorkerSettings = {
 
   logTags : process.env.NODE_ENV === "production" ? 
   [
-    "info", "ice", "dtls", "rtp"
+    "info"
   ] 
   : 
   [
