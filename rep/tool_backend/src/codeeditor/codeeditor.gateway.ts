@@ -1,11 +1,13 @@
 import { AuthType, ToolBackendPayload } from "@/guards/guard.type";
-import { Logger } from "@nestjs/common";
+import { Inject, Logger } from "@nestjs/common";
 import { ConnectedSocket, OnGatewayConnection, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer, WsException } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { CODEEDITOR_CLIENT_EVENT_NAME, CODEEDITOR_EVENT_NAME } from "./codeeditor.constants";
 import { CodeeditorService } from "./codeeditor.service";
 import { KafkaService } from "@/infra/event-stream/kafka/event-stream.service";
 import { EVENT_STREAM_NAME } from "@/infra/event-stream/event-stream.constants";
+import { CODEEDITOR_WEBSOCKET } from "@/infra/websocket/websocket.constants";
+import { CodeeditorWebsocket } from "@/infra/websocket/codeeditor/codeeditor.service";
 
 
 // 아래쪽에 whiteboard 관련 @Submessage를 붙이셔서 해주시면 될것 같아요 ㅎㅎ
@@ -28,12 +30,15 @@ export class CodeeditorWebsocketGateway implements OnGatewayInit, OnGatewayConne
 
   constructor(
     private readonly codeeditorService : CodeeditorService,
-    private readonly kafkaService : KafkaService
+    private readonly kafkaService : KafkaService,
+    @Inject(CODEEDITOR_WEBSOCKET) private readonly codeeditorSocket : CodeeditorWebsocket
   ) {}
 
   // 연결을 했을때 
   afterInit(server: Server) : void {
     
+    this.codeeditorSocket.bindServer(server);
+
     server.use(async (socket, next) => {
       try {
         const { token, type } = socket.handshake.auth as AuthType;

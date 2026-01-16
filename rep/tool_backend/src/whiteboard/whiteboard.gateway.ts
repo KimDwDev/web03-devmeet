@@ -6,6 +6,7 @@ import { WHITEBOARD_CLIENT_EVENT_NAME, WHITEBOARD_EVENT_NAME, WHITEBOARD_GROUP }
 import { WhiteboardService } from "./whiteboard.service";
 import { KafkaService } from "@/infra/event-stream/kafka/event-stream.service";
 import { EVENT_STREAM_NAME } from "@/infra/event-stream/event-stream.constants";
+import { WhiteboardWebsocket } from "@/infra/websocket/whiteboard/whiteboard.service";
 
 
 // 아래쪽에 whiteboard 관련 @Submessage를 붙이셔서 해주시면 될것 같아요 ㅎㅎ
@@ -28,12 +29,14 @@ export class WhiteboardWebsocketGateway implements OnGatewayInit, OnGatewayConne
 
   constructor(
     private readonly whiteboarService : WhiteboardService,
-    private readonly kafkaService : KafkaService
+    private readonly kafkaService : KafkaService,
+    private readonly whiteboardSocket : WhiteboardWebsocket
   ) {}
 
   // 연결을 했을때 
   afterInit(server: Server) : void {
-    
+    this.whiteboardSocket.bindServer(server);
+
     server.use(async (socket, next) => {
       try {
         const { token, type } = socket.handshake.auth as AuthType;

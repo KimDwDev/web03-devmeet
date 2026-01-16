@@ -9,6 +9,8 @@ import { KafkaModule } from '@infra/event-stream/kafka/event-stream';
 import { GuardModule } from './guards/guard.module';
 import { WhiteboardModule } from './whiteboard/whiteboard.module';
 import { CodeeditorModule } from './codeeditor/codeeditor.module';
+import { CodeeditorWebsocketModule } from './infra/websocket/codeeditor/codeeditor.module';
+import { WhiteboardWebsocketModule } from './infra/websocket/whiteboard/whiteboard.module';
 
 
 @Module({
@@ -25,7 +27,10 @@ import { CodeeditorModule } from './codeeditor/codeeditor.module';
     HealthModule,
     GuardModule,
     WhiteboardModule, // whiteboard
-    CodeeditorModule // codeeditor
+    CodeeditorModule, // codeeditor
+    WhiteboardWebsocketModule, // whiteboard용 websocket
+    CodeeditorWebsocketModule, // codeeditor용 websocket
+
   ],
   controllers: [],
   providers: [],

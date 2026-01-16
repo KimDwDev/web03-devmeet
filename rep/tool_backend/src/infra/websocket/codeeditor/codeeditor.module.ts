@@ -1,8 +1,9 @@
-import { Module } from "@nestjs/common";
+import { Global, Module } from "@nestjs/common";
 import { CODEEDITOR_WEBSOCKET } from "../websocket.constants";
 import { CodeeditorWebsocket } from "./codeeditor.service";
 
 
+@Global()
 @Module({
   providers : [
     CodeeditorWebsocket,
