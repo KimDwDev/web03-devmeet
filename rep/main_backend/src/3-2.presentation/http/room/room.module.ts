@@ -5,7 +5,10 @@ import { AuthModule } from "../auth/auth.module";
 import { CreateRoomUsecase } from "@app/room/commands/usecase";
 import { MakeArgonRoomPasswordHash, MakeRoomIdGenerator, MakeRoomRandomCodeGenerator } from "./room.interface";
 import { DeleteRoomDataToMysql, InsertRoomDataToMysql } from "@infra/db/mysql/room/room.outbound";
-import { InsertRoomDataToRedis } from "@/3-1.infra/cache/redis/room/room.outbound";
+import { InsertRoomDataToRedis } from "@infra/cache/redis/room/room.outbound";
+import { GetRoomInfoUsecase } from "@app/room/queries/usecase";
+import { SelectRoomInfoDataFromRedis } from "@infra/cache/redis/room/room.inbound";
+import { SelectRoomIdFromMysql } from "@infra/db/mysql/room/room.inbound";
 
 
 @Module({
@@ -44,6 +47,23 @@ import { InsertRoomDataToRedis } from "@/3-1.infra/cache/redis/room/room.outboun
         InsertRoomDataToMysql,
         InsertRoomDataToRedis,
         DeleteRoomDataToMysql
+      ]
+    },
+
+    // 방의 정보를 가져오는 로직
+    {
+      provide : GetRoomInfoUsecase,
+      useFactory : (
+        selectRoomIdFromDb : SelectRoomIdFromMysql,
+        selectRoomInfoFromCache : SelectRoomInfoDataFromRedis
+      ) => {
+        return new GetRoomInfoUsecase({
+          selectRoomIdFromDb, selectRoomInfoFromCache
+        })
+      },
+      inject : [
+        SelectRoomIdFromMysql,
+        SelectRoomInfoDataFromRedis
       ]
     }
   ]

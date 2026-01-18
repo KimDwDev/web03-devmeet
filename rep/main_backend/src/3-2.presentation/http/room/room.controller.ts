@@ -5,6 +5,7 @@ import { CreateRoomValidate } from "./room.validate";
 import { RoomService } from "./room.service";
 import { CreateRoomDto, CreateRoomResult } from "@app/room/commands/dto";
 import { Payload } from "@app/auth/commands/dto";
+import { GetRoomInfoResult } from "@app/room/queries/dto";
 
 
 @Controller("rooms")
@@ -36,9 +37,8 @@ export class RoomController {
   @Get(":code")
   async getRoomInfoController(
     @Param("code") code : string
-  ) {
-    
-
+  ) : Promise<GetRoomInfoResult> {
+    return this.roomService.getRoomInfoService(code);
   };
 
 };
