@@ -11,6 +11,8 @@ type CodeEditorToolbarProps = {
   onCancelPresenter: () => void;
   language: EditorLanguage;
   onLanguageChange: (lang: EditorLanguage) => void;
+  isOnlyMycursor: boolean;
+  onToggleOnlyMyCursor: () => void;
 };
 
 function CodeEditorToolbar({
@@ -22,6 +24,8 @@ function CodeEditorToolbar({
   onCancelPresenter,
   language,
   onLanguageChange,
+  isOnlyMycursor,
+  onToggleOnlyMyCursor,
 }: CodeEditorToolbarProps) {
   const disabledPresenter = hasPresenter && !isPresenter;
 
@@ -37,6 +41,17 @@ function CodeEditorToolbar({
           }`}
         >
           자동완성 {isAutoCompleted ? 'ON' : 'OFF'}
+        </button>
+
+        <button
+          onClick={onToggleOnlyMyCursor}
+          className={`rounded px-3 py-1 text-sm font-bold text-white transition-colors ${
+            isOnlyMycursor
+              ? 'bg-green-600 hover:bg-green-500'
+              : 'bg-red-600 hover:bg-red-500'
+          }`}
+        >
+          내 커서만 보기 {isOnlyMycursor ? 'ON' : 'OFF'}
         </button>
 
         {!isPresenter && (

@@ -20,17 +20,27 @@ export default function CodeEditor({
   minimap = true,
 }: CodeEditorProps) {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
-  const cleanupRef = useRef<(() => void) | null>(null);
   const providerRef = useRef<WebsocketProvider | null>(null);
-  const remoteDecorationsRef =
-    useRef<monaco.editor.IEditorDecorationsCollection | null>(null);
   const monacoRef = useRef<typeof import('monaco-editor') | null>(null);
+
+  const cursorCollectionsRef = useRef<
+    Map<number, monaco.editor.IEditorDecorationsCollection>
+  >(new Map()); // clientId -> 1 decoration collection
+
+  const onlyMyCursorRef = useRef(false);
+
+  const cleanupRef = useRef<(() => void) | null>(null);
 
   const [isAutoCompleted, setIsAutoCompleted] = useState<boolean>(autoComplete);
   const [isPresenter, setIsPresenter] = useState<boolean>(false);
   const [hasPresenter, setHasPresenter] = useState<boolean>(false);
   const [codeLanguage, setCodeLanguage] =
     useState<EditorLanguage>('typescript');
+  const [onlyMyCursor, setOnlyMyCursor] = useState<boolean>(false);
+
+  useEffect(() => {
+    onlyMyCursorRef.current = onlyMyCursor;
+  }, [onlyMyCursor]);
 
   const handleMount = async (
     editor: monaco.editor.IStandaloneCodeEditor,
@@ -38,10 +48,6 @@ export default function CodeEditor({
   ) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
-
-    if (!remoteDecorationsRef.current) {
-      remoteDecorationsRef.current = editor.createDecorationsCollection();
-    }
 
     const ydoc = new Y.Doc();
     const yLanguage = ydoc.getMap<LanguageState>('language');
@@ -97,29 +103,52 @@ export default function CodeEditor({
     const updateRemoteDecorations = (states: Map<number, AwarenessState>) => {
       if (!editorRef.current) return;
 
-      const decorations: monaco.editor.IModelDeltaDecoration[] = [];
+      const onlyMine = onlyMyCursorRef.current;
+      const collections = cursorCollectionsRef.current;
+      const myId = provider.awareness.clientID;
 
       states.forEach((state, clientId) => {
-        if (clientId === provider.awareness.clientID) return;
-        if (!state.cursor) return;
+        if (clientId === myId) return;
+
+        // 본인 제외 클라이언트들 collection 지우기
+        if (!state.cursor || onlyMine) {
+          collections.get(clientId)?.clear();
+          return;
+        }
 
         const { lineNumber, column } = state.cursor;
+
+        if (!collections.has(clientId)) {
+          collections.set(clientId, editor.createDecorationsCollection());
+        }
+
+        const collection = collections.get(clientId)!;
+
         const { cursor } = colorFromClientId(clientId);
         const displayedUserName = state.user?.name ?? 'User';
 
         injectCursorStyles(clientId, cursor, displayedUserName);
 
-        decorations.push({
-          range: new monaco.Range(lineNumber, column, lineNumber, column + 1),
-          options: {
-            className: `remote-cursor-${clientId}`,
-            stickiness:
-              monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+        collection.set([
+          {
+            range: new monaco.Range(lineNumber, column, lineNumber, column + 1),
+            options: {
+              className: `remote-cursor-${clientId}`,
+              stickiness:
+                monaco.editor.TrackedRangeStickiness
+                  .NeverGrowsWhenTypingAtEdges,
+            },
           },
-        });
-      });
+        ]);
 
-      remoteDecorationsRef.current!.set(decorations);
+        // 사라진 client 정리 => GC용
+        for (const [clientId, collection] of collections) {
+          if (!states.has(clientId)) {
+            collection.clear();
+            collections.delete(clientId);
+          }
+        }
+      });
     };
 
     const updatePresenterState = (states: Map<number, AwarenessState>) => {
@@ -163,8 +192,8 @@ export default function CodeEditor({
       provider.destroy();
       ydoc.destroy();
 
-      remoteDecorationsRef.current?.clear();
-      remoteDecorationsRef.current = null;
+      cursorCollectionsRef.current.forEach((c) => c.clear());
+      cursorCollectionsRef.current.clear();
 
       document
         .querySelectorAll('style[data-client-id]')
@@ -176,9 +205,24 @@ export default function CodeEditor({
     return () => cleanupRef.current?.();
   }, []);
 
+  // react <-> monaco <-> awareness 사이 동기화 브릿지 로직
+  useEffect(() => {
+    onlyMyCursorRef.current = onlyMyCursor;
+
+    if (providerRef.current) {
+      if (!editorRef.current) return;
+
+      cursorCollectionsRef.current.forEach((c) => c.clear());
+    }
+  }, [onlyMyCursor]);
+
   // 자동완성 토글
   const toggleAutoComplete = useCallback(() => {
     setIsAutoCompleted((prev) => !prev);
+  }, []);
+
+  const toggleOnlyMyCursor = useCallback(() => {
+    setOnlyMyCursor((prev) => !prev);
   }, []);
 
   // 발표자 되기
@@ -238,6 +282,8 @@ export default function CodeEditor({
         onCancelPresenter={cancelPresenter}
         language={codeLanguage}
         onLanguageChange={changeLanguage}
+        isOnlyMycursor={onlyMyCursor}
+        onToggleOnlyMyCursor={toggleOnlyMyCursor}
       />
 
       {/* 코드에디터 */}
