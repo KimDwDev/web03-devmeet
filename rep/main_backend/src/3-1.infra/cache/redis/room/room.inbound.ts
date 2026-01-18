@@ -3,7 +3,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import { type RedisClientType } from "redis";
 import { CACHE_ROOM_INFO_KEY_NAME, CACHE_ROOM_INFO_PRODUCE_KEY_PROPS_NAME, CACHE_ROOM_MEMBERS_KEY_PROPS_NAME, CACHE_ROOM_NAMESPACE_NAME, CACHE_ROOM_SUB_NAMESPACE_NAME, CACHE_SFU_NAMESPACE_NAME, CACHE_SFU_PRODUCERS_KEY_NAME, CACHE_SFU_PRODUCES_KEY_PROPS_NAME, REDIS_SERVER } from "../../cache.constants";
 import { RoomInfoValues } from "@app/room/dtos";
-import { GetRoomMainInfo, GetRoomMembersResult, MembersInfo, ProviderInfo } from "@app/room/queries/dto";
+import { GetRoomInfoCacheResult, GetRoomInfoResult, GetRoomMainInfo, GetRoomMembersResult, MembersInfo, ProviderInfo } from "@app/room/queries/dto";
 import { NotAllowToolPayload, NotAllowToolTicket } from "@error/infra/infra.error";
 
 
@@ -403,4 +403,28 @@ export class CheckRoomUserFromRedis extends SelectDataFromCache<RedisClientType<
     }
   };
   
+};
+
+// room의 정보를 가져온다. -> 
+@Injectable()
+export class SelectRoomInfoDataFromRedis extends SelectDataFromCache<RedisClientType<any, any>> {
+
+  constructor(
+    @Inject(REDIS_SERVER) cache : RedisClientType<any, any>,
+  ) { super(cache); };
+
+  // namespace는 room_id 이다.
+  async select({ namespace, keyName, }: { namespace: string; keyName: string; }): Promise<GetRoomInfoCacheResult> {
+    
+    const room_id : string = namespace;
+
+    const roomInfoNameSpace : string = `${CACHE_ROOM_NAMESPACE_NAME.CACHE_ROOM}:${room_id}:${CACHE_ROOM_SUB_NAMESPACE_NAME.INFO}`;
+
+    const roomInfo = await this.cache.hGetAll(roomInfoNameSpace);
+
+    return {
+      current_participants : Number(roomInfo[CACHE_ROOM_INFO_KEY_NAME.CURRENT_PARTICIANTS]),
+      max_participants : Number(roomInfo[CACHE_ROOM_INFO_KEY_NAME.MAX_PARTICIANTS])
+    }
+  }
 };

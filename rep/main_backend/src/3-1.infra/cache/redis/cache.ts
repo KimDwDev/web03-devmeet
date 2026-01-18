@@ -8,7 +8,7 @@ import {
 import { REDIS_SERVER } from '../cache.constants';
 import { SelectHsetDataFromRedis } from './user/user.inbound';
 import { DeleteMainProducerFromRedis, DeleteRoomDatasToRedis, InsertRoomDatasToRedis, InsertRoomDataToRedis, InsertToolTicketToRedis } from './room/room.outbound';
-import { CheckRoomUserFromRedis, CheckToolTicketFromRedis, CheckUserPayloadFromRedis, SelectRoomInfoFromRedis, SelectRoomMemberInfosFromRedis } from './room/room.inbound';
+import { CheckRoomUserFromRedis, CheckToolTicketFromRedis, CheckUserPayloadFromRedis, SelectRoomInfoDataFromRedis, SelectRoomInfoFromRedis, SelectRoomMemberInfosFromRedis } from './room/room.inbound';
 import { CreateSfuTransportInfoToRedis, DeleteConsumerDataToRedis, DeleteMainProducerDataToRedis, DeleteSfuTransportInfoToRedis, DeleteUserProducerDataToRedis, InsertConsumerDatasToRedis, InsertConsumerDataToRedis, InsertMainProducerDataToRedis, InsertUserProducerDataToRedis,  } from "./sfu/sfu.outbound"
 import { SelectConsumerInfoFromRedis, SelectConsumerInfosFromRedis, SelectMainProducerDataFromRedis, SelectSfuTransportDataFromRedis, SelectUserProducerDataFromRedis, SelectUserTransportFromRedis } from './sfu/sfu.inbound';
 
@@ -75,6 +75,7 @@ import { SelectConsumerInfoFromRedis, SelectConsumerInfosFromRedis, SelectMainPr
     CheckToolTicketFromRedis, // ticket을 이용해서 검증 맞는지
     CheckRoomUserFromRedis, // room에 유저가 있고 해당 producer가 메인이 맞는지 확인
     DeleteMainProducerFromRedis, // 해당 room에 있는 main_producer를 삭제
+    SelectRoomInfoDataFromRedis // 해당 방에 정보를 가져오는 redis
   ],
   exports: [
     REDIS_SERVER,
@@ -106,6 +107,7 @@ import { SelectConsumerInfoFromRedis, SelectConsumerInfosFromRedis, SelectMainPr
     CheckToolTicketFromRedis,
     CheckRoomUserFromRedis,
     DeleteMainProducerFromRedis,
+    SelectRoomInfoDataFromRedis
   ],
 })
 export class RedisModule {}
