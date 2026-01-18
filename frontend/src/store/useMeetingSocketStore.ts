@@ -1,13 +1,17 @@
 import { Device } from 'mediasoup-client';
-import { Transport } from 'mediasoup-client/types';
+import { Producer, Transport } from 'mediasoup-client/types';
 import { Socket } from 'socket.io-client';
 import { create } from 'zustand';
 
-interface MeetingSocketState {
-  socket: Socket | null;
-  device: Device | null;
-  sendTransport: Transport | null;
-  recvTransport: Transport | null;
+type ProducerPromise = (
+  track: MediaStreamTrack,
+) => Promise<Producer<{ type: string }>>;
+
+interface Producers {
+  produceMic: ProducerPromise | null;
+  produceCam: ProducerPromise | null;
+  produceScreenVideo: ProducerPromise | null;
+  produceScreenAudio: ProducerPromise | null;
 }
 
 interface MediasoupTransports {
@@ -16,14 +20,20 @@ interface MediasoupTransports {
   recvTransport: Transport;
 }
 
+interface MeetingSocketState {
+  socket: Socket | null;
+  device: Device | null;
+  sendTransport: Transport | null;
+  recvTransport: Transport | null;
+  producers: Producers;
+}
+
 interface MeetingSocketAction {
   setSocket: (socket: Socket | null) => void;
 
-  setMediasoupTransports: ({
-    device,
-    sendTransport,
-    recvTransport,
-  }: MediasoupTransports) => void;
+  setMediasoupTransports: (transports: MediasoupTransports) => void;
+
+  setProducers: (producers: Producers) => void;
 }
 
 export const useMeetingSocketStore = create<
@@ -34,6 +44,14 @@ export const useMeetingSocketStore = create<
   sendTransport: null,
   recvTransport: null,
 
+  producers: {
+    produceMic: null,
+    produceCam: null,
+    produceScreenAudio: null,
+    produceScreenVideo: null,
+  },
+
   setSocket: (socket) => set({ socket }),
   setMediasoupTransports: (transports) => set({ ...transports }),
+  setProducers: (producers) => set({ producers }),
 }));

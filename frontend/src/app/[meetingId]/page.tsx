@@ -6,6 +6,7 @@ import MeetingLobby from '@/components/meeting/MeetingLobby';
 import MeetingRoom from '@/components/meeting/MeetingRoom';
 import { useMeetingSocket } from '@/hooks/useMeetingSocket';
 import { useMeetingSocketStore } from '@/store/useMeetingSocketStore';
+import { createProducers } from '@/utils/createProducers';
 import { initMediasoupTransports } from '@/utils/initMediasoupTransports';
 import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -17,7 +18,7 @@ interface JoinError {
 
 export default function MeetingPage() {
   const { socket } = useMeetingSocket();
-  const { setMediasoupTransports } = useMeetingSocketStore();
+  const { setMediasoupTransports, setProducers } = useMeetingSocketStore();
 
   // 이후 실제 회의 정보 API 호출로 수정 필요
   const { password } = DUMMY_MEETING_INFO;
@@ -75,6 +76,13 @@ export default function MeetingPage() {
         // SDP / ICE / DTLS 초기화 진행
         const transports = await initMediasoupTransports(socket);
         setMediasoupTransports(transports);
+
+        // Produce 설정
+        const producers = createProducers({
+          socket,
+          sendTransport: transports.sendTransport,
+        });
+        setProducers(producers);
 
         setIsPasswordModalOpen(false);
         setIsJoined(true);
