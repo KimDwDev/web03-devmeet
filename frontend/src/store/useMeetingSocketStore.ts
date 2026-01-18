@@ -1,24 +1,8 @@
+import { MediasoupTransports, Producers } from '@/types/media';
 import { Device } from 'mediasoup-client';
-import { Producer, Transport } from 'mediasoup-client/types';
+import { Transport } from 'mediasoup-client/types';
 import { Socket } from 'socket.io-client';
 import { create } from 'zustand';
-
-type ProducerPromise = (
-  track: MediaStreamTrack,
-) => Promise<Producer<{ type: string }>>;
-
-interface Producers {
-  produceMic: ProducerPromise | null;
-  produceCam: ProducerPromise | null;
-  produceScreenVideo: ProducerPromise | null;
-  produceScreenAudio: ProducerPromise | null;
-}
-
-interface MediasoupTransports {
-  device: Device;
-  sendTransport: Transport;
-  recvTransport: Transport;
-}
 
 interface MeetingSocketState {
   socket: Socket | null;

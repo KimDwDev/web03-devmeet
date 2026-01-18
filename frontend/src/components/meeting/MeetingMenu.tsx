@@ -16,7 +16,7 @@ import {
 } from '@/assets/icons/meeting';
 import Modal from '@/components/common/Modal';
 import MeetingButton from '@/components/meeting/MeetingButton';
-import { useMeeingStore } from '@/store/useMeetingStore';
+import { useMeetingStore } from '@/store/useMeetingStore';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -35,7 +35,7 @@ export default function MeetingMenu() {
     isWorkspaceOpen,
     isCodeEditorOpen,
     setIsOpen,
-  } = useMeeingStore();
+  } = useMeetingStore();
 
   const toggleAudio = () => setAudio(audio === 'ON' ? 'OFF' : 'ON');
 
