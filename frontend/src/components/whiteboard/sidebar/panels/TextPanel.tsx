@@ -4,7 +4,7 @@ import StrokeColorSection from '@/components/whiteboard/sidebar/sections/StrokeC
 import TextSizeSection from '@/components/whiteboard/sidebar/sections/text/TextSizeSection';
 import TextAlignSection from '@/components/whiteboard/sidebar/sections/text/TextAlignSection';
 import TextFormatSection from '@/components/whiteboard/sidebar/sections/text/TextFormatSection';
-import type { TextSize } from './textPresets';
+import type { TextSize } from '@/constants/textPresets';
 import type { TextAlignment } from '@/types/whiteboard/base';
 
 // TextPanel 컴포넌트

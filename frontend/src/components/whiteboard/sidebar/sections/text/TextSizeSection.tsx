@@ -1,7 +1,7 @@
 'use client';
 
 import ButtonGroup from '@/components/whiteboard/sidebar/ui/ButtonGroup';
-import type { TextSize } from '../../panels/textPresets';
+import type { TextSize } from '@/constants/textPresets';
 
 // Text 크기 설정 section
 interface TextSizeSectionProps {
