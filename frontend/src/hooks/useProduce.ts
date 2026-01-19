@@ -131,7 +131,7 @@ export const useProduce = () => {
 
       // 공유가 중간에 중단되면 producer/track 정리
       videoProducer.on('trackended', () => {
-        stopVideoProduce();
+        stopScreenProduce();
       });
 
       setMedia({ screenShareOn: true });
