@@ -7,15 +7,21 @@ import ColorPicker from '@/components/whiteboard/sidebar/ui/ColorPicker';
 interface StrokeColorSectionProps {
   color: string;
   onChange: (color: string) => void;
+  allowTransparent?: boolean;
 }
 
 export default function StrokeColorSection({
   color,
   onChange,
+  allowTransparent = true,
 }: StrokeColorSectionProps) {
   return (
     <Section title="Stroke">
-      <ColorPicker color={color} onChange={onChange} allowTransparent={true} />
+      <ColorPicker
+        color={color}
+        onChange={onChange}
+        allowTransparent={allowTransparent}
+      />
     </Section>
   );
 }
