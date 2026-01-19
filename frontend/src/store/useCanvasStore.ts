@@ -76,6 +76,8 @@ interface CanvasState {
 
   // 자유 그리기
   currentDrawing: DrawingItem | null;
+  drawingStroke: string;
+  setDrawingStroke: (color: string) => void;
   startDrawing: (x: number, y: number) => void;
   continueDrawing: (x: number, y: number) => void;
   finishDrawing: () => void;
@@ -200,14 +202,17 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   setCursorMode: (mode) => set({ cursorMode: mode }),
 
   currentDrawing: null,
+  drawingStroke: '#343a40', // 팔레트의 검정색
+  setDrawingStroke: (color) => set({ drawingStroke: color }),
 
   // 그리기
   startDrawing: (x, y) => {
+    const state = get();
     const newDrawing: DrawingItem = {
       id: uuidv4(),
       type: 'drawing',
       points: [x, y],
-      stroke: '#111827',
+      stroke: state.drawingStroke,
       strokeWidth: 10,
       scaleX: 1,
       scaleY: 1,
