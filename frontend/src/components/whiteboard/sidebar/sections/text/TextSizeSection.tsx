@@ -15,7 +15,7 @@ export default function TextSizeSection({
 }: TextSizeSectionProps) {
   return (
     <ButtonGroup
-      label="Font Size"
+      label="Size"
       options={[
         { value: 'S', label: 'S' },
         { value: 'M', label: 'M' },
