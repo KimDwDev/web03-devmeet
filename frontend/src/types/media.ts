@@ -5,6 +5,7 @@ export type MediaPermission = 'unknown' | 'granted' | 'denied';
 export interface MediaState {
   videoOn: boolean;
   audioOn: boolean;
+  screenShareOn: boolean;
   cameraPermission: MediaPermission;
   micPermission: MediaPermission;
 }

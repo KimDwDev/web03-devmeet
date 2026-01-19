@@ -60,13 +60,107 @@ export const useProduce = () => {
     }
   };
 
-  const startVideoProduce = () => {};
+  const startVideoProduce = async () => {
+    const { producers, isProducing } = useMeetingSocketStore.getState();
+    if (!helpers || producers.videoProducer || isProducing.video) {
+      return;
+    }
 
-  const stopVideoProduce = () => {};
+    try {
+      setIsProducing('video', true);
 
-  const startScreenProduce = () => {};
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const videoTrack = stream.getVideoTracks()[0];
 
-  const stopScreenProduce = () => {};
+      const videoProducer = await helpers.produceCam(videoTrack);
+      setProducer('videoProducer', videoProducer);
+      setMedia({ videoOn: true });
+
+      videoProducer.on('trackended', () => {
+        stopVideoProduce();
+      });
+    } catch (error) {
+      console.error('카메라 시작 실패:', error);
+    } finally {
+      setIsProducing('video', false);
+    }
+  };
+
+  const stopVideoProduce = () => {
+    const { videoProducer } = useMeetingSocketStore.getState().producers;
+
+    if (videoProducer) {
+      videoProducer.close();
+      videoProducer.track?.stop();
+      setProducer('videoProducer', null);
+      setMedia({ videoOn: false });
+    }
+  };
+
+  const startScreenProduce = async () => {
+    const { producers, isProducing } = useMeetingSocketStore.getState();
+    if (
+      !helpers ||
+      (producers.screenAudioProducer && producers.screenVideoProducer) ||
+      isProducing.screen
+    )
+      return;
+
+    let stream: MediaStream | null = null;
+
+    try {
+      setIsProducing('screen', true);
+
+      stream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: true,
+      });
+
+      const videoTrack = stream.getVideoTracks()[0];
+      const audioTrack = stream.getAudioTracks()[0] ?? null;
+
+      // 화면 produce 시도 (여기서 서버가 막으면 예외 발생)
+      const videoProducer = await helpers.produceScreenVideo(videoTrack);
+      setProducer('screenVideoProducer', videoProducer);
+
+      // (선택) 오디오도 함께 보낼 경우
+      if (audioTrack) {
+        const audioProducer = await helpers.produceScreenAudio(audioTrack);
+        setProducer('screenAudioProducer', audioProducer);
+      }
+
+      // 공유가 중간에 중단되면 producer/track 정리
+      videoProducer.on('trackended', () => {
+        stopVideoProduce();
+      });
+
+      setMedia({ screenShareOn: true });
+    } catch (error) {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+      stopScreenProduce();
+
+      console.error('화면 공유 시작 실패:', error);
+    } finally {
+      setIsProducing('screen', false);
+    }
+  };
+
+  const stopScreenProduce = () => {
+    const { screenAudioProducer, screenVideoProducer } =
+      useMeetingSocketStore.getState().producers;
+
+    if (screenVideoProducer) {
+      screenVideoProducer.close();
+      screenAudioProducer?.close();
+      screenVideoProducer.track?.stop();
+      screenAudioProducer?.track?.stop();
+      setProducer('screenVideoProducer', null);
+      setProducer('screenAudioProducer', null);
+      setMedia({ screenShareOn: false });
+    }
+  };
 
   return {
     startAudioProduce,

@@ -16,6 +16,7 @@ import {
 } from '@/assets/icons/meeting';
 import Modal from '@/components/common/Modal';
 import MeetingButton from '@/components/meeting/MeetingButton';
+import { useProduce } from '@/hooks/useProduce';
 import { useMeetingStore } from '@/store/useMeetingStore';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -23,7 +24,6 @@ import { useState } from 'react';
 export default function MeetingMenu() {
   const {
     media,
-    setMedia,
     members,
     hasNewChat,
     setHasNewChat,
@@ -34,10 +34,32 @@ export default function MeetingMenu() {
     isCodeEditorOpen,
     setIsOpen,
   } = useMeetingStore();
+  const {
+    startAudioProduce,
+    stopAudioProduce,
+    startVideoProduce,
+    stopVideoProduce,
+    startScreenProduce,
+    stopScreenProduce,
+  } = useProduce();
 
-  const toggleAudio = () => setMedia({ audioOn: !media.audioOn });
+  const toggleAudio = async () => {
+    const { audioOn } = useMeetingStore.getState().media;
+    if (audioOn) {
+      stopAudioProduce();
+    } else {
+      await startAudioProduce();
+    }
+  };
 
-  const toggleVideo = () => setMedia({ videoOn: !media.videoOn });
+  const toggleVideo = async () => {
+    const { videoOn } = useMeetingStore.getState().media;
+    if (videoOn) {
+      stopVideoProduce();
+    } else {
+      await startVideoProduce();
+    }
+  };
 
   const onInfoClick = () => {
     setIsOpen('isInfoOpen', !isInfoOpen);
@@ -50,6 +72,15 @@ export default function MeetingMenu() {
   const onChatClick = () => {
     setHasNewChat(false);
     setIsOpen('isChatOpen', !isChatOpen);
+  };
+
+  const onScreenShareClick = async () => {
+    const { screenShareOn } = useMeetingStore.getState().media;
+    if (screenShareOn) {
+      stopScreenProduce();
+    } else {
+      await startScreenProduce();
+    }
   };
 
   const onWorkspaceClick = () => {
@@ -124,6 +155,8 @@ export default function MeetingMenu() {
         <MeetingButton
           icon={<ShareIcon className="h-8 w-8" />}
           text="화면 공유"
+          isActive={useMeetingStore.getState().media.screenShareOn}
+          onClick={onScreenShareClick}
         />
         <MeetingButton
           icon={<WorkspaceIcon className="h-8 w-8" />}

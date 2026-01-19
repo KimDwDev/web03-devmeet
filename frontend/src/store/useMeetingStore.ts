@@ -4,6 +4,7 @@ import { create } from 'zustand';
 const INITIAL_MEDIA_STATE: MediaState = {
   videoOn: false,
   audioOn: false,
+  screenShareOn: false,
   cameraPermission: 'unknown',
   micPermission: 'unknown',
 };
