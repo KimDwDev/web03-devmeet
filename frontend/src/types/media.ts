@@ -20,3 +20,9 @@ export interface MediasoupTransports {
   sendTransport: Transport;
   recvTransport: Transport;
 }
+
+export interface IsProducing {
+  audio: boolean;
+  video: boolean;
+  screen: boolean;
+}
