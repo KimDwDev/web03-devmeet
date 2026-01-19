@@ -184,4 +184,4 @@ export class PauseProducerValidate {
   @IsString()
   @IsIn(['audio', 'video'])
   kind: 'audio' | 'video';
-};
+}

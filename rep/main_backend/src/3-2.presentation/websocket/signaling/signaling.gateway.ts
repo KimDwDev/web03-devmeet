@@ -240,7 +240,7 @@ export class SignalingWebsocketGateway
     }
   }
 
-  // 본격적으로 프론트엔드에서 회의방에 배포하고 싶을때 사용 -> 이미 있다면 ON하는 기능을 추가 해야 한다. 
+  // 본격적으로 프론트엔드에서 회의방에 배포하고 싶을때 사용 -> 이미 있다면 ON하는 기능을 추가 해야 한다.
   @SubscribeMessage(WEBSOCKET_SIGNALING_EVENT_NAME.PRODUCE)
   @UsePipes(
     new ValidationPipe({
@@ -453,15 +453,15 @@ export class SignalingWebsocketGateway
     }
   }
 
-  // 카메라 or 마이크를 OFF할때 사용한다. -> 대신 카메라가 존재해야 한다. 
+  // 카메라 or 마이크를 OFF할때 사용한다. -> 대신 카메라가 존재해야 한다.
   @SubscribeMessage(WEBSOCKET_SIGNALING_EVENT_NAME.PRODUCE_OFF)
   async pauseProduceGateway(
     @ConnectedSocket() client: Socket,
-    @MessageBody() validate: PauseProducerValidate
+    @MessageBody() validate: PauseProducerValidate,
   ) {
     try {
       const producerInfo = await this.signalingService.pauseProduce(client, validate);
-      
+
       // 모두에게 알림 - 마이크 or 카메라 껏다고 방에 인원에게 알린다.
       const room_id: string = client.data.room_id;
       const namespace: string = `${CHANNEL_NAMESPACE.SIGNALING}:${room_id}`;
@@ -470,19 +470,17 @@ export class SignalingWebsocketGateway
       return { ok: true };
     } catch (err) {
       this.logger.error(err);
-      throw new WsException({ message: err.message ?? '에러 발생', status: err.status ?? 500 });      
-    };
-  };
+      throw new WsException({ message: err.message ?? '에러 발생', status: err.status ?? 500 });
+    }
+  }
 
-  // 화면공유를 내릴때 사용한다. -> 화면 공유가 되어있는 상태여야 한다. 
+  // 화면공유를 내릴때 사용한다. -> 화면 공유가 되어있는 상태여야 한다.
   @SubscribeMessage(WEBSOCKET_SIGNALING_EVENT_NAME.SCREEN_STOP)
-  async stopScreenGateway(
-    @ConnectedSocket() client: Socket
-  ) {
+  async stopScreenGateway(@ConnectedSocket() client: Socket) {
     try {
       const result = await this.signalingService.stopScreen(client);
 
-      // 모두에게 알림 - 화면공유가 꺼졌다고 방에 인원에게 알린다. 
+      // 모두에게 알림 - 화면공유가 꺼졌다고 방에 인원에게 알린다.
       const room_id: string = client.data.room_id;
       const namespace: string = `${CHANNEL_NAMESPACE.SIGNALING}:${room_id}`;
       client.to(namespace).emit(WEBSOCKET_SIGNALING_CLIENT_EVENT_NAME.ALERT_PRODUCED, result);
@@ -490,8 +488,7 @@ export class SignalingWebsocketGateway
       return result;
     } catch (err) {
       this.logger.error(err);
-      throw new WsException({ message: err.message ?? '에러 발생', status: err.status ?? 500 });        
-    };
-  };
-
+      throw new WsException({ message: err.message ?? '에러 발생', status: err.status ?? 500 });
+    }
+  }
 }

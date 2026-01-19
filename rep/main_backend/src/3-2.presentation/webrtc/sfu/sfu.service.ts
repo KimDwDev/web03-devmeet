@@ -54,8 +54,8 @@ export class SfuService {
     private readonly createConsumersUsecase: CreateConsumersUsecase<any>,
     private readonly resumeConsumersUsecase: ResumeConsumersUsecase<any>,
     private readonly pauseConsumersUsecase: PauseConsumesUsecase<any>,
-    private readonly pauseProducerUsecase : PauseProducerUsecase<any>, // producer를 멈추기 위한 usecase
-    private readonly stopScreenUsecase : StopScreenProducerUsecase<any>, // screen을 멈추기 위한 usecase
+    private readonly pauseProducerUsecase: PauseProducerUsecase<any>, // producer를 멈추기 위한 usecase
+    private readonly stopScreenUsecase: StopScreenProducerUsecase<any>, // screen을 멈추기 위한 usecase
     // infra
     private readonly roomRouters: RoomRouterRepository,
     private readonly transports: TransportRepository,
@@ -140,13 +140,13 @@ export class SfuService {
     await this.pauseConsumersUsecase.execute(dto);
   }
 
-  // 11. producer off 
-  async pauseProducers(dto : PauseProducerDto) : Promise<void> {
+  // 11. producer off
+  async pauseProducers(dto: PauseProducerDto): Promise<void> {
     await this.pauseProducerUsecase.execute(dto);
-  };
+  }
 
   // 12. 스크린 producer off
-  async stopScreen(dto : StopScreenProducerDto) : Promise<StopScreenProducerResult> {
+  async stopScreen(dto: StopScreenProducerDto): Promise<StopScreenProducerResult> {
     return this.stopScreenUsecase.execute(dto);
-  };
+  }
 }

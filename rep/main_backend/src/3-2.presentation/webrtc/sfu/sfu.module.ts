@@ -145,7 +145,7 @@ import {
         insertMainProducerDataToCache: InsertMainProducerDataToRedis,
         deleteUserProducerDataToCache: DeleteUserProducerDataToRedis,
         deleteMainProducerDataToCache: DeleteMainProducerDataToRedis,
-        updateUserProducerDataToCache : UpdateProducerStatusToRedis,
+        updateUserProducerDataToCache: UpdateProducerStatusToRedis,
       ) => {
         return new CreateProduceUsecase(produceRepo, transportRepo, {
           selectTransportDataFromCache,
@@ -155,7 +155,7 @@ import {
           insertMainProducerDataToCache,
           deleteUserProducerDataToCache,
           deleteMainProducerDataToCache,
-          updateUserProducerDataToCache
+          updateUserProducerDataToCache,
         });
       },
       inject: [
@@ -276,46 +276,42 @@ import {
 
     // producer를 멈추는 usecase
     {
-      provide : PauseProducerUsecase,
-      useFactory : (
+      provide: PauseProducerUsecase,
+      useFactory: (
         produceRepo: ProducerRepositoryPort,
-        selectUserProduceFromCache : SelectUserProducerDataFromRedis,
-        deleteUserProduceToCache : DeleteUserProducerDataToRedis,
-        updateUserProduceToCache : UpdateProducerStatusToRedis
+        selectUserProduceFromCache: SelectUserProducerDataFromRedis,
+        deleteUserProduceToCache: DeleteUserProducerDataToRedis,
+        updateUserProduceToCache: UpdateProducerStatusToRedis,
       ) => {
-        return new PauseProducerUsecase(
-          produceRepo,
-          { selectUserProduceFromCache, deleteUserProduceToCache, updateUserProduceToCache }
-        )
+        return new PauseProducerUsecase(produceRepo, {
+          selectUserProduceFromCache,
+          deleteUserProduceToCache,
+          updateUserProduceToCache,
+        });
       },
-      inject : [
+      inject: [
         ProducerRepository,
         SelectUserProducerDataFromRedis,
         DeleteUserProducerDataToRedis,
-        UpdateProducerStatusToRedis
-      ]
+        UpdateProducerStatusToRedis,
+      ],
     },
 
-    // screen을 끄는 usecase 
+    // screen을 끄는 usecase
     {
-      provide : StopScreenProducerUsecase,
-      useFactory : (
+      provide: StopScreenProducerUsecase,
+      useFactory: (
         produceRepo: ProducerRepositoryPort,
-        selectMainAndSubProducerFromCache : SelectRoomProducerDataFromRedis, // producer를 찾는다. 
-        deleteProducerInfoToCache : DeleteMainProducerDataToRedis // 불량 producer는 삭제한다. 
+        selectMainAndSubProducerFromCache: SelectRoomProducerDataFromRedis, // producer를 찾는다.
+        deleteProducerInfoToCache: DeleteMainProducerDataToRedis, // 불량 producer는 삭제한다.
       ) => {
-        return new StopScreenProducerUsecase(
-          produceRepo,
-          { selectMainAndSubProducerFromCache, deleteProducerInfoToCache }
-        )
+        return new StopScreenProducerUsecase(produceRepo, {
+          selectMainAndSubProducerFromCache,
+          deleteProducerInfoToCache,
+        });
       },
-      inject : [
-        ProducerRepository,
-        SelectRoomProducerDataFromRedis,
-        DeleteMainProducerDataToRedis
-      ]
+      inject: [ProducerRepository, SelectRoomProducerDataFromRedis, DeleteMainProducerDataToRedis],
     },
-
   ],
   exports: [SfuService],
 })
