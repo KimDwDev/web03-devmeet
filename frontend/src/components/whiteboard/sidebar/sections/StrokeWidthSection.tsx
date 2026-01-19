@@ -20,7 +20,7 @@ export default function StrokeWidthSection({
   ];
 
   return (
-    <Section title="Size">
+    <Section title="Border">
       <div className="flex items-end gap-3">
         {/* 프리셋 버튼 그룹 */}
         <div className="flex-1">
@@ -35,7 +35,7 @@ export default function StrokeWidthSection({
         {/* 두께 슬라이더 */}
         <div className="flex-1">
           <Slider
-            label="width"
+            label="thickness"
             value={strokeWidth}
             min={0.5}
             max={20}
