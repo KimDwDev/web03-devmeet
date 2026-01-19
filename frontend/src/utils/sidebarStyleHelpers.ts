@@ -22,8 +22,8 @@ export function getLineSize(line: LineItem): ArrowSize {
 // 현재 Text 사이즈 결정
 export function getTextSize(text: TextItem): TextSize {
   if (text.fontSize <= 16) return 'S';
-  if (text.fontSize <= 24) return 'M';
-  if (text.fontSize <= 36) return 'L';
+  if (text.fontSize <= 32) return 'M';
+  if (text.fontSize <= 65) return 'L';
   return 'XL';
 }
 
