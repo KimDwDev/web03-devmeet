@@ -6,12 +6,18 @@ import { useMemo } from 'react';
 import ShapePanel from '@/components/whiteboard/sidebar/panels/ShapePanel';
 import ArrowPanel from '@/components/whiteboard/sidebar/panels/ArrowPanel';
 import LinePanel from '@/components/whiteboard/sidebar/panels/LinePanel';
+import MediaPanel from '@/components/whiteboard/sidebar/panels/MediaPanel';
 
 import { StrokeStyleType } from '@/components/whiteboard/sidebar/sections/StrokeStyleSection';
 import { EdgeType } from '@/components/whiteboard/sidebar/sections/EdgesSection';
 
 import { useCanvasStore } from '@/store/useCanvasStore';
-import type { ArrowItem, LineItem, ShapeItem } from '@/types/whiteboard';
+import type {
+  ArrowItem,
+  LineItem,
+  ShapeItem,
+  ImageItem,
+} from '@/types/whiteboard';
 import {
   ARROW_SIZE_PRESETS,
   ARROW_STYLE_PRESETS,
@@ -23,7 +29,7 @@ import {
 } from '@/utils/arrowPanelHelpers';
 
 // 사이드 바 선택된 요소 타입
-type SelectionType = 'shape' | 'arrow' | 'line' | null;
+type SelectionType = 'shape' | 'arrow' | 'line' | 'media' | null;
 
 export default function Sidebar() {
   // 스토어에서 선택된 아이템 정보 가져오기
@@ -47,6 +53,10 @@ export default function Sidebar() {
         return 'arrow';
       case 'line':
         return 'line';
+      case 'image':
+      case 'video':
+      case 'youtube':
+        return 'media';
       default:
         return null;
     }
@@ -93,6 +103,10 @@ export default function Sidebar() {
         return 'Arrow';
       case 'line':
         return 'Line';
+      case 'media':
+        if (selectedItem?.type === 'youtube') return 'Youtube';
+        if (selectedItem?.type === 'video') return 'Video';
+        return 'Image';
       default:
         return '';
     }
@@ -223,6 +237,65 @@ export default function Sidebar() {
             }}
             onChangeStyle={(style) => {
               updateItem(selectedId!, { tension: ARROW_STYLE_PRESETS[style] });
+            }}
+          />
+        )}
+
+        {selectionType === 'media' && (
+          <MediaPanel
+            strokeColor={(selectedItem as ImageItem).stroke ?? 'transparent'}
+            strokeWidth={(selectedItem as ImageItem).strokeWidth ?? 0}
+            strokeStyle={getStrokeStyle(
+              (selectedItem as ImageItem).dash,
+              (selectedItem as ImageItem).strokeWidth ?? 0,
+            )}
+            edgeType={getEdgeType((selectedItem as ImageItem).cornerRadius)}
+            opacity={(selectedItem as ImageItem).opacity ?? 1}
+            onChangeStrokeColor={(color) =>
+              updateItem(selectedId!, { stroke: color })
+            }
+            onChangeStrokeWidth={(width) => {
+              const currentWidth = (selectedItem as ImageItem).strokeWidth ?? 0;
+              const currentDash = (selectedItem as ImageItem).dash;
+
+              const currentStyle = getStrokeStyle(
+                currentDash,
+                currentWidth || 2,
+              );
+
+              const newDash = getDashArray(currentStyle, width);
+
+              updateItem(selectedId!, {
+                strokeWidth: width,
+                dash: newDash,
+                stroke: (selectedItem as ImageItem).stroke ?? '#000000',
+              });
+            }}
+            onChangeStrokeStyle={(style) => {
+              const currentWidth = (selectedItem as ImageItem).strokeWidth ?? 0;
+
+              // 보정된 두께
+              // 두께가 0이면 내부적으로 2로 간주하여 dash 배열 계산
+              const effectiveWidth = currentWidth === 0 ? 2 : currentWidth;
+
+              updateItem(selectedId!, {
+                // effectiveWidth로 dash 배열 계산
+                dash: getDashArray(style, effectiveWidth),
+
+                // 두께가 0이었다면 2px로 업데이트
+                strokeWidth: effectiveWidth,
+
+                // 색상이 없었다면 기본 색상 검정으로 설정
+                stroke: (selectedItem as ImageItem).stroke ?? '#000000',
+              });
+            }}
+            onChangeEdgeType={(type) => {
+              updateItem(selectedId!, {
+                cornerRadius: type === 'round' ? 20 : 0,
+              });
+            }}
+            onChangeOpacity={(opacity) => {
+              updateItem(selectedId!, { opacity });
             }}
           />
         )}
