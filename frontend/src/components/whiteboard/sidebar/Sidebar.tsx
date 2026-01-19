@@ -7,6 +7,7 @@ import ShapePanel from '@/components/whiteboard/sidebar/panels/ShapePanel';
 import ArrowPanel from '@/components/whiteboard/sidebar/panels/ArrowPanel';
 import LinePanel from '@/components/whiteboard/sidebar/panels/LinePanel';
 import TextPanel from '@/components/whiteboard/sidebar/panels/TextPanel';
+import DrawingPanel from '@/components/whiteboard/sidebar/panels/DrawingPanel';
 
 import { useCanvasStore } from '@/store/useCanvasStore';
 import type {
@@ -14,6 +15,7 @@ import type {
   LineItem,
   ShapeItem,
   TextItem,
+  DrawingItem,
 } from '@/types/whiteboard';
 import {
   ARROW_SIZE_PRESETS,
@@ -28,13 +30,16 @@ import {
 } from '@/utils/sidebarStyleHelpers';
 
 // 사이드 바 선택된 요소 타입
-type SelectionType = 'shape' | 'arrow' | 'line' | 'text' | null;
+type SelectionType = 'shape' | 'arrow' | 'line' | 'text' | 'drawing' | null;
 
 export default function Sidebar() {
   // 스토어에서 선택된 아이템 정보 가져오기
   const selectedId = useCanvasStore((state) => state.selectedId);
   const items = useCanvasStore((state) => state.items);
   const updateItem = useCanvasStore((state) => state.updateItem);
+  const cursorMode = useCanvasStore((state) => state.cursorMode);
+  const drawingStroke = useCanvasStore((state) => state.drawingStroke);
+  const setDrawingStroke = useCanvasStore((state) => state.setDrawingStroke);
 
   // 선택된 아이템 찾기
   const selectedItem = useMemo(
@@ -54,6 +59,8 @@ export default function Sidebar() {
         return 'line';
       case 'text':
         return 'text';
+      case 'drawing':
+        return 'drawing';
       default:
         return null;
     }
@@ -63,6 +70,8 @@ export default function Sidebar() {
 
   // 선택 타입에 따른 표시될 헤더 제목
   const getHeaderTitle = () => {
+    if (cursorMode === 'draw') return 'Drawing';
+
     switch (selectionType) {
       case 'shape':
         return 'Shape';
@@ -72,13 +81,15 @@ export default function Sidebar() {
         return 'Line';
       case 'text':
         return 'Text';
+      case 'drawing':
+        return 'Drawing';
       default:
         return '';
     }
   };
 
-  // 선택된 아이템이 없거나 지원하지 않는 타입이면 사이드바 표시 안 함
-  if (!selectedItem || !selectionType) {
+  // 사이드바 표시 여부
+  if (!(selectedItem && selectionType) && cursorMode !== 'draw') {
     return null;
   }
 
@@ -179,6 +190,23 @@ export default function Sidebar() {
             onChangeTextDecoration={(textDecoration) =>
               updateItem(selectedId!, { textDecoration })
             }
+          />
+        )}
+        {/* drawing */}
+        {(cursorMode === 'draw' || selectionType === 'drawing') && (
+          <DrawingPanel
+            stroke={
+              selectedItem && selectionType === 'drawing'
+                ? (selectedItem as DrawingItem).stroke
+                : drawingStroke
+            }
+            onChangeStroke={(color) => {
+              if (selectedItem && selectionType === 'drawing') {
+                updateItem(selectedId!, { stroke: color });
+              } else {
+                setDrawingStroke(color);
+              }
+            }}
           />
         )}
       </div>
