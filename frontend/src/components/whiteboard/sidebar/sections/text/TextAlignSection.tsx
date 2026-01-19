@@ -1,6 +1,5 @@
 'use client';
 
-import Section from '@/components/whiteboard/sidebar/ui/Section';
 import ButtonGroup from '@/components/whiteboard/sidebar/ui/ButtonGroup';
 import type { TextAlignment } from '@/types/whiteboard/base';
 import {

@@ -1,9 +1,9 @@
 'use client';
 
 import StrokeColorSection from '@/components/whiteboard/sidebar/sections/StrokeColorSection';
-import TextSizeSection from '@/components/whiteboard/sidebar/sections/TextSizeSection';
-import TextAlignSection from '@/components/whiteboard/sidebar/sections/TextAlignSection';
-import TextStyleSection from '@/components/whiteboard/sidebar/sections/TextStyleSection';
+import TextSizeSection from '@/components/whiteboard/sidebar/sections/text/TextSizeSection';
+import TextAlignSection from '@/components/whiteboard/sidebar/sections/text/TextAlignSection';
+import TextStyleSection from '@/components/whiteboard/sidebar/sections/text/TextStyleSection';
 import type { TextSize } from './textPresets';
 import type { TextAlignment } from '@/types/whiteboard/base';
 
@@ -13,10 +13,12 @@ interface TextPanelProps {
   size: TextSize;
   align: TextAlignment;
   fontStyle: string;
+  textDecoration: string;
   onChangeFill: (color: string) => void;
   onChangeSize: (size: TextSize) => void;
   onChangeAlign: (align: TextAlignment) => void;
   onChangeFontStyle: (fontStyle: string) => void;
+  onChangeTextDecoration: (textDecoration: string) => void;
 }
 
 export default function TextPanel({
@@ -24,10 +26,12 @@ export default function TextPanel({
   size,
   align,
   fontStyle,
+  textDecoration,
   onChangeFill,
   onChangeSize,
   onChangeAlign,
   onChangeFontStyle,
+  onChangeTextDecoration,
 }: TextPanelProps) {
   return (
     <div className="flex flex-col gap-2">
@@ -47,7 +51,9 @@ export default function TextPanel({
       {/* 텍스트 스타일 설정 섹션 */}
       <TextStyleSection
         fontStyle={fontStyle}
+        textDecoration={textDecoration}
         onChangeFontStyle={onChangeFontStyle}
+        onChangeTextDecoration={onChangeTextDecoration}
       />
     </div>
   );

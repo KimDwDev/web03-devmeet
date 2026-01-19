@@ -166,6 +166,7 @@ export default function Sidebar() {
             size={getTextSize(selectedItem as TextItem)}
             align={(selectedItem as TextItem).align}
             fontStyle={(selectedItem as TextItem).fontStyle ?? 'normal'}
+            textDecoration={(selectedItem as TextItem).textDecoration ?? 'none'}
             onChangeFill={(color) => updateItem(selectedId!, { fill: color })}
             onChangeSize={(size) => {
               const preset = TEXT_SIZE_PRESETS[size];
@@ -174,6 +175,9 @@ export default function Sidebar() {
             onChangeAlign={(align) => updateItem(selectedId!, { align })}
             onChangeFontStyle={(fontStyle) =>
               updateItem(selectedId!, { fontStyle })
+            }
+            onChangeTextDecoration={(textDecoration) =>
+              updateItem(selectedId!, { textDecoration })
             }
           />
         )}

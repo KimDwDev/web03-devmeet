@@ -16,6 +16,7 @@ export interface TextItem extends BaseItem {
   fontSize: number;
   fontFamily: string;
   fontStyle?: string;
+  textDecoration?: string;
   fill: string;
   align: TextAlignment;
   wrap: TextWrap;
