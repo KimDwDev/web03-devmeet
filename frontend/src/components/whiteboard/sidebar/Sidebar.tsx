@@ -51,7 +51,8 @@ export default function Sidebar() {
   // 스토어에서 선택된 아이템 정보 가져오기
   const selectedId = useWhiteboardLocalStore((state) => state.selectedId);
   const items = useWhiteboardSharedStore((state) => state.items);
-  const { updateItem } = useItemActions();
+  const { updateItem, bringToFront, sendToBack } = useItemActions();
+
   const cursorMode = useWhiteboardLocalStore((state) => state.cursorMode);
   const drawingStroke = useWhiteboardLocalStore((state) => state.drawingStroke);
   const drawingSize = useWhiteboardLocalStore((state) => state.drawingSize);
@@ -152,6 +153,15 @@ export default function Sidebar() {
     return null;
   }
 
+  const handleLayerChange = (direction: 'front' | 'back') => {
+    if (!selectedId) return;
+    if (direction === 'front') {
+      bringToFront(selectedId);
+    } else {
+      sendToBack(selectedId);
+    }
+  };
+
   return (
     <aside className="absolute top-1/2 left-2 z-1 flex max-h-[calc(100vh-2rem)] w-56 -translate-y-1/2 flex-col overflow-y-auto rounded-lg border border-neutral-200 bg-white p-4 shadow-xl">
       {/* Sidebar Title */}
@@ -221,6 +231,7 @@ export default function Sidebar() {
             onChangeOpacity={(opacity) => {
               updateItem(selectedId!, { opacity });
             }}
+            onChangeLayer={handleLayerChange}
           />
         )}
 
