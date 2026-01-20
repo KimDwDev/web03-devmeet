@@ -107,3 +107,21 @@ export class NotAllowRoomMemberOne extends BaseError {
     });
   }
 }
+
+export class NotAllowFileSize extends BaseError {
+  constructor(size : number) {
+    super({
+      message: `파일의 크기는 ${size}를 넘어서는 안됩니다.`,
+      status: 500,
+    });
+  }
+}
+
+export class NotFoundResult extends BaseError {
+  constructor() {
+    super({
+      message: `파일 다운로드를 위한 결과값을 만들지 못했습니다.`,
+      status: 500,
+    });
+  }
+}

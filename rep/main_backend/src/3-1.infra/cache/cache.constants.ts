@@ -15,12 +15,13 @@ export const CACHE_ROOM_NAMESPACE_NAME = Object.freeze({
 } as const);
 
 // 방과 함께 추가적으로 사용할 namespace ( 아래는 예시 )
-// cache:rooms:${room_id}:info ?? members
+// cache:rooms:${room_id}:info ?? members ?? files
 // cache:rooms:sockets
 export const CACHE_ROOM_SUB_NAMESPACE_NAME = Object.freeze({
   INFO: 'info',
   MEMBERS: 'members',
   SOCKETS: 'sockets',
+  FILES : "files"
 } as const);
 
 // code, title, owner_id 등 방에 정보들을 저장할 key_name들
@@ -61,17 +62,22 @@ export const CACHE_ROOM_SOCKETS_KEY_PROPS_NAME = Object.freeze({
   IP: 'ip',
 } as const);
 
-// 아래는 room에서 member들을 위해서 필요한 개인 캐시 데이터 ( 만료시간 있음 )
-// 예시: cache:rooms:${room_id}:${user_id}:files
-export const CACHE_ROOM_MEMBER_SUB_NAMESPACE_NAME = Object.freeze({
-  FILES : "files"
-} as const);
-
-// {filename}:{mime_type}:{size} : {  } 이런식으로 데이터가 저장된다. 만료시간은 1시간 정도로 보고 있다. 
-export const CACHE_ROOM_MEMBER_FILES_PROPS_NAME = Object.freeze({
+// file_id : { } 이런 식으로 데이터가 저장될 예정이다. 
+export const CACHE_ROOM_FILES_KEY_PROPS_NAME = Object.freeze({
   FILENAME : "filename",
   MIME_TYPE : "mime_type",
-  SIZE : "size"
+  CATEGORY : "category", // image, video, audio, text, binary
+  SIZE : "size",
+  UPLOAD_UD : "upload_id", // 기존에 upload_id로 10mb 초과면 이게 있을것이다. 
+  USER_ID : "user_id",
+  NICKNAME : "nickname",
+  STATUS : "status" // uploading, completed
+} as const);
+
+// 아래는 room에서 member들을 위해서 필요한 개인 캐시 데이터 ( 만료시간 있음 )
+// 예시: cache:rooms:${room_id}:${user_id}:file_ids key: {filename}:{mime_type}:{size} value: file_id
+export const CACHE_ROOM_MEMBER_SUB_NAMESPACE_NAME = Object.freeze({
+  FILE_IDS : "file_ids"
 } as const);
 
 // sfu와 관련된 cache 정보
