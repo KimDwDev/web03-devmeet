@@ -125,3 +125,20 @@ export class NotFoundResult extends BaseError {
     });
   }
 }
+export class NotAllowRoomMemberFile extends BaseError {
+  constructor() {
+    super({
+      message: `현재 방에 위치해 있지 않거나 정보를 잘못보내셨습니다.`,
+      status: 500,
+    });
+  }
+}
+
+export class NotAllowRoomFileData extends BaseError {
+  constructor(name : string) {
+    super({
+      message: `파일을 전송하는데 ${name}에 값이 잘못보내졌습니다.`,
+      status: 500,
+    });
+  }
+};
