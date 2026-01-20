@@ -25,7 +25,7 @@ const mockData: ToolBackendPayload = {
   socket_id: 'socket1',
   ticket: 'ticket',
   clientType: 'main',
-  nickname: 'test_user',
+  // nickname: 'test_user',
 };
 
 @WebSocketGateway({
