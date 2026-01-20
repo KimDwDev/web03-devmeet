@@ -1,4 +1,5 @@
 import {
+  CheckUploadFileUsecase,
   ConnectRoomUsecase,
   DisconnectRoomUsecase,
   OpenToolUsecase,
@@ -199,6 +200,19 @@ import { GetCompleteMultipartTagsFromAwsS3, GetMultipartUploadIdFromS3Bucket, Ge
         GetMultipartUploadIdFromS3Bucket,
         GetPresignedUrlsFromS3Bucket,
         InsertFileInfoToRedis
+      ]
+    },
+
+    // 파일의 업로드를 확인하는 usecase 
+    {
+      provide : CheckUploadFileUsecase,
+      useFactory : (
+        
+      ) => {
+
+      }, 
+      inject : [
+
       ]
     }
   ],

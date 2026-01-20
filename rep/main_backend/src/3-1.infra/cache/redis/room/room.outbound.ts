@@ -17,7 +17,7 @@ import {
   REDIS_SERVER,
 } from '../../cache.constants';
 import { RoomProps } from '@domain/room/vo';
-import { InsertRoomDataDto, InsertToolInfoData, InsertUploadFileInfoDto } from '@app/room/commands/dto';
+import { CheckUploadFileDto, InsertRoomDataDto, InsertToolInfoData, InsertUploadFileInfoDto } from '@app/room/commands/dto';
 import { CacheError } from '@error/infra/infra.error';
 
 @Injectable()
@@ -313,4 +313,43 @@ export class InsertFileInfoToRedis extends InsertDataToCache<RedisClientType<any
 
     return true;
   };
+};
+
+// 해당 파일의 상태를 업데이트 한다. 
+@Injectable()
+export class UpdateFileInfoToRedis extends InsertDataToCache<RedisClientType<any, any>> {
+
+  constructor(@Inject(REDIS_SERVER) cache: RedisClientType<any, any>) {
+    super(cache);
+  };
+
+  async insert(entity: CheckUploadFileDto): Promise<boolean> {
+    
+    const roomFileInfoNamespace : string = `${CACHE_ROOM_NAMESPACE_NAME.CACHE_ROOM}:${entity.room_id}:${CACHE_ROOM_SUB_NAMESPACE_NAME.FILES}`;
+
+    const result = await this.cache.hGet(roomFileInfoNamespace, entity.file_id);
+
+    if ( !result ) return false;
+
+    try {
+      const obj = JSON.parse(result) as Record<string, any>;
+
+      // status를 변경
+      obj[CACHE_ROOM_FILES_KEY_PROPS_NAME.STATUS] = "completed";
+
+      await this.cache.hSet(
+        roomFileInfoNamespace,
+        entity.file_id,
+        JSON.stringify(obj),
+      );
+
+      return true;
+    } catch {
+      // JSON이 깨져 있으면 불량 데이터는 삭제한다. 
+      await this.cache.hDel(roomFileInfoNamespace, entity.file_id);
+      return false;
+    };
+
+  };
+
 };

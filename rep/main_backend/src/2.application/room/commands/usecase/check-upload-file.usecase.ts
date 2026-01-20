@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { CheckUploadFileDto, CheckUploadFileDtoValidateResult, CheckUploadFileResult } from "../dto";
 import { SelectDataFromCache } from "@app/ports/cache/cache.inbound";
-import { NotAllowRoomFileData, NotAllowRoomMemberFile } from "@error/application/room/room.error";
+import { NotAllowRoomFileData, NotAllowRoomMemberFile, NotAllowUpdateFileData } from "@error/application/room/room.error";
 import { CheckUploadDataFromDisk, CheckUploadDatasFromDisk, GetUploadUrlFromDisk  } from "@app/ports/disk/disk.inbound";
 import { CompleteUploadFileToDisk } from "@app/ports/disk/disk.outbound";
 import { InsertDataToCache } from "@app/ports/cache/cache.outbound";
@@ -78,7 +78,8 @@ export class CheckUploadFileUsecase<T, ST> {
 
     if ( checkResult.status !== "completed" ) {
       // 2. 데이터 저장 
-      await this.updateFileInfoToCache.insert(dto); // room_id:user_id에서 file_id에 해당하는 상태만 변경해주면 된다. 
+      const inserted : boolean = await this.updateFileInfoToCache.insert(dto); // room_id:user_id에서 file_id에 해당하는 상태만 변경해주면 된다. 
+      if ( !inserted ) throw new NotAllowUpdateFileData();
     };
 
     // 3. 반환한다.

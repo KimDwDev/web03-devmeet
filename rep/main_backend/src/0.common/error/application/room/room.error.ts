@@ -142,3 +142,12 @@ export class NotAllowRoomFileData extends BaseError {
     });
   }
 };
+
+export class NotAllowUpdateFileData extends BaseError {
+  constructor() {
+    super({
+      message: "파일 데이터에 상태를 업데이트 하지 못했습니다.",
+      status: 500,
+    });
+  }
+};
