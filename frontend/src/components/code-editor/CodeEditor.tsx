@@ -11,16 +11,12 @@ import { colorFromClientId, injectCursorStyles } from '@/utils/code-editor';
 import { AwarenessState, LanguageState } from '@/types/code-editor';
 import CodeEditorToolbar from './CodeEditorToolbar';
 import { EditorLanguage } from '@/constants/code-editor';
+import { useToolSocketStore } from '@/store/useToolSocketStore';
 
 type CodeEditorProps = {
   autoComplete?: boolean;
   minimap?: boolean;
 };
-
-// TODO: 모듈로 빼서 가져오기
-const SERVER_URL = process.env.NEXT_PUBLIC_TOOL_BACKEND_URL;
-const NAMESPACE = process.env.NEXT_PUBLIC_TOOL_BACKEND_WEBSOCKET_PREFIX;
-const SOCKET_PATH = process.env.NEXT_PUBLIC_TOOL_BACKEND_WEBSOCKET_CODEEDITOR;
 
 export default function CodeEditor({
   autoComplete = true,
@@ -47,6 +43,8 @@ export default function CodeEditor({
     useState<EditorLanguage>('typescript');
   const [onlyMyCursor, setOnlyMyCursor] = useState<boolean>(false);
 
+  const { codeEditorSocket: socket } = useToolSocketStore(); // 시그널링 소켓
+
   const handleMount = async (
     editor: monaco.editor.IStandaloneCodeEditor,
     monaco: typeof import('monaco-editor'),
@@ -61,13 +59,8 @@ export default function CodeEditor({
 
     providerRef.current = { ydoc, awareness };
 
-    const socket = io(`${SERVER_URL}${NAMESPACE}`, {
-      path: SOCKET_PATH,
-      transports: ['websocket'],
-      auth: { token: 'test-token' }, // TODO: 실제 토큰으로 교체
-    });
-
     socketRef.current = socket;
+    if (!socket) return;
 
     socket.on('init-user', ({ userId }: { userId: string }) => {
       awareness.setLocalState({

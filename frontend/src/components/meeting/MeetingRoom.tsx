@@ -7,6 +7,8 @@ import MeetingMenu from '@/components/meeting/MeetingMenu';
 import MemberModal from '@/components/meeting/MemberModal';
 import MemberVideoBar from '@/components/meeting/MemberVideoBar';
 import Whiteboard from '@/components/whiteboard/Whiteboard';
+import { useCodeEditorSocket } from '@/hooks/useCodeEditorSocket';
+import { useMeetingSocket } from '@/hooks/useMeetingSocket';
 import { useProduce } from '@/hooks/useProduce';
 import { useMeetingStore } from '@/store/useMeetingStore';
 import { useEffect } from 'react';
@@ -22,6 +24,9 @@ export default function MeetingRoom({ meetingId }: { meetingId: string }) {
   } = useMeetingStore();
   const { startAudioProduce, startVideoProduce, isReady } = useProduce();
 
+  const { joinCodeEditor, closeCodeEditor } = useCodeEditorSocket();
+  const { socket: mainSocket } = useMeetingSocket();
+
   // 초기 입장 시 로비에서 설정한 미디어 Produce
   useEffect(() => {
     if (!isReady) return;
@@ -30,6 +35,30 @@ export default function MeetingRoom({ meetingId }: { meetingId: string }) {
     if (audioOn) startAudioProduce();
     if (videoOn) startVideoProduce();
   }, [isReady]);
+
+  // 툴 소켓 연결 전파
+  useEffect(() => {
+    if (!mainSocket) return;
+
+    const handleRequestCodeEditor = ({
+      request_user,
+      tool,
+    }: {
+      request_user: string;
+      tool: string;
+    }) => {
+      // 이미 에디터가 열려있는 상태가 아닐 때만 참여
+      if (!isCodeEditorOpen) {
+        joinCodeEditor(tool);
+      }
+    };
+
+    mainSocket.on('room:request_codeeditor', handleRequestCodeEditor);
+
+    return () => {
+      mainSocket.off('room:request_codeeditor', handleRequestCodeEditor);
+    };
+  }, [mainSocket, isCodeEditorOpen, joinCodeEditor, closeCodeEditor]);
 
   return (
     <main className="flex h-screen w-full flex-col overflow-hidden bg-neutral-900">
