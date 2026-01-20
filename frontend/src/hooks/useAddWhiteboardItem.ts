@@ -26,7 +26,14 @@ export const useAddWhiteboardItem = () => {
       viewportWidth,
       viewportHeight,
     );
-    addText({ x: worldPos.x, y: worldPos.y });
+
+    const defaultWidth = 200;
+    const defaultFontSize = 32;
+
+    addText({
+      x: worldPos.x - defaultWidth / 2,
+      y: worldPos.y - defaultFontSize / 2,
+    });
   };
 
   // Arrow Item 추가 핸들러
