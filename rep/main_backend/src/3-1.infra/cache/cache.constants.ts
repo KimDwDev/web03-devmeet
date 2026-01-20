@@ -61,6 +61,19 @@ export const CACHE_ROOM_SOCKETS_KEY_PROPS_NAME = Object.freeze({
   IP: 'ip',
 } as const);
 
+// 아래는 room에서 member들을 위해서 필요한 개인 캐시 데이터 ( 만료시간 있음 )
+// 예시: cache:rooms:${room_id}:${user_id}:files
+export const CACHE_ROOM_MEMBER_SUB_NAMESPACE_NAME = Object.freeze({
+  FILES : "files"
+} as const);
+
+// {filename}:{mime_type}:{size} : {  } 이런식으로 데이터가 저장된다. 만료시간은 1시간 정도로 보고 있다. 
+export const CACHE_ROOM_MEMBER_FILES_PROPS_NAME = Object.freeze({
+  FILENAME : "filename",
+  MIME_TYPE : "mime_type",
+  SIZE : "size"
+} as const);
+
 // sfu와 관련된 cache 정보
 export const CACHE_SFU_NAMESPACE_NAME = Object.freeze({
   USER_INFO: 'cache:sfu:users', // + user_id -> 유저에 따라서 필요한 정보 저장

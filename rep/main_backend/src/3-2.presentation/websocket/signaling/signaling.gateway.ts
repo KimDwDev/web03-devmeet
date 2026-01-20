@@ -491,4 +491,8 @@ export class SignalingWebsocketGateway
       throw new WsException({ message: err.message ?? '에러 발생', status: err.status ?? 500 });
     }
   }
+
+  // 메시지 or 파일 전송 기능 구현 
+  
+
 }
