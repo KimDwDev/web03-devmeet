@@ -1,6 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
 
 import { useSharedStore } from '@/store/useSharedStore';
+import {
+  CANVAS_WIDTH,
+  CANVAS_HEIGHT,
+} from '@/components/whiteboard/constants/canvas';
 
 import type {
   WhiteboardItem,
@@ -18,17 +22,14 @@ import { extractYoutubeId } from '@/utils/youtube';
 
 // 아이템 액션 훅 / Yjs 연동 시 이 훅을 useYjsWebSocket에서 사용
 export function useItemActions() {
-  const canvasWidth = useSharedStore((state) => state.canvasWidth);
-  const canvasHeight = useSharedStore((state) => state.canvasHeight);
-
   // 텍스트 추가
   const addText = (payload?: Partial<Omit<TextItem, 'id' | 'type'>>) => {
     const id = uuidv4();
     const newText: TextItem = {
       id,
       type: 'text',
-      x: payload?.x ?? canvasWidth / 2,
-      y: payload?.y ?? canvasHeight / 2,
+      x: payload?.x ?? CANVAS_WIDTH / 2,
+      y: payload?.y ?? CANVAS_HEIGHT / 2,
       text: payload?.text ?? '새 텍스트',
       fontSize: payload?.fontSize ?? 32,
       fontFamily: payload?.fontFamily ?? 'Arial',
@@ -54,10 +55,10 @@ export function useItemActions() {
       id,
       type: 'arrow',
       points: payload?.points ?? [
-        canvasWidth / 2 - 100,
-        canvasHeight / 2,
-        canvasWidth / 2 + 100,
-        canvasHeight / 2,
+        CANVAS_WIDTH / 2 - 100,
+        CANVAS_HEIGHT / 2,
+        CANVAS_WIDTH / 2 + 100,
+        CANVAS_HEIGHT / 2,
       ],
       stroke: payload?.stroke ?? '#111827',
       strokeWidth: payload?.strokeWidth ?? 4,
@@ -78,10 +79,10 @@ export function useItemActions() {
       id,
       type: 'line',
       points: payload?.points ?? [
-        canvasWidth / 2 - 100,
-        canvasHeight / 2,
-        canvasWidth / 2 + 100,
-        canvasHeight / 2,
+        CANVAS_WIDTH / 2 - 100,
+        CANVAS_HEIGHT / 2,
+        CANVAS_WIDTH / 2 + 100,
+        CANVAS_HEIGHT / 2,
       ],
       stroke: payload?.stroke ?? '#111827',
       strokeWidth: payload?.strokeWidth ?? 4,
@@ -103,8 +104,8 @@ export function useItemActions() {
       id,
       type: 'shape',
       shapeType: type,
-      x: payload?.x ?? canvasWidth / 2 - 50,
-      y: payload?.y ?? canvasHeight / 2 - 50,
+      x: payload?.x ?? CANVAS_WIDTH / 2 - 50,
+      y: payload?.y ?? CANVAS_HEIGHT / 2 - 50,
       width: payload?.width ?? 100,
       height: payload?.height ?? 100,
       fill: payload?.fill ?? '#ffffff',
@@ -131,8 +132,8 @@ export function useItemActions() {
       id,
       type: 'image',
       src: payload.src,
-      x: payload.x ?? canvasWidth / 2 - 250,
-      y: payload.y ?? canvasHeight / 2 - 125,
+      x: payload.x ?? CANVAS_WIDTH / 2 - 250,
+      y: payload.y ?? CANVAS_HEIGHT / 2 - 125,
       width: payload.width ?? 500,
       height: payload.height ?? 250,
       rotation: 0,
@@ -160,8 +161,8 @@ export function useItemActions() {
       id,
       type: 'video',
       src: payload.src,
-      x: payload.x ?? canvasWidth / 2 - 250,
-      y: payload.y ?? canvasHeight / 2 - 125,
+      x: payload.x ?? CANVAS_WIDTH / 2 - 250,
+      y: payload.y ?? CANVAS_HEIGHT / 2 - 125,
       width: payload.width ?? 500,
       height: payload.height ?? 250,
       rotation: 0,
@@ -195,8 +196,8 @@ export function useItemActions() {
       type: 'youtube',
       url,
       videoId,
-      x: canvasWidth / 2 - width / 2,
-      y: canvasHeight / 2 - height / 2,
+      x: CANVAS_WIDTH / 2 - width / 2,
+      y: CANVAS_HEIGHT / 2 - height / 2,
       width,
       height,
       rotation: 0,
