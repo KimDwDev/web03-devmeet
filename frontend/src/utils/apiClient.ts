@@ -32,7 +32,7 @@ const baseApi = async <T>(
 
   const config: RequestInit = {
     ...rest,
-    credentials: withToken ? 'include' : 'same-origin',
+    credentials: rest.credentials ?? (withToken ? 'include' : 'same-origin'),
     headers: {
       'Content-Type': 'application/json',
       ...(withToken && token && { Authorization: `Bearer ${token}` }),
