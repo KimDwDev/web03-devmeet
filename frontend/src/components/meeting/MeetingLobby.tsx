@@ -4,7 +4,7 @@ import Header from '@/components/layout/Header';
 import MediaSettingSection from '@/components/meeting/media/MediaSettingSection';
 import { useMeetingSocketStore } from '@/store/useMeetingSocketStore';
 import { useUserStore } from '@/store/useUserStore';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 
 export default function MeetingLobby({
   meetingId,
@@ -18,8 +18,9 @@ export default function MeetingLobby({
 
   const { socket } = useMeetingSocketStore();
   const { isLoaded, isLoggedIn, nickname } = useUserStore();
-
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [tempNickname, setTempNickname] = useState('');
+  const isJoinDisabled =
+    !socket || !isLoaded || (!isLoggedIn && !tempNickname.trim());
 
   // 비회원 닉네임 확인 로직
   const [isNicknameError, setIsNicknameError] = useState(false);
@@ -27,8 +28,7 @@ export default function MeetingLobby({
     if (isLoggedIn) {
       onJoin(nickname);
     } else {
-      const tempNickname = inputRef.current?.value;
-      if (tempNickname) {
+      if (tempNickname.trim()) {
         onJoin(tempNickname);
       } else {
         setIsNicknameError(true);
@@ -56,13 +56,18 @@ export default function MeetingLobby({
 
         {isLoaded && !isLoggedIn && (
           <input
-            ref={inputRef}
+            value={tempNickname}
+            onChange={(e) => setTempNickname(e.target.value)}
             className="input-default input-light"
             placeholder="닉네임을 입력해주세요"
           />
         )}
 
-        <Button onClick={onButtonClick} disabled={!socket}>
+        <Button
+          onClick={onButtonClick}
+          color={isJoinDisabled ? 'disabled' : 'primary'}
+          disabled={isJoinDisabled}
+        >
           {socket ? '회의 참여하기' : '연결 준비 중...'}
         </Button>
       </section>
