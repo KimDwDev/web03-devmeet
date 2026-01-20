@@ -263,6 +263,7 @@ export default function Sidebar() {
             onChangeEndHeadType={(type) => {
               updateItem(selectedId!, { endHeadType: type });
             }}
+            onChangeLayer={handleLayerChange}
           />
         )}
 
@@ -284,6 +285,7 @@ export default function Sidebar() {
             onChangeStyle={(style) => {
               updateItem(selectedId!, { tension: ARROW_STYLE_PRESETS[style] });
             }}
+            onChangeLayer={handleLayerChange}
           />
         )}
 
@@ -344,6 +346,7 @@ export default function Sidebar() {
             onChangeOpacity={(opacity) => {
               updateItem(selectedId!, { opacity });
             }}
+            onChangeLayer={handleLayerChange}
           />
         )}
 
@@ -367,6 +370,7 @@ export default function Sidebar() {
             onChangeTextDecoration={(textDecoration) =>
               updateItem(selectedId!, { textDecoration })
             }
+            onChangeLayer={handleLayerChange}
           />
         )}
         {/* drawing */}
@@ -397,6 +401,7 @@ export default function Sidebar() {
                 setDrawingSize(size);
               }
             }}
+            onChangeLayer={selectedItem ? handleLayerChange : undefined}
           />
         )}
       </div>
