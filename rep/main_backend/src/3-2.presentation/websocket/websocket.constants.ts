@@ -28,6 +28,7 @@ export const WEBSOCKET_SIGNALING_EVENT_NAME = Object.freeze({
   PRODUCE_OFF: 'signaling:ws:produce_off', // 비디오 or 마이크 off
   SCREEN_STOP: 'signaling:ws:screen_stop', // 화면 공유 stop -> 추가적으로
   UPLOAD_FILE : "signaling:ws:upload_file", // 파일을 전송하는 이벤트
+  FILE_CHECK : "signaling:ws:file_check", // 파일이 제대로 올라갔는지 확인하는 이벤트
 
   // 워크 스페이스 or 코드에디터 생성을 위한 이벤트 이름
   OPEN_WHITEBOARD: 'signaling:ws:open_whiteboard',
@@ -43,6 +44,7 @@ export const WEBSOCKET_SIGNALING_CLIENT_EVENT_NAME = Object.freeze({
   SCREEN_STOP: 'room:screen_stop',
   NEW_USER: 'room:new_user',
   USER_CLOSED: 'room:user_closed',
+  SEND_MESSAGE : "room:send_message",
   ERROR: 'room:error',
 
   // 아래는 오게될 요청

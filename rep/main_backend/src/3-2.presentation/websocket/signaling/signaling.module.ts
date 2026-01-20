@@ -10,6 +10,7 @@ import { SelectRoomDataFromMysql } from '@infra/db/mysql/room/room.inbound';
 import { CompareRoomArgonHash, MakeFileIdGenerator, MakeIssueToolTicket } from './signaling.interface';
 import {
   CheckRoomUserFromRedis,
+  CheckUserAndSelectFileInfoFromRedis,
   CheckUserAndSelectPrevFileInfoFromRedis,
   CheckUserPayloadFromRedis,
   SelectRoomInfoFromRedis,
@@ -26,6 +27,7 @@ import {
   InsertFileInfoToRedis,
   InsertRoomDatasToRedis,
   InsertToolTicketToRedis,
+  UpdateFileInfoToRedis,
 } from '@infra/cache/redis/room/room.outbound';
 import { SignalingWebsocketService } from './signaling.service';
 import { AuthWebsocketModule } from '../auth/auth.module';
@@ -40,7 +42,8 @@ import { ConfigService } from '@nestjs/config';
 import { TOOL_LEFT_TOPIC_NAME } from './signaling.validate';
 import { EVENT_STREAM_NAME } from '@infra/event-stream/event-stream.constants';
 import { KafkaService } from '@infra/event-stream/kafka/event-stream-service';
-import { GetCompleteMultipartTagsFromAwsS3, GetMultipartUploadIdFromS3Bucket, GetPresignedUrlFromS3Bucket, GetPresignedUrlsFromS3Bucket } from '@infra/disk/s3/adapters/disk.inbound';
+import { CheckPresignedUrlFromAwsS3, CheckUploadDatasFromAwsS3, GetCompleteMultipartTagsFromAwsS3, GetMultipartUploadIdFromS3Bucket, GetPresignedUrlFromS3Bucket, GetPresignedUrlsFromS3Bucket } from '@infra/disk/s3/adapters/disk.inbound';
+import { CompleteUploadToAwsS3 } from '@/3-1.infra/disk/s3/adapters/disk.outbound';
 
 
 @Module({
@@ -207,12 +210,24 @@ import { GetCompleteMultipartTagsFromAwsS3, GetMultipartUploadIdFromS3Bucket, Ge
     {
       provide : CheckUploadFileUsecase,
       useFactory : (
-        
+        checkUserAndSelectFileInfoFromCache : CheckUserAndSelectFileInfoFromRedis,
+        checkUploadFromDisk : CheckPresignedUrlFromAwsS3,
+        checkUploadsFromDisk : CheckUploadDatasFromAwsS3,
+        completeUploadToDisk : CompleteUploadToAwsS3,
+        updateFileInfoToCache : UpdateFileInfoToRedis,
+        getUploadUrlFromDisk : GetPresignedUrlFromS3Bucket,
       ) => {
-
+        return new CheckUploadFileUsecase({
+          checkUserAndSelectFileInfoFromCache, checkUploadFromDisk, checkUploadsFromDisk, completeUploadToDisk, updateFileInfoToCache, getUploadUrlFromDisk
+        })
       }, 
       inject : [
-
+        CheckUserAndSelectFileInfoFromRedis,
+        CheckPresignedUrlFromAwsS3,
+        CheckUploadDatasFromAwsS3,
+        CompleteUploadToAwsS3,
+        UpdateFileInfoToRedis,
+        GetPresignedUrlFromS3Bucket,
       ]
     }
   ],

@@ -24,10 +24,12 @@ import {
   WEBSOCKET_SIGNALING_EVENT_NAME,
 } from '../websocket.constants';
 import {
+  CheckFileValidate,
   ConnectToolTypeValidate,
   DisConnectToolTypeValidate,
   DtlsHandshakeValidate,
   JoinRoomValidate,
+  MessageResultProps,
   NegotiateIceValidate,
   OnConsumesValidate,
   OnConsumeValidate,
@@ -40,7 +42,7 @@ import {
   SocketPayload,
   UploadFileValidate,
 } from './signaling.validate';
-import { ConnectResult, ConnectRoomDto, UploadFileResult } from '@app/room/commands/dto';
+import { CheckUploadFileResult, ConnectResult, ConnectRoomDto, UploadFileResult } from '@app/room/commands/dto';
 import { CHANNEL_NAMESPACE } from '@infra/channel/channel.constants';
 import { GetRoomMembersResult } from '@app/room/queries/dto';
 import { SIGNALING_WEBSOCKET } from '@infra/websocket/websocket.constants';
@@ -508,6 +510,32 @@ export class SignalingWebsocketGateway
       throw new WsException({ message: err.message ?? '에러 발생', status: err.status ?? 500 });      
     };
   };
+  
+  // 파일 전송을 확인할때 사용한다.
+  @SubscribeMessage(WEBSOCKET_SIGNALING_EVENT_NAME.FILE_CHECK)
+  async checkFileUploadGateway(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() validate: CheckFileValidate
+  ) : Promise<CheckUploadFileResult> {
+    try {
+      const result = await this.signalingService.checkFileUpload(client, validate);
+
+      // 모든 방에 정보를 알려야 한다. 
+      const roomMessage : MessageResultProps = { ...result, message : undefined, type : "file" };
+      const room_id: string = client.data.room_id;
+      const namespace: string = `${CHANNEL_NAMESPACE.SIGNALING}:${room_id}`;
+      client.to(namespace).emit(WEBSOCKET_SIGNALING_CLIENT_EVENT_NAME.SEND_MESSAGE, roomMessage); // 방에 파일을 전달한다. 
+
+      return result;
+    } catch (err) {
+      this.logger.error(err);
+      throw new WsException({ message: err.message ?? '에러 발생', status: err.status ?? 500 });         
+    };
+  };
+
+  // 파일을 다운 받을때 사용하는 로직
+
+  // 메시지를 보낼때 사용하는 로직 
   
 
 }

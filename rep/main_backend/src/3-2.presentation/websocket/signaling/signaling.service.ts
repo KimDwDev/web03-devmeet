@@ -3,6 +3,8 @@ import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import * as cookie from 'cookie';
 import {
+  CheckUploadFileDto,
+  CheckUploadFileResult,
   ConnectResult,
   ConnectRoomDto,
   DisconnectRoomDto,
@@ -11,6 +13,7 @@ import {
   UploadFileResult,
 } from '@app/room/commands/dto';
 import {
+  CheckUploadFileUsecase,
   ConnectRoomUsecase,
   DisconnectRoomUsecase,
   OpenToolUsecase,
@@ -18,6 +21,7 @@ import {
 } from '@app/room/commands/usecase';
 import { v7 as uuidV7 } from 'uuid';
 import {
+  CheckFileValidate,
   DtlsHandshakeValidate,
   OnConsumesValidate,
   OnConsumeValidate,
@@ -70,6 +74,7 @@ export class SignalingWebsocketService {
     private readonly connectToolUsecase: ConnectToolUsecase<any>,
     private readonly disconnectToolUsecase: DisconnectToolUsecase<any>,
     private readonly uploadFileUsecase : UploadFileUsecase<any, any>,
+    private readonly checkFileUsecase : CheckUploadFileUsecase<any, any>,
     private readonly sfuServer: SfuService,
   ) {}
 
@@ -393,5 +398,15 @@ export class SignalingWebsocketService {
       ...payload, room_id, ...validate
     };
     return this.uploadFileUsecase.execute(dto);
+  };
+
+  // 파일 업로드를 확인하겠다는 뜻
+  async checkFileUpload(client : Socket, validate : CheckFileValidate) : Promise<CheckUploadFileResult> {
+    const room_id: string = client.data.room_id;
+    const payload: SocketPayload = client.data.user;
+    const dto : CheckUploadFileDto = {
+      ...payload, room_id, ...validate
+    };
+    return this.checkFileUsecase.execute(dto);
   };
 }
