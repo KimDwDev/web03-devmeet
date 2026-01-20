@@ -19,6 +19,7 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.26",
     "konva": "^10.0.12",
+    "mediasoup-client": "^3.18.3",
     "monaco-editor": "^0.55.1",
     "next": "16.0.10",
     "react": "19.2.1",
@@ -59,5 +60,10 @@
     "cz-customizable": {
       "config": "./cz-config.js"
     }
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "mediasoup"
+    ]
   }
 }
