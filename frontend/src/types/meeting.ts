@@ -49,7 +49,7 @@ interface MemberProviderInfo {
   is_paused: boolean;
 }
 
-export interface MeetingMember {
+export interface MeetingMemberInfo {
   user_id: string;
   nickname: string;
   profile_path: string | null;
@@ -63,5 +63,5 @@ export interface FetchRoomMembersResponse {
     main: ProviderInfo | ProviderToolInfo | null;
     sub: ProviderInfo | ProviderToolInfo | null;
   } | null;
-  members: MeetingMember[];
+  members: MeetingMemberInfo[];
 }

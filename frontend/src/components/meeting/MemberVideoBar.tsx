@@ -12,9 +12,9 @@ export default function MemberVideoBar() {
   const { members } = useMeetingStore();
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages =
-    members.length <= 5
+    Object.values(members).length <= 5
       ? 1
-      : 1 + Math.ceil((members.length - 5) / MEMBERS_PER_PAGE);
+      : 1 + Math.ceil((Object.values(members).length - 5) / MEMBERS_PER_PAGE);
   const [hasPrevPage, hasNextPage] = [
     currentPage > 1,
     currentPage < totalPages,
@@ -46,9 +46,11 @@ export default function MemberVideoBar() {
       <section className="flex gap-4">
         {/* 이후 백엔드 연동 시 pagination으로 수정, 수동 slice는 불필요 */}
         {start === 0 && <MyVideo />}
-        {members.slice(start, end).map((member) => (
-          <SmVideo key={member.user_id} {...member} />
-        ))}
+        {Object.values(members)
+          .slice(start, end)
+          .map((member) => (
+            <SmVideo key={member.user_id} {...member} />
+          ))}
       </section>
 
       <button

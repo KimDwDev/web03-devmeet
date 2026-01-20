@@ -1,4 +1,4 @@
-import { MediaState, MeetingMember } from '@/types/meeting';
+import { MediaState, MeetingMemberInfo } from '@/types/meeting';
 import { create } from 'zustand';
 
 const INITIAL_MEDIA_STATE: MediaState = {
@@ -11,8 +11,7 @@ const INITIAL_MEDIA_STATE: MediaState = {
 
 interface MeetingState {
   media: MediaState;
-
-  members: MeetingMember[];
+  members: Record<string, MeetingMemberInfo>;
   hasNewChat: boolean;
 
   isInfoOpen: boolean;
@@ -24,8 +23,9 @@ interface MeetingState {
 
 interface MeetingActions {
   setMedia: (media: Partial<MediaState>) => void;
-  setMembers: (members: MeetingMember[]) => void;
-  setMember: (member: MeetingMember) => void;
+  setMembers: (members: MeetingMemberInfo[]) => void;
+  addMember: (member: MeetingMemberInfo) => void;
+  removeMember: (userId: string) => void;
   setHasNewChat: (state: boolean) => void;
 
   setIsOpen: (
@@ -43,8 +43,7 @@ interface MeetingActions {
 
 export const useMeetingStore = create<MeetingState & MeetingActions>((set) => ({
   media: INITIAL_MEDIA_STATE,
-
-  members: [],
+  members: {},
   hasNewChat: false,
 
   isInfoOpen: false,
@@ -54,9 +53,26 @@ export const useMeetingStore = create<MeetingState & MeetingActions>((set) => ({
   isCodeEditorOpen: false,
 
   setMedia: (media) => set((prev) => ({ media: { ...prev.media, ...media } })),
-  setMembers: (members) => set({ members }),
-  setMember: (member) =>
-    set((prev) => ({ members: [...prev.members, member] })),
+  setMembers: (members) =>
+    set({
+      members: members.reduce(
+        (acc, cur) => ({ ...acc, [cur.user_id]: cur }),
+        {},
+      ),
+    }),
+  addMember: (member) =>
+    set((state) => ({
+      members: {
+        ...state.members,
+        [member.user_id]: member,
+      },
+    })),
+  removeMember: (userId) =>
+    set((state) => {
+      const nextMembers = { ...state.members };
+      delete nextMembers[userId];
+      return { members: nextMembers };
+    }),
   setHasNewChat: (state) => set({ hasNewChat: state }),
 
   setIsOpen: (type, state) => set({ [type]: state }),

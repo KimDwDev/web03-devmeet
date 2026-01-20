@@ -1,6 +1,6 @@
 import { MoreHoriIcon } from '@/assets/icons/common';
 import { MicOffIcon } from '@/assets/icons/meeting';
-import { MeetingMember } from '@/types/meeting';
+import { MeetingMemberInfo } from '@/types/meeting';
 import Image from 'next/image';
 import { useState } from 'react';
 
@@ -10,7 +10,7 @@ export default function SmVideo({
   profile_path,
   cam,
   mic,
-}: MeetingMember) {
+}: MeetingMemberInfo) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const onMoreClick = () => setIsDropdownOpen((prev) => !prev);
 
