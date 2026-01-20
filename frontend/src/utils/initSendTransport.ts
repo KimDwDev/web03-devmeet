@@ -26,11 +26,7 @@ export const initSendTransport = (socket: Socket, sendTransport: Transport) => {
         // mediasoup 자체 함수
         callback({ id });
       } catch (e) {
-        if (e instanceof Error) {
-          errback(e);
-        } else {
-          errback(new Error(String(e)));
-        }
+        errback(e instanceof Error ? e : new Error(String(e)));
       }
     },
   );

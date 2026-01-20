@@ -93,13 +93,22 @@ export default function MeetingPage() {
         setIsPasswordModalOpen(false);
         setIsJoined(true);
       } else {
-        setJoinError({ title: '입장 실패', message: 'response로 수정 필요' });
+        setJoinError({
+          title: '입장 실패',
+          message: '연결에 실패했습니다. 다시 시도해주세요.',
+        });
       }
     };
     socket.on('room:joined', onRoomJoined);
 
+    const onException = async ({ message }: { message: string }) => {
+      setJoinError({ title: '입장 실패', message });
+    };
+    socket.on('exception', onException);
+
     return () => {
       socket.off('room:joined', onRoomJoined);
+      socket.off('exception', onException);
     };
   }, [socket]);
 
@@ -138,7 +147,7 @@ export default function MeetingPage() {
               }}
               isLightMode
             >
-              비밀번호를 확인해주세요
+              {joinError.message}
             </Modal>
           )}
         </>

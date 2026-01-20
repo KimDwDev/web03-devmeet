@@ -33,7 +33,7 @@ export async function initMediasoupTransports(socket: Socket) {
     throw new Error('NEGOTIATE_ICE(recv) failed: missing transportOptions');
   }
   // 서버 Response와 Mediasoup의 타입 일치
-  const { transportId: recvId, ...recvRest } = sendRes.transportOptions;
+  const { transportId: recvId, ...recvRest } = recvRes.transportOptions;
   const recvTransport = device.createRecvTransport({ id: recvId, ...recvRest });
 
   // 5) DTLS_HANDSHAKE 연결 핸들러 공통 함수
@@ -47,11 +47,7 @@ export async function initMediasoupTransports(socket: Socket) {
         });
         callback();
       } catch (e) {
-        if (e instanceof Error) {
-          errback(e);
-        } else {
-          errback(new Error(String(e)));
-        }
+        errback(e instanceof Error ? e : new Error(String(e)));
       }
     });
   };
