@@ -7,11 +7,17 @@ import { useMeetingStore } from '@/store/useMeetingStore';
 import { useState } from 'react';
 
 export default function MemberVideoBar() {
+  const MEMBERS_PER_PAGE = 6;
+
   const { members } = useMeetingStore();
   const [currentPage, setCurrentPage] = useState(1);
+  const totalPages =
+    members.length <= 5
+      ? 1
+      : 1 + Math.ceil((members.length - 5) / MEMBERS_PER_PAGE);
   const [hasPrevPage, hasNextPage] = [
     currentPage > 1,
-    currentPage < members.length,
+    currentPage < totalPages,
   ];
 
   const onPrevClick = () => {
@@ -24,9 +30,9 @@ export default function MemberVideoBar() {
     setCurrentPage((prev) => prev + 1);
   };
 
-  const MEMBERS_PER_PAGE = 6;
-  const start = Math.max((currentPage - 1) * MEMBERS_PER_PAGE, 1);
-  const end = (currentPage - 1) * MEMBERS_PER_PAGE + MEMBERS_PER_PAGE;
+  const isFirstPage = currentPage === 1;
+  const start = isFirstPage ? 0 : (currentPage - 2) * MEMBERS_PER_PAGE + 5;
+  const end = isFirstPage ? 5 : start + MEMBERS_PER_PAGE;
 
   return (
     <header className="flex w-full justify-between px-4 py-2">
@@ -39,7 +45,7 @@ export default function MemberVideoBar() {
 
       <section className="flex gap-4">
         {/* 이후 백엔드 연동 시 pagination으로 수정, 수동 slice는 불필요 */}
-        {start === 1 && <MyVideo />}
+        {start === 0 && <MyVideo />}
         {members.slice(start, end).map((member) => (
           <SmVideo key={member.user_id} {...member} />
         ))}

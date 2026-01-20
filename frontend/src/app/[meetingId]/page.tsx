@@ -107,8 +107,6 @@ export default function MeetingPage() {
     return <div>잘못된 회의 접근입니다. 다시 시도해주세요.</div>;
   }
 
-  console.log(members);
-
   return (
     <main className="min-h-screen">
       {!isJoined ? (
