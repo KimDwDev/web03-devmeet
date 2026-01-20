@@ -70,6 +70,7 @@ import { SelectRoomIdFromMysql } from '@infra/db/mysql/room/room.inbound';
       },
       inject: [SelectRoomIdFromMysql, SelectRoomInfoDataFromRedis],
     },
+
   ],
 })
 export class RoomModule {}

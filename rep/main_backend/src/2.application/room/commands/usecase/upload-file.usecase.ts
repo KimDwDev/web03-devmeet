@@ -38,7 +38,7 @@ export class UploadFileUsecase<T, ST> {
     this.insertFileInfoToCache = insertFileInfoToCache;
   }
 
-  async execute(dto : UploadFileDto) {
+  async execute(dto : UploadFileDto) : Promise<UploadFileResult> {
 
     // 1. 이 유저가 방에 있는고 기존에 다운받던 파일이 있는가 확인 ( upload 중이면서 모든 정보가 같은 경우 그에 대한 파일을 제공해준다. )
     const prevFileInfo : FindUploadFileInfo | undefined = await this.checkUserAndSelectPrevFileInfoFromCache.select({ 

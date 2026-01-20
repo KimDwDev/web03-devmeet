@@ -2,12 +2,14 @@ import {
   ConnectRoomUsecase,
   DisconnectRoomUsecase,
   OpenToolUsecase,
+  UploadFileUsecase,
 } from '@app/room/commands/usecase';
 import { Module } from '@nestjs/common';
 import { SelectRoomDataFromMysql } from '@infra/db/mysql/room/room.inbound';
-import { CompareRoomArgonHash, MakeIssueToolTicket } from './signaling.interface';
+import { CompareRoomArgonHash, MakeFileIdGenerator, MakeIssueToolTicket } from './signaling.interface';
 import {
   CheckRoomUserFromRedis,
+  CheckUserAndSelectPrevFileInfoFromRedis,
   CheckUserPayloadFromRedis,
   SelectRoomInfoFromRedis,
   SelectRoomMemberInfosFromRedis,
@@ -20,6 +22,7 @@ import {
 import {
   DeleteMainProducerFromRedis,
   DeleteRoomDatasToRedis,
+  InsertFileInfoToRedis,
   InsertRoomDatasToRedis,
   InsertToolTicketToRedis,
 } from '@infra/cache/redis/room/room.outbound';
@@ -36,6 +39,8 @@ import { ConfigService } from '@nestjs/config';
 import { TOOL_LEFT_TOPIC_NAME } from './signaling.validate';
 import { EVENT_STREAM_NAME } from '@infra/event-stream/event-stream.constants';
 import { KafkaService } from '@infra/event-stream/kafka/event-stream-service';
+import { GetCompleteMultipartTagsFromAwsS3, GetMultipartUploadIdFromS3Bucket, GetPresignedUrlFromS3Bucket } from '@infra/disk/s3/adapters/disk.inbound';
+
 
 @Module({
   imports: [AuthWebsocketModule, SfuModule],
@@ -45,6 +50,8 @@ import { KafkaService } from '@infra/event-stream/kafka/event-stream-service';
     SignalingWebsocketGateway,
     SignalingWebsocketService,
     CompareRoomArgonHash,
+    MakeFileIdGenerator,
+
     {
       provide: TOOL_LEFT_TOPIC_NAME,
       useValue: EVENT_STREAM_NAME.TOOL_LEFT,
@@ -167,6 +174,31 @@ import { KafkaService } from '@infra/event-stream/kafka/event-stream-service';
         DeleteMainProducerFromRedis,
       ],
     },
+
+    // 파일을 업로드하기전에 url을 받는 로직
+    {
+      provide : UploadFileUsecase,
+      useFactory : (
+        checkUserAndSelectPrevFileInfoFromCache : CheckUserAndSelectPrevFileInfoFromRedis,
+        makeFileId : MakeFileIdGenerator,
+        getUploadUrlFromDisk : GetPresignedUrlFromS3Bucket,
+        getCompleteUploadUrlFromDisk : GetCompleteMultipartTagsFromAwsS3,
+        getMultiVerGroupIdFromDisk : GetMultipartUploadIdFromS3Bucket, 
+        insertFileInfoToCache : InsertFileInfoToRedis
+      ) => {
+        return new UploadFileUsecase({
+          checkUserAndSelectPrevFileInfoFromCache, makeFileId, getUploadUrlFromDisk, getCompleteUploadUrlFromDisk, getMultiVerGroupIdFromDisk, insertFileInfoToCache
+        })
+      },
+      inject : [
+        CheckUserAndSelectPrevFileInfoFromRedis,
+        MakeFileIdGenerator,
+        GetPresignedUrlFromS3Bucket,
+        GetCompleteMultipartTagsFromAwsS3,
+        GetMultipartUploadIdFromS3Bucket,
+        InsertFileInfoToRedis
+      ]
+    }
   ],
 })
 export class SignalingWebsocketModule {}

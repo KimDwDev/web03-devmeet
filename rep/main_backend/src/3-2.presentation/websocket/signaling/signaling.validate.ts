@@ -3,11 +3,15 @@ import {
   ArrayMinSize,
   IsArray,
   IsIn,
+  IsInt,
   IsNotEmpty,
   IsObject,
   IsOptional,
   IsString,
+  Matches,
+  Max,
   MaxLength,
+  Min,
   MinLength,
   ValidateNested,
 } from 'class-validator';
@@ -181,7 +185,32 @@ export class PauseProducerValidate {
   @IsString()
   producer_id: string;
 
+  @IsNotEmpty()
   @IsString()
   @IsIn(['audio', 'video'])
   kind: 'audio' | 'video';
 }
+
+export class UploadFileValidate {
+  
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(255) 
+  @Matches(/^[^\\\/\0]+$/)
+  filename: string;
+  
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(300)
+  @Matches(/^[\w.+-]+\/[\w.+-]+$/)
+  mime_type: string;
+
+  @IsNotEmpty()
+  @IsIn(["image", "video", "audio", "text", "binary"])
+  category: "image" | "video" | "audio" | "text" | "binary";
+  
+  @IsInt()
+  @Min(1)
+  @Max(100 * 1024 * 1024)
+  size: number;
+};

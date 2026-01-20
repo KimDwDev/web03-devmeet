@@ -7,11 +7,14 @@ import {
   ConnectRoomDto,
   DisconnectRoomDto,
   OpenToolDto,
+  UploadFileDto,
+  UploadFileResult,
 } from '@app/room/commands/dto';
 import {
   ConnectRoomUsecase,
   DisconnectRoomUsecase,
   OpenToolUsecase,
+  UploadFileUsecase,
 } from '@app/room/commands/usecase';
 import { v7 as uuidV7 } from 'uuid';
 import {
@@ -25,6 +28,7 @@ import {
   ResumeConsumersValidate,
   ResumeConsumerValidate,
   SocketPayload,
+  UploadFileValidate,
 } from './signaling.validate';
 import { PayloadRes } from '@app/auth/queries/dto';
 import { SfuService } from '@present/webrtc/sfu/sfu.service';
@@ -65,6 +69,7 @@ export class SignalingWebsocketService {
     private readonly openToolUsecase: OpenToolUsecase<any>,
     private readonly connectToolUsecase: ConnectToolUsecase<any>,
     private readonly disconnectToolUsecase: DisconnectToolUsecase<any>,
+    private readonly uploadFileUsecase : UploadFileUsecase<any, any>,
     private readonly sfuServer: SfuService,
   ) {}
 
@@ -378,5 +383,15 @@ export class SignalingWebsocketService {
       user_id: payload.user_id,
     };
     return this.sfuServer.stopScreen(dto);
-  }
+  };
+
+  // 파일 업로드를 위해서 정보를 가져오겠다는 뜻
+  async uploadFileInfo(client: Socket, validate: UploadFileValidate) : Promise<UploadFileResult> {
+    const room_id: string = client.data.room_id;
+    const payload: SocketPayload = client.data.user;
+    const dto : UploadFileDto = {
+      ...payload, room_id, ...validate
+    };
+    return this.uploadFileUsecase.execute(dto);
+  };
 }

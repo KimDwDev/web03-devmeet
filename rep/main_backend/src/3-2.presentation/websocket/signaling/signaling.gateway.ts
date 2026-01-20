@@ -38,8 +38,9 @@ import {
   ResumeConsumersValidate,
   ResumeConsumerValidate,
   SocketPayload,
+  UploadFileValidate,
 } from './signaling.validate';
-import { ConnectResult, ConnectRoomDto } from '@app/room/commands/dto';
+import { ConnectResult, ConnectRoomDto, UploadFileResult } from '@app/room/commands/dto';
 import { CHANNEL_NAMESPACE } from '@infra/channel/channel.constants';
 import { GetRoomMembersResult } from '@app/room/queries/dto';
 import { SIGNALING_WEBSOCKET } from '@infra/websocket/websocket.constants';
@@ -492,7 +493,21 @@ export class SignalingWebsocketGateway
     }
   }
 
-  // 메시지 or 파일 전송 기능 구현 
+  // 파일 전송 기능 ( 전송할 url 전달 )
+  @SubscribeMessage(WEBSOCKET_SIGNALING_EVENT_NAME.UPLOAD_FILE)
+  async uploadFileGateway(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() validate: UploadFileValidate
+  ) : Promise<UploadFileResult> {
+    try {
+      const result = await this.signalingService.uploadFileInfo(client, validate);
+
+      return result;
+    } catch (err) {
+      this.logger.error(err);
+      throw new WsException({ message: err.message ?? '에러 발생', status: err.status ?? 500 });      
+    };
+  };
   
 
 }
