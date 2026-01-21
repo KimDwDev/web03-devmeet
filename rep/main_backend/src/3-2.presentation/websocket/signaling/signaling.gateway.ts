@@ -151,14 +151,14 @@ export class SignalingWebsocketGateway
       ip: payload.ip,
     };
     try {
-      // 여기서는 에러가 발생하면 바로 연결을 끊어야 한다.
       const result: ConnectResult = await this.signalingService.joinRoomService(dto);
 
       // 방 채널에 가입을 한다.
       const namespace: string = `${CHANNEL_NAMESPACE.SIGNALING}:${result.room_id}`;
       client.join(namespace);
-
+      
       // client에 room_id를 저장한다.
+      if ( !payload.nickname ) client.data.user.nickname = inputs.nickname
       client.data.room_id = result.room_id;
 
       // 일단 기본 세팅으로 응답
