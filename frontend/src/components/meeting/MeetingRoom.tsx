@@ -11,6 +11,7 @@ import { useCodeEditorSocket } from '@/hooks/useCodeEditorSocket';
 import { useMeetingSocket } from '@/hooks/useMeetingSocket';
 import { useProduce } from '@/hooks/useProduce';
 import { useMeetingStore } from '@/store/useMeetingStore';
+import { useToolSocketStore } from '@/store/useToolSocketStore';
 import { useEffect } from 'react';
 
 export default function MeetingRoom({ meetingId }: { meetingId: string }) {
@@ -21,11 +22,19 @@ export default function MeetingRoom({ meetingId }: { meetingId: string }) {
     isChatOpen,
     isWorkspaceOpen,
     isCodeEditorOpen,
+    setIsOpen,
   } = useMeetingStore();
   const { startAudioProduce, startVideoProduce, isReady } = useProduce();
 
   const { joinCodeEditor } = useCodeEditorSocket();
   const { socket: mainSocket } = useMeetingSocket();
+  const { codeEditorSocket } = useToolSocketStore();
+
+  useEffect(() => {
+    if (!codeEditorSocket) {
+      setIsOpen('isCodeEditorOpen', false);
+    }
+  }, [codeEditorSocket]);
 
   // 초기 입장 시 로비에서 설정한 미디어 Produce
   useEffect(() => {

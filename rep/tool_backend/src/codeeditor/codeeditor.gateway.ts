@@ -19,8 +19,8 @@ import { CODEEDITOR_WEBSOCKET } from '@/infra/websocket/websocket.constants';
 import { CodeeditorWebsocket } from '@/infra/websocket/codeeditor/codeeditor.service';
 
 @WebSocketGateway({
-  namespace: process.env.NODE_BACKEND_WEBSOCKET_PREFIX,
-  path: process.env.NODE_BACKEND_WEBSOCKET_CODEEDITOR, // http 핸드세이킹이 있을때 붙게 되는
+  namespace: process.env.NODE_BACKEND_WEBSOCKET_CODEEDITOR,
+  path: process.env.NODE_BACKEND_WEBSOCKET_PREFIX,
   cors: {
     origin: process.env.NODE_ALLOWED_ORIGIN?.split(',').map((origin) => origin.trim()),
     credentials: process.env.NODE_ALLOWED_CREDENTIALS === 'true',
