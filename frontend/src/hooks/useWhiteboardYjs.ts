@@ -5,6 +5,7 @@ import { Socket } from 'socket.io-client';
 import { useWhiteboardSharedStore } from '@/store/useWhiteboardSharedStore';
 import { useWhiteboardAwarenessStore } from '@/store/useWhiteboardAwarenessStore';
 import type { WhiteboardItem } from '@/types/whiteboard';
+import type { YMapValue } from '@/types/whiteboard/yjs';
 
 export const useWhiteboardYjs = (socket: Socket | null) => {
   const undoManagerRef = useRef<Y.UndoManager | null>(null);
@@ -28,7 +29,7 @@ export const useWhiteboardYjs = (socket: Socket | null) => {
 
     // Yjs 문서 생성
     const ydoc = new Y.Doc();
-    const yItems = ydoc.getArray<WhiteboardItem>('items');
+    const yItems = ydoc.getArray<Y.Map<YMapValue>>('items');
     const awareness = new awarenessProtocol.Awareness(ydoc);
 
     // 고유 origin 생성 (UndoManager 추적용)
@@ -105,9 +106,15 @@ export const useWhiteboardYjs = (socket: Socket | null) => {
       socket.emit('yjs-update', fullUpdate);
     });
 
+    // Y.Map → WhiteboardItem 변환
+    const yMapToItem = (yMap: Y.Map<YMapValue>): WhiteboardItem => {
+      return yMap.toJSON() as WhiteboardItem;
+    };
+
     // Yjs Array → SharedStore
     const handleYjsChange = () => {
-      const newItems = yItems.toArray();
+      const yMaps = yItems.toArray();
+      const newItems = yMaps.map(yMapToItem);
 
       // 중복 ID 감지
       const uniqueIds = new Set<string>();
@@ -140,7 +147,9 @@ export const useWhiteboardYjs = (socket: Socket | null) => {
       setItems(uniqueItems);
     };
 
-    yItems.observe(handleYjsChange);
+    // Y.Array 내부 map 변경 감지
+    yItems.observeDeep(handleYjsChange);
+
     handleYjsChange();
 
     // Awareness 변경 감지
@@ -169,7 +178,7 @@ export const useWhiteboardYjs = (socket: Socket | null) => {
       useWhiteboardSharedStore
         .getState()
         .setYjsInstances(null, null, null, null);
-      yItems.unobserve(handleYjsChange);
+      yItems.unobserveDeep(handleYjsChange);
       socket.off('yjs-update');
       socket.off('awareness-update');
       socket.off('request-sync');

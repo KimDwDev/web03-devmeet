@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import * as Y from 'yjs';
 
 import { useWhiteboardSharedStore } from '@/store/useWhiteboardSharedStore';
 import {
@@ -17,6 +18,7 @@ import type {
   VideoItem,
   YoutubeItem,
 } from '@/types/whiteboard';
+import type { YMapValue } from '@/types/whiteboard/yjs';
 
 import { extractYoutubeId } from '@/utils/youtube';
 
@@ -25,6 +27,17 @@ export function useItemActions() {
   // Store에서 Yjs 인스턴스 가져옴
   const yItems = useWhiteboardSharedStore((state) => state.yItems);
   const yjsOrigin = useWhiteboardSharedStore((state) => state.yjsOrigin);
+
+  // WhiteboardItem → Y.Map 변환(WhiteboardItem 그대로 사용 x )
+  const itemToYMap = (item: WhiteboardItem): Y.Map<YMapValue> => {
+    const yMap = new Y.Map<YMapValue>();
+    Object.entries(item).forEach(([key, value]) => {
+      if (value !== undefined) {
+        yMap.set(key, value as YMapValue);
+      }
+    });
+    return yMap;
+  };
 
   // 텍스트 추가
   const addText = (payload?: Partial<Omit<TextItem, 'id' | 'type'>>) => {
@@ -48,7 +61,7 @@ export function useItemActions() {
     };
 
     yItems.doc.transact(() => {
-      yItems.push([newText]);
+      yItems.push([itemToYMap(newText)]);
     }, yjsOrigin);
     return id;
   };
@@ -75,7 +88,7 @@ export function useItemActions() {
     };
 
     yItems.doc.transact(() => {
-      yItems.push([newArrow]);
+      yItems.push([itemToYMap(newArrow)]);
     }, yjsOrigin);
   };
 
@@ -99,7 +112,7 @@ export function useItemActions() {
     };
 
     yItems.doc.transact(() => {
-      yItems.push([newLine]);
+      yItems.push([itemToYMap(newLine)]);
     }, yjsOrigin);
   };
 
@@ -126,7 +139,7 @@ export function useItemActions() {
     };
 
     yItems.doc.transact(() => {
-      yItems.push([newShape]);
+      yItems.push([itemToYMap(newShape)]);
     }, yjsOrigin);
   };
 
@@ -157,7 +170,7 @@ export function useItemActions() {
     };
 
     yItems.doc.transact(() => {
-      yItems.push([newImage]);
+      yItems.push([itemToYMap(newImage)]);
     }, yjsOrigin);
   };
 
@@ -188,7 +201,7 @@ export function useItemActions() {
     };
 
     yItems.doc.transact(() => {
-      yItems.push([newVideo]);
+      yItems.push([itemToYMap(newVideo)]);
     }, yjsOrigin);
   };
 
@@ -224,7 +237,7 @@ export function useItemActions() {
     };
 
     yItems.doc.transact(() => {
-      yItems.push([newYoutube]);
+      yItems.push([itemToYMap(newYoutube)]);
     }, yjsOrigin);
   };
 
@@ -232,23 +245,26 @@ export function useItemActions() {
   const addDrawing = (drawing: WhiteboardItem) => {
     if (!yItems || !yItems.doc) return;
     yItems.doc.transact(() => {
-      yItems.push([drawing]);
+      yItems.push([itemToYMap(drawing)]);
     }, yjsOrigin);
   };
 
-  // 아이템 업데이트
+  // 아이템 업데이트 (Y.Map 속성 직접 수정 - Undo 스택 유지)
   const updateItem = (id: string, changes: Partial<WhiteboardItem>) => {
     if (!yItems || !yItems.doc) return;
 
-    const items = yItems.toArray();
-    const index = items.findIndex((item) => item.id === id);
+    const yMaps = yItems.toArray();
+    const index = yMaps.findIndex((yMap) => yMap.get('id') === id);
     if (index === -1) return;
 
-    const updatedItem = { ...items[index], ...changes } as WhiteboardItem;
+    const yMap = yMaps[index];
 
     yItems.doc.transact(() => {
-      yItems.delete(index, 1);
-      yItems.insert(index, [updatedItem]);
+      Object.entries(changes).forEach(([key, value]) => {
+        if (value !== undefined) {
+          yMap.set(key, value);
+        }
+      });
     }, yjsOrigin);
   };
 
@@ -256,8 +272,8 @@ export function useItemActions() {
   const deleteItem = (id: string) => {
     if (!yItems || !yItems.doc) return;
 
-    const items = yItems.toArray();
-    const index = items.findIndex((item) => item.id === id);
+    const yMaps = yItems.toArray();
+    const index = yMaps.findIndex((yMap) => yMap.get('id') === id);
     if (index === -1) return;
 
     yItems.doc.transact(() => {
@@ -269,15 +285,15 @@ export function useItemActions() {
   const bringToFront = (id: string) => {
     if (!yItems || !yItems.doc) return;
 
-    const items = yItems.toArray();
-    const index = items.findIndex((item) => item.id === id);
-    if (index === -1 || index === items.length - 1) return;
+    const yMaps = yItems.toArray();
+    const index = yMaps.findIndex((yMap) => yMap.get('id') === id);
+    if (index === -1 || index === yMaps.length - 1) return;
 
-    const item = items[index];
+    const yMap = yMaps[index];
 
     yItems.doc.transact(() => {
       yItems.delete(index, 1);
-      yItems.push([item]);
+      yItems.push([yMap]);
     }, yjsOrigin);
   };
 
@@ -285,15 +301,15 @@ export function useItemActions() {
   const sendToBack = (id: string) => {
     if (!yItems || !yItems.doc) return;
 
-    const items = yItems.toArray();
-    const index = items.findIndex((item) => item.id === id);
+    const yMaps = yItems.toArray();
+    const index = yMaps.findIndex((yMap) => yMap.get('id') === id);
     if (index === -1 || index === 0) return;
 
-    const item = items[index];
+    const yMap = yMaps[index];
 
     yItems.doc.transact(() => {
       yItems.delete(index, 1);
-      yItems.insert(0, [item]);
+      yItems.insert(0, [yMap]);
     }, yjsOrigin);
   };
 
@@ -301,15 +317,15 @@ export function useItemActions() {
   const bringForward = (id: string) => {
     if (!yItems || !yItems.doc) return;
 
-    const items = yItems.toArray();
-    const currentIndex = items.findIndex((item) => item.id === id);
-    if (currentIndex === -1 || currentIndex === items.length - 1) return;
+    const yMaps = yItems.toArray();
+    const currentIndex = yMaps.findIndex((yMap) => yMap.get('id') === id);
+    if (currentIndex === -1 || currentIndex === yMaps.length - 1) return;
 
-    const item = items[currentIndex];
+    const yMap = yMaps[currentIndex];
 
     yItems.doc.transact(() => {
       yItems.delete(currentIndex, 1);
-      yItems.insert(currentIndex + 1, [item]);
+      yItems.insert(currentIndex + 1, [yMap]);
     }, yjsOrigin);
   };
 
@@ -317,15 +333,15 @@ export function useItemActions() {
   const sendBackward = (id: string) => {
     if (!yItems || !yItems.doc) return;
 
-    const items = yItems.toArray();
-    const currentIndex = items.findIndex((item) => item.id === id);
+    const yMaps = yItems.toArray();
+    const currentIndex = yMaps.findIndex((yMap) => yMap.get('id') === id);
     if (currentIndex <= 0) return;
 
-    const item = items[currentIndex];
+    const yMap = yMaps[currentIndex];
 
     yItems.doc.transact(() => {
       yItems.delete(currentIndex, 1);
-      yItems.insert(currentIndex - 1, [item]);
+      yItems.insert(currentIndex - 1, [yMap]);
     }, yjsOrigin);
   };
 

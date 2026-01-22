@@ -8,12 +8,13 @@ import {
 } from '@/components/whiteboard/constants/canvas';
 
 import type { WhiteboardItem } from '@/types/whiteboard';
+import type { YMapValue } from '@/types/whiteboard/yjs';
 
 interface SharedState {
   items: WhiteboardItem[];
   canvasWidth: number;
   canvasHeight: number;
-  yItems: Y.Array<WhiteboardItem> | null;
+  yItems: Y.Array<Y.Map<YMapValue>> | null;
   awareness: awarenessProtocol.Awareness | null;
   undoManager: Y.UndoManager | null;
   yjsOrigin: string | null;
@@ -23,7 +24,7 @@ interface SharedActions {
   setItems: (items: WhiteboardItem[]) => void;
   setCanvasSize: (width: number, height: number) => void;
   setYjsInstances: (
-    yItems: Y.Array<WhiteboardItem> | null,
+    yItems: Y.Array<Y.Map<YMapValue>> | null,
     awareness: awarenessProtocol.Awareness | null,
     undoManager?: Y.UndoManager | null,
     yjsOrigin?: string | null,
