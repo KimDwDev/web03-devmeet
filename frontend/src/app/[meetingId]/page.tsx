@@ -6,7 +6,6 @@ import MeetingLobby from '@/components/meeting/MeetingLobby';
 import MeetingRoom from '@/components/meeting/MeetingRoom';
 import { useMeetingSocket } from '@/hooks/useMeetingSocket';
 import { useMeetingSocketStore } from '@/store/useMeetingSocketStore';
-import { useMeetingStore } from '@/store/useMeetingStore';
 import { useUserStore } from '@/store/useUserStore';
 import { initMediasoupTransports } from '@/utils/initMediasoupTransports';
 import { useParams } from 'next/navigation';
@@ -19,8 +18,7 @@ interface JoinError {
 
 export default function MeetingPage() {
   const { socket } = useMeetingSocket();
-  const { setMediasoupTransports, producers } = useMeetingSocketStore();
-  const { members } = useMeetingStore();
+  const { setMediasoupTransports } = useMeetingSocketStore();
   const { isLoggedIn, nickname, setTempUser } = useUserStore();
 
   // 이후 실제 회의 정보 API 호출로 수정 필요

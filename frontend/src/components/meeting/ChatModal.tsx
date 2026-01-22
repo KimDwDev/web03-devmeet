@@ -19,7 +19,7 @@ export default function ChatModal() {
     e.preventDefault();
     if (value.trim().length === 0) return;
 
-    console.log(value);
+    // console.log(value);
     setValue('');
   };
 
