@@ -36,9 +36,12 @@ export const useWhiteboardYjs = (socket: Socket | null) => {
 
     // UndoManager 생성
     const undoManager = new Y.UndoManager(yItems, {
-      trackedOrigins: new Set([yjsOrigin, null]), // yjsOrigin과 null(UndoManager 자신) 추적
+      trackedOrigins: new Set([yjsOrigin]), // 로컬 변경만 추적
       captureTimeout: 500, // 하나의 작업으로 묶을 시간(ms)
     });
+    // UndoManager 자신의 변경도 추적 (undo/redo 동기화용)
+    undoManager.trackedOrigins.add(undoManager);
+
     undoManagerRef.current = undoManager;
 
     // Store에 Yjs 인스턴스 저장
@@ -64,8 +67,12 @@ export const useWhiteboardYjs = (socket: Socket | null) => {
     ydoc.on(
       'update',
       (update: Uint8Array, origin: string | Y.UndoManager | null) => {
-        // 로컬 변경(yjsOrigin) 또는 UndoManager 변경이면 전송
-        if (origin === yjsOrigin || origin === undoManager) {
+        // 로컬 변경, UndoManager 변경, cleanup 모두 전송
+        if (
+          origin === yjsOrigin ||
+          origin === undoManager ||
+          origin === 'cleanup'
+        ) {
           socket.emit('yjs-update', update);
         }
       },
@@ -101,7 +108,36 @@ export const useWhiteboardYjs = (socket: Socket | null) => {
     // Yjs Array → SharedStore
     const handleYjsChange = () => {
       const newItems = yItems.toArray();
-      setItems(newItems);
+
+      // 중복 ID 감지
+      const uniqueIds = new Set<string>();
+      const indexesToDelete: number[] = [];
+
+      newItems.forEach((item, index) => {
+        if (uniqueIds.has(item.id)) {
+          indexesToDelete.push(index);
+        } else {
+          uniqueIds.add(item.id);
+        }
+      });
+
+      // 중복 데이터를 Yjs에서 삭제
+      if (indexesToDelete.length > 0) {
+        console.log(`[Yjs] 중복 아이템 ${indexesToDelete.length}개 제거`);
+        ydoc.transact(() => {
+          indexesToDelete.reverse().forEach((index) => {
+            yItems.delete(index, 1);
+          });
+        }, 'cleanup');
+      }
+
+      // UI 업데이트
+      const uniqueItems = newItems.filter(
+        (item, index, self) =>
+          self.findIndex((i) => i.id === item.id) === index,
+      );
+
+      setItems(uniqueItems);
     };
 
     yItems.observe(handleYjsChange);
