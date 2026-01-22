@@ -22,15 +22,15 @@ export default function RemoteCursor({ x, y, color, name }: RemoteCursorProps) {
   return (
     <div
       ref={cursorRef}
-      className="pointer-events-none absolute left-0 top-0 transition-transform duration-100 ease-out"
+      className="pointer-events-none absolute top-0 left-0 transition-transform duration-100 ease-out"
       style={{ willChange: 'transform', color }}
     >
       {/* 커서 아이콘 */}
       <CursorIcon width={16} height={16} />
-      
+
       {/* 사용자 이름 */}
       <div
-        className="ml-5 mt-1 whitespace-nowrap rounded px-2 py-1 text-xs text-white shadow-md"
+        className="mt-1 ml-5 rounded px-2 py-1 text-xs whitespace-nowrap text-white"
         style={{ backgroundColor: color }}
       >
         {name}

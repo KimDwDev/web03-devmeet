@@ -91,11 +91,11 @@ export const useWhiteboardYjs = (socket: Socket | null) => {
       .getState()
       .setAwarenessCallback(updateAwarenessSelection);
 
-    // 커서 업데이트 (스로틀링 50ms)
+    // 커서 업데이트 (스로틀링 30ms)
     let lastCursorUpdate = 0;
     const updateAwarenessCursor = (x: number, y: number) => {
       const now = Date.now();
-      if (now - lastCursorUpdate < 50) return;
+      if (now - lastCursorUpdate < 30) return;
       lastCursorUpdate = now;
 
       const currentState = awareness.getLocalState();
