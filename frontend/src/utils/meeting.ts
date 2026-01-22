@@ -56,6 +56,25 @@ export const getVideoConsumerIds = (
   };
 };
 
+export const getAudioConsumerIds = (
+  members: Record<string, MeetingMemberInfo>,
+  consumers: Record<string, MemberConsumer>,
+) => {
+  const allMembers = Object.values(members);
+  const newAudioConsumers: string[] = [];
+
+  allMembers.forEach((member) => {
+    const micId = member.mic?.provider_id;
+    if (!micId) return;
+
+    if (!consumers[micId]?.audio) {
+      newAudioConsumers.push(micId);
+    }
+  });
+
+  return { newAudioConsumers };
+};
+
 export const getConsumerInstances = async (
   recvTransport: Transport,
   newConsumersData: ConsumerInfo[],

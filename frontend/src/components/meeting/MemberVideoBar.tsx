@@ -80,8 +80,17 @@ export default function MemberVideoBar() {
           const userId = Object.values(members).find(
             (m) => m.cam?.provider_id === producerId,
           )?.user_id;
-          if (userId)
-            setMemberStream(userId, 'video', new MediaStream([consumer.track]));
+          if (userId) {
+            if (members[userId].cam?.is_paused) {
+              removeMemberStream(userId, 'video');
+            } else {
+              setMemberStream(
+                userId,
+                'video',
+                new MediaStream([consumer.track]),
+              );
+            }
+          }
         });
       }
 
@@ -89,7 +98,9 @@ export default function MemberVideoBar() {
       if (allResumeIds.length > 0) {
         socket.emit('signaling:ws:resumes', { consumer_ids: allResumeIds });
         visibleStreamTracks.forEach(({ userId, track }) => {
-          setMemberStream(userId, 'video', new MediaStream([track]));
+          if (members[userId].cam?.is_paused)
+            removeMemberStream(userId, 'video');
+          else setMemberStream(userId, 'video', new MediaStream([track]));
         });
       }
 
@@ -112,6 +123,7 @@ export default function MemberVideoBar() {
     if (!hasNextPage) return;
     setCurrentPage((prev) => prev + 1);
   };
+  console.log(members, memberStreams);
 
   return (
     <header className="flex w-full justify-between px-4 py-2">
