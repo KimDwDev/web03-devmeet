@@ -26,7 +26,7 @@ export default function MemberModal() {
   const onCloseClick = () => setIsOpen('isMemberOpen', false);
 
   return (
-    <aside className="meeting-side-modal">
+    <aside className="meeting-side-modal z-6">
       <div className="flex-center relative h-12 w-full bg-neutral-800">
         <span className="font-bold text-neutral-200">
           참가자 ({totalMembers.length})
@@ -51,9 +51,7 @@ export default function MemberModal() {
             // TODO
             // audio={!!member.mic && !member.mic.is_paused}
             // video={!!member.cam && !member.cam.is_paused}
-            profileImg={
-              member.profile_path ?? 'https://picsum.photos/id/237/200/10'
-            }
+            profileImg={member.profile_path as string}
             reverseDropdown={members.length > 3 && index >= members.length - 2}
           />
         ))}
