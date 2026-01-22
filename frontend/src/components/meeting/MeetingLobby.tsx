@@ -4,7 +4,16 @@ import Header from '@/components/layout/Header';
 import MediaSettingSection from '@/components/meeting/media/MediaSettingSection';
 import { useMeetingSocketStore } from '@/store/useMeetingSocketStore';
 import { useUserStore } from '@/store/useUserStore';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { api } from '@/utils/apiClient';
+
+interface MeetingRoomResponse {
+  current_participants: number;
+  has_password: boolean;
+  host_nickname: string;
+  max_participants: number;
+  title: string;
+}
 
 export default function MeetingLobby({
   meetingId,
@@ -13,9 +22,6 @@ export default function MeetingLobby({
   meetingId: string;
   onJoin: (nickname: string) => void;
 }) {
-  const meetingLeader = 'Tony';
-  const meetingMemberCnt = 9;
-
   const { socket } = useMeetingSocketStore();
   const { isLoaded, isLoggedIn, nickname } = useUserStore();
   const [tempNickname, setTempNickname] = useState('');
@@ -24,6 +30,32 @@ export default function MeetingLobby({
 
   // 비회원 닉네임 확인 로직
   const [isNicknameError, setIsNicknameError] = useState(false);
+  const [roomInfo, setRoomInfo] = useState<MeetingRoomResponse | null>(null);
+
+  useEffect(() => {
+    if (!meetingId) return;
+
+    const fetchMeetingRooom = async () => {
+      try {
+        const response = await api.get<MeetingRoomResponse>(
+          `/rooms/${meetingId}`,
+        );
+        setRoomInfo(response);
+      } catch (e) {
+        // console.error('회의실 정보 조회 실패', e);
+      }
+    };
+
+    fetchMeetingRooom();
+  }, [meetingId]);
+
+  if (!roomInfo) {
+    return (
+      <main className="flex min-h-screen items-center justify-center">
+        회의실 정보를 불러오는 중입니다 ...
+      </main>
+    );
+  }
 
   const onButtonClick = () => {
     if (isLoggedIn) {
@@ -52,10 +84,10 @@ export default function MeetingLobby({
       <section className="flex w-full max-w-60 flex-col items-center justify-center gap-6">
         <div className="flex w-full flex-col items-center">
           <h1 className="mb-2 text-2xl text-neutral-900">
-            <b>{meetingLeader}</b> 님의 회의실
+            <b>{roomInfo?.title}</b>
           </h1>
           <span className="text-base text-neutral-600">
-            현재 참여자: {meetingMemberCnt}명
+            현재 참여자: {roomInfo?.current_participants}명
           </span>
         </div>
 
@@ -65,6 +97,7 @@ export default function MeetingLobby({
             onChange={(e) => setTempNickname(e.target.value)}
             className="input-default input-light"
             placeholder="닉네임을 입력해주세요"
+            autoFocus
           />
         )}
 

@@ -134,6 +134,7 @@ export default function MeetingPage() {
                 ref={passwordRef}
                 className="input-sm input-light"
                 type="password"
+                autoFocus
               />
             </Modal>
           )}
