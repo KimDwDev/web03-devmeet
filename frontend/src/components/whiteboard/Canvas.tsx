@@ -9,6 +9,7 @@ import type { WhiteboardItem, TextItem, ArrowItem } from '@/types/whiteboard';
 
 import { useWhiteboardSharedStore } from '@/store/useWhiteboardSharedStore';
 import { useWhiteboardLocalStore } from '@/store/useWhiteboardLocalStore';
+import { useWhiteboardAwarenessStore } from '@/store/useWhiteboardAwarenessStore';
 import { useItemActions } from '@/hooks/useItemActions';
 import { cn } from '@/utils/cn';
 
@@ -22,6 +23,7 @@ import { useCanvasMouseEvents } from '@/hooks/useCanvasMouseEvents';
 import RenderItem from '@/components/whiteboard/items/RenderItem';
 import TextArea from '@/components/whiteboard/items/text/TextArea';
 import ItemTransformer from '@/components/whiteboard/controls/ItemTransformer';
+import RemoteSelectionIndicator from '@/components/whiteboard/controls/RemoteSelectionIndicator';
 import ArrowHandles from '@/components/whiteboard/items/arrow/ArrowHandles';
 
 export default function Canvas() {
@@ -41,6 +43,10 @@ export default function Canvas() {
     (state) => state.setViewportSize,
   );
   const cursorMode = useWhiteboardLocalStore((state) => state.cursorMode);
+
+  // 다른 사용자들의 선택 상태
+  const users = useWhiteboardAwarenessStore((state) => state.users);
+  const myUserId = useWhiteboardAwarenessStore((state) => state.myUserId);
 
   const stageRef = useRef<Konva.Stage | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -264,7 +270,34 @@ export default function Canvas() {
             />
           )}
 
-          {/* Transformer */}
+          {/* 다른 사용자들의 선택 표시 */}
+          {(() => {
+            const displayedItemIds = new Set<string>();
+            return Array.from(users.values())
+              .filter((user) => {
+                if (
+                  user.id === myUserId ||
+                  !user.selectedId ||
+                  user.selectedId === selectedId
+                ) {
+                  return false;
+                }
+                if (displayedItemIds.has(user.selectedId)) return false;
+                displayedItemIds.add(user.selectedId);
+                return true;
+              })
+              .map((user) => (
+                <RemoteSelectionIndicator
+                  key={user.id}
+                  selectedId={user.selectedId!}
+                  userColor={user.color}
+                  items={items}
+                  stageRef={stageRef}
+                />
+              ));
+          })()}
+
+          {/* 내 Transformer */}
           <ItemTransformer
             selectedId={selectedId}
             items={items}
