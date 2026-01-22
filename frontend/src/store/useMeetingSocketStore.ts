@@ -36,11 +36,15 @@ interface MeetingSocketAction {
   setProducer: (type: keyof Producers, producer: Producer | null) => void;
   setIsProducing: (type: keyof IsProducing, state: boolean) => void;
 
-  addConsumer: (userId: string, kind: MediaKind, consumer: Consumer) => void;
-  addConsumers: (
-    consumers: { userId: string; kind: MediaKind; consumer: Consumer }[],
+  addConsumer: (
+    producerId: string,
+    kind: MediaKind,
+    consumer: Consumer,
   ) => void;
-  removeConsumer: (userId: string) => void;
+  addConsumers: (
+    consumers: { producerId: string; kind: MediaKind; consumer: Consumer }[],
+  ) => void;
+  removeConsumer: (producerId: string) => void;
 }
 
 export const useMeetingSocketStore = create<
@@ -72,12 +76,12 @@ export const useMeetingSocketStore = create<
   setIsProducing: (type, state) =>
     set((prev) => ({ isProducing: { ...prev.isProducing, [type]: state } })),
 
-  addConsumer: (userId, kind, consumer) =>
+  addConsumer: (producerId, kind, consumer) =>
     set((prev) => ({
       consumers: {
         ...prev.consumers,
-        [userId]: {
-          ...prev.consumers[userId],
+        [producerId]: {
+          ...prev.consumers[producerId],
           [kind]: consumer,
         },
       },
@@ -86,9 +90,9 @@ export const useMeetingSocketStore = create<
     set((prev) => {
       const nextConsumers = { ...prev.consumers };
 
-      newConsumerList.forEach(({ userId, kind, consumer }) => {
-        nextConsumers[userId] = {
-          ...nextConsumers[userId],
+      newConsumerList.forEach(({ producerId, kind, consumer }) => {
+        nextConsumers[producerId] = {
+          ...nextConsumers[producerId],
           [kind]: consumer,
         };
       });
@@ -97,16 +101,16 @@ export const useMeetingSocketStore = create<
         consumers: nextConsumers,
       };
     }),
-  removeConsumer: (userId) =>
+  removeConsumer: (producerId) =>
     set((prev) => {
-      const targetMember = prev.consumers[userId];
+      const targetMember = prev.consumers[producerId];
 
       if (targetMember) {
         targetMember.audio?.close();
         targetMember.video?.close();
       }
 
-      const { [userId]: _, ...remainingConsumers } = prev.consumers;
+      const { [producerId]: _, ...remainingConsumers } = prev.consumers;
 
       return {
         consumers: remainingConsumers,

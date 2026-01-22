@@ -30,9 +30,17 @@ export default function MeetingRoom({ meetingId }: { meetingId: string }) {
     isCodeEditorOpen,
   } = useMeetingStore();
   const { startAudioProduce, startVideoProduce, isReady } = useProduce();
-  const { socket, device, recvTransport, addConsumer, removeConsumer } =
-    useMeetingSocketStore();
   const {
+    producers,
+    consumers,
+    socket,
+    device,
+    recvTransport,
+    addConsumer,
+    removeConsumer,
+  } = useMeetingSocketStore();
+  const {
+    members,
     setMembers,
     addMember,
     removeMember,
@@ -100,16 +108,17 @@ export default function MeetingRoom({ meetingId }: { meetingId: string }) {
     });
     const onAlertProduced = async (producerInfo: ProducerInfo) => {
       const {
-        user_id: producerId,
+        user_id: userId,
         kind: producerKind,
         is_paused: isPaused,
+        producer_id: producerId,
       } = producerInfo;
 
       const existingConsumer =
         useMeetingSocketStore.getState().consumers[producerId]?.[producerKind];
 
       if (isPaused) {
-        removeMemberStream(producerId, producerKind);
+        removeMemberStream(userId, producerKind);
 
         if (existingConsumer) {
           await socket.emitWithAck('signaling:ws:pause', {
@@ -125,13 +134,13 @@ export default function MeetingRoom({ meetingId }: { meetingId: string }) {
         });
 
         const stream = new MediaStream([existingConsumer.track]);
-        setMemberStream(producerId, producerKind, stream);
+        setMemberStream(userId, producerKind, stream);
       } else {
         try {
           const { consumer, kind, stream } = await consumeOne(producerInfo);
 
           addConsumer(producerId, kind, consumer);
-          setMemberStream(producerId, kind, stream);
+          setMemberStream(userId, kind, stream);
         } catch (error) {
           console.error('신규 컨슈머 생성 실패:', error);
         }

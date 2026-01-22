@@ -14,28 +14,46 @@ export const getVideoConsumerIds = (
   const visibleIdsSet = new Set(visibleMembers.map((member) => member.user_id));
 
   const newVideoConsumers: string[] = [];
-  const visibleVideoIds: string[] = [];
-  const hiddenVideoIds: string[] = [];
+  const resumeConsumerIds: string[] = [];
+  const pauseConsumerIds: string[] = [];
+
+  const visibleStreamTracks: { userId: string; track: MediaStreamTrack }[] = [];
+  const hiddenUserIds: string[] = [];
 
   allMembers.forEach((member) => {
     const producerId = member.cam?.provider_id;
     if (!producerId) return;
 
-    if (visibleIdsSet.has(member.user_id)) {
-      // 현재 화면에 보이는 비디오 ID들 (Resume 대상)
-      visibleVideoIds.push(producerId);
+    const consumer = consumers[producerId]?.video;
 
-      // 신규 Consume 대상 추출
-      if (!consumers[member.user_id]?.video) {
+    if (visibleIdsSet.has(member.user_id)) {
+      // 새로운 consume 대상
+      if (!consumer) {
         newVideoConsumers.push(producerId);
+      } else {
+        // resume 대상 계산
+        resumeConsumerIds.push(consumer.id);
+        visibleStreamTracks.push({
+          userId: member.user_id,
+          track: consumer.track,
+        });
       }
     } else {
-      // 다른 페이지의 비디오 ID들 (Pause 대상)
-      hiddenVideoIds.push(producerId);
+      // pause 대상 계산
+      hiddenUserIds.push(member.user_id);
+      if (consumer) {
+        pauseConsumerIds.push(consumer.id);
+      }
     }
   });
 
-  return { newVideoConsumers, visibleVideoIds, hiddenVideoIds };
+  return {
+    newVideoConsumers,
+    resumeConsumerIds,
+    pauseConsumerIds,
+    visibleStreamTracks,
+    hiddenUserIds,
+  };
 };
 
 export const getConsumerInstances = async (
@@ -45,21 +63,19 @@ export const getConsumerInstances = async (
   const consumerInstances = await Promise.all(
     newConsumersData.map(async (data) => {
       const { consumer_id, producer_id, kind, rtpParameters } = data;
-      // 실제 Consumer 인스턴스 생성
       const consumer = await recvTransport.consume({
         id: consumer_id,
         producerId: producer_id,
         kind,
         rtpParameters,
         appData: {
-          user_id: producer_id,
           type: kind === 'audio' ? 'mic' : kind === 'video' ? 'cam' : undefined,
           status: 'user',
         },
       });
 
       return {
-        userId: producer_id,
+        producerId: producer_id,
         kind: data.kind,
         consumer: consumer,
       };

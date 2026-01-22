@@ -11,8 +11,9 @@ import { useEffect, useMemo, useState } from 'react';
 
 export default function MemberVideoBar() {
   const MEMBERS_PER_PAGE = 6;
-  const { members } = useMeetingStore();
-  const { socket, consumers, recvTransport, device, addConsumers } =
+  const { members, memberStreams, setMemberStream, removeMemberStream } =
+    useMeetingStore();
+  const { socket, recvTransport, device, consumers, addConsumers } =
     useMeetingSocketStore();
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -37,17 +38,23 @@ export default function MemberVideoBar() {
   const hasPrevPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages;
 
-  console.log(consumers);
-
   // visibleMembers가 바뀔 때 consume, resume/pause
   useEffect(() => {
     if (!socket || !recvTransport || !device) return;
 
     const syncVideoStreams = async () => {
       const currentConsumers = useMeetingSocketStore.getState().consumers;
-      const { newVideoConsumers, visibleVideoIds, hiddenVideoIds } =
-        getVideoConsumerIds(members, visibleMembers, currentConsumers);
+      const {
+        newVideoConsumers,
+        resumeConsumerIds,
+        pauseConsumerIds,
+        visibleStreamTracks,
+        hiddenUserIds,
+      } = getVideoConsumerIds(members, visibleMembers, currentConsumers);
 
+      const allResumeIds = [...resumeConsumerIds];
+
+      // 새로운 consumer 추가
       if (newVideoConsumers.length > 0) {
         const payload = {
           transport_id: recvTransport.id,
@@ -64,14 +71,32 @@ export default function MemberVideoBar() {
           recvTransport,
           consumerInfos,
         );
+
         addConsumers(newConsumers);
+
+        newConsumers.forEach(({ producerId, consumer }) => {
+          allResumeIds.push(consumer.id);
+
+          const userId = Object.values(members).find(
+            (m) => m.cam?.provider_id === producerId,
+          )?.user_id;
+          if (userId)
+            setMemberStream(userId, 'video', new MediaStream([consumer.track]));
+        });
       }
 
-      if (visibleVideoIds.length > 0) {
-        socket.emit('signaling:ws:resumes', { consumer_ids: visibleVideoIds });
+      // 그룹 resume
+      if (allResumeIds.length > 0) {
+        socket.emit('signaling:ws:resumes', { consumer_ids: allResumeIds });
+        visibleStreamTracks.forEach(({ userId, track }) => {
+          setMemberStream(userId, 'video', new MediaStream([track]));
+        });
       }
-      if (hiddenVideoIds.length > 0) {
-        socket.emit('signaling:ws:pauses', { consumer_ids: hiddenVideoIds });
+
+      // 그룹 pause
+      if (pauseConsumerIds.length > 0) {
+        socket.emit('signaling:ws:pauses', { consumer_ids: pauseConsumerIds });
+        hiddenUserIds.forEach((userId) => removeMemberStream(userId, 'video'));
       }
     };
 
