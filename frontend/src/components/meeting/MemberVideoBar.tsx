@@ -82,13 +82,9 @@ export default function MemberVideoBar() {
           )?.user_id;
           if (userId) {
             if (members[userId].cam?.is_paused) {
-              removeMemberStream(userId, 'video');
+              removeMemberStream(userId, 'cam');
             } else {
-              setMemberStream(
-                userId,
-                'video',
-                new MediaStream([consumer.track]),
-              );
+              setMemberStream(userId, 'cam', new MediaStream([consumer.track]));
             }
           }
         });
@@ -98,16 +94,15 @@ export default function MemberVideoBar() {
       if (allResumeIds.length > 0) {
         socket.emit('signaling:ws:resumes', { consumer_ids: allResumeIds });
         visibleStreamTracks.forEach(({ userId, track }) => {
-          if (members[userId].cam?.is_paused)
-            removeMemberStream(userId, 'video');
-          else setMemberStream(userId, 'video', new MediaStream([track]));
+          if (members[userId].cam?.is_paused) removeMemberStream(userId, 'cam');
+          else setMemberStream(userId, 'cam', new MediaStream([track]));
         });
       }
 
       // 그룹 pause
       if (pauseConsumerIds.length > 0) {
         socket.emit('signaling:ws:pauses', { consumer_ids: pauseConsumerIds });
-        hiddenUserIds.forEach((userId) => removeMemberStream(userId, 'video'));
+        hiddenUserIds.forEach((userId) => removeMemberStream(userId, 'cam'));
       }
     };
 

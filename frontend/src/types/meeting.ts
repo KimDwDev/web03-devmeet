@@ -73,25 +73,19 @@ export interface FetchRoomMembersResponse {
   members: MeetingMemberInfo[];
 }
 
+export type MediaType = 'mic' | 'cam' | 'screen_video' | 'screen_audio';
+
 export interface ProducerInfo {
   producer_id: string;
   user_id: string;
   status: 'user' | 'main';
   kind: 'audio' | 'video';
-  type: 'mic' | 'cam' | 'screen_video' | 'screen_audio';
+  type: MediaType;
   nickname: string;
   is_paused: boolean;
 }
 
-export interface MemberStream {
-  audio?: MediaStream;
-  video?: MediaStream;
-}
-
-export interface MemberConsumer {
-  audio?: Consumer;
-  video?: Consumer;
-}
+export type MemberStream = Partial<Record<MediaType, MediaStream>>;
 
 export interface ConsumerInfo {
   producer_id: string;

@@ -109,7 +109,7 @@ export default function MeetingRoom({ meetingId }: { meetingId: string }) {
     const onAlertProduced = async (producerInfo: ProducerInfo) => {
       const {
         user_id: userId,
-        kind: producerKind,
+        type: producerType,
         is_paused: isPaused,
         producer_id: producerId,
       } = producerInfo;
@@ -118,7 +118,7 @@ export default function MeetingRoom({ meetingId }: { meetingId: string }) {
         useMeetingSocketStore.getState().consumers[producerId];
 
       if (isPaused) {
-        removeMemberStream(userId, producerKind);
+        removeMemberStream(userId, producerType);
 
         if (existingConsumer) {
           await socket.emitWithAck('signaling:ws:pause', {
@@ -134,13 +134,13 @@ export default function MeetingRoom({ meetingId }: { meetingId: string }) {
         });
 
         const stream = new MediaStream([existingConsumer.track]);
-        setMemberStream(userId, producerKind, stream);
+        setMemberStream(userId, producerType, stream);
       } else {
         try {
-          const { consumer, kind, stream } = await consumeOne(producerInfo);
+          const { consumer, stream } = await consumeOne(producerInfo);
 
           addConsumer(producerId, consumer);
-          setMemberStream(userId, kind, stream);
+          setMemberStream(userId, producerType, stream);
         } catch (error) {
           console.error('신규 컨슈머 생성 실패:', error);
         }

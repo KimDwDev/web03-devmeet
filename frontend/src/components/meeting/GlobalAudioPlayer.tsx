@@ -52,11 +52,11 @@ export const GlobalAudioPlayer = () => {
             if (!member.mic?.is_paused) {
               setMemberStream(
                 member.user_id,
-                'audio',
+                'mic',
                 new MediaStream([consumer.track]),
               );
             } else {
-              removeMemberStream(member.user_id, 'audio');
+              removeMemberStream(member.user_id, 'mic');
             }
           }
         });
@@ -76,10 +76,10 @@ export const GlobalAudioPlayer = () => {
   return (
     <div id="remote-audio-container" style={{ display: 'none' }}>
       {Object.entries(memberStreams).map(([userId, streams]) => {
-        if (!streams.audio) return null;
+        if (!streams.mic) return null;
 
         return (
-          <AudioView key={`${userId}-remote-audio`} stream={streams.audio} />
+          <AudioView key={`${userId}-remote-audio`} stream={streams.mic} />
         );
       })}
     </div>
