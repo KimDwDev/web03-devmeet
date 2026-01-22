@@ -1,4 +1,11 @@
-import { Consumer, Device, Producer, Transport } from 'mediasoup-client/types';
+import {
+  Consumer,
+  Device,
+  MediaKind,
+  Producer,
+  RtpParameters,
+  Transport,
+} from 'mediasoup-client/types';
 
 export type MediaPermission = 'unknown' | 'granted' | 'denied';
 
@@ -84,4 +91,11 @@ export interface MemberStream {
 export interface MemberConsumer {
   audio?: Consumer;
   video?: Consumer;
+}
+
+export interface ConsumerInfo {
+  producer_id: string;
+  consumer_id: string;
+  kind: MediaKind;
+  rtpParameters: RtpParameters;
 }

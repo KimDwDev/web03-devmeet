@@ -37,6 +37,9 @@ interface MeetingSocketAction {
   setIsProducing: (type: keyof IsProducing, state: boolean) => void;
 
   addConsumer: (userId: string, kind: MediaKind, consumer: Consumer) => void;
+  addConsumers: (
+    consumers: { userId: string; kind: MediaKind; consumer: Consumer }[],
+  ) => void;
   removeConsumer: (userId: string) => void;
 }
 
@@ -79,6 +82,21 @@ export const useMeetingSocketStore = create<
         },
       },
     })),
+  addConsumers: (newConsumerList) =>
+    set((prev) => {
+      const nextConsumers = { ...prev.consumers };
+
+      newConsumerList.forEach(({ userId, kind, consumer }) => {
+        nextConsumers[userId] = {
+          ...nextConsumers[userId],
+          [kind]: consumer,
+        };
+      });
+
+      return {
+        consumers: nextConsumers,
+      };
+    }),
   removeConsumer: (userId) =>
     set((prev) => {
       const targetMember = prev.consumers[userId];

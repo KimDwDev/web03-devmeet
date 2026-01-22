@@ -5,12 +5,15 @@ import MyVideo from '@/components/meeting/MyVideo';
 import SmVideo from '@/components/meeting/SmVideo';
 import { useMeetingSocketStore } from '@/store/useMeetingSocketStore';
 import { useMeetingStore } from '@/store/useMeetingStore';
+import { ConsumerInfo } from '@/types/meeting';
+import { getConsumerInstances, getVideoConsumerIds } from '@/utils/meeting';
 import { useEffect, useMemo, useState } from 'react';
 
 export default function MemberVideoBar() {
   const MEMBERS_PER_PAGE = 6;
   const { members } = useMeetingStore();
-  const { consumers } = useMeetingSocketStore();
+  const { socket, consumers, recvTransport, device, addConsumers } =
+    useMeetingSocketStore();
   const [currentPage, setCurrentPage] = useState(1);
 
   // 전체 페이지 수 계산 (첫 페이지는 MyVideo 포함)
@@ -34,38 +37,46 @@ export default function MemberVideoBar() {
   const hasPrevPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages;
 
-  console.log(members);
+  console.log(consumers);
 
   // visibleMembers가 바뀔 때 consume, resume/pause
   useEffect(() => {
-    const allMembers = Object.values(members);
+    if (!socket || !recvTransport || !device) return;
 
-    // 신규 Consume 대상 추출
-    const newVideoConsumers = visibleMembers.reduce((acc, member) => {
-      if (member.cam?.provider_id && !consumers[member.user_id]?.video) {
-        acc.push(member.cam.provider_id);
+    const syncVideoStreams = async () => {
+      const currentConsumers = useMeetingSocketStore.getState().consumers;
+      const { newVideoConsumers, visibleVideoIds, hiddenVideoIds } =
+        getVideoConsumerIds(members, visibleMembers, currentConsumers);
+
+      if (newVideoConsumers.length > 0) {
+        const payload = {
+          transport_id: recvTransport.id,
+          producer_infos: newVideoConsumers.map((id) => ({
+            producer_id: id,
+            rtpCapabilities: device.rtpCapabilities,
+            status: 'user',
+          })),
+        };
+
+        const { consumerInfos }: { consumerInfos: ConsumerInfo[] } =
+          await socket.emitWithAck('signaling:ws:consumes', payload);
+        const newConsumers = await getConsumerInstances(
+          recvTransport,
+          consumerInfos,
+        );
+        addConsumers(newConsumers);
       }
-      return acc;
-    }, [] as string[]);
 
-    // 현재 화면에 보이는 비디오 ID들 (Resume 대상)
-    const visibleVideoIds = visibleMembers
-      .filter((member) => member.cam?.provider_id)
-      .map((member) => member.cam!.provider_id);
+      if (visibleVideoIds.length > 0) {
+        socket.emit('signaling:ws:resumes', { consumer_ids: visibleVideoIds });
+      }
+      if (hiddenVideoIds.length > 0) {
+        socket.emit('signaling:ws:pauses', { consumer_ids: hiddenVideoIds });
+      }
+    };
 
-    // 다른 페이지의 비디오 ID들 (Pause 대상)
-    const hiddenVideoIds = allMembers
-      .filter(
-        (member) =>
-          !visibleMembers.find((vMember) => vMember.user_id === member.user_id),
-      )
-      .filter((member) => member.cam?.provider_id)
-      .map((member) => member.cam!.provider_id);
-
-    console.log('신규 Consume 대상 : ', newVideoConsumers);
-    console.log('Resume/Consume 대상(화면 노출) : ', visibleVideoIds);
-    console.log('Pause 대상(화면 미노출) : ', hiddenVideoIds);
-  }, [visibleMembers, members]);
+    syncVideoStreams();
+  }, [visibleMembers, members, socket, recvTransport, device]);
 
   const onPrevClick = () => {
     if (!hasPrevPage) return;
