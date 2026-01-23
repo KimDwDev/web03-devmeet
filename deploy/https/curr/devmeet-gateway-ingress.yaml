@@ -47,6 +47,7 @@ spec:
             backend:
               service:
                 name: main-backend-svc
+                # 이 서비스의 포트로 매핑해라 예를 들어서 http://main-backend-svc:8080으로 매핑
                 port:
                   number: 8080
           - path: /tool
