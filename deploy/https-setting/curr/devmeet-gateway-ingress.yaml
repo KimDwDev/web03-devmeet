@@ -4,7 +4,9 @@ metadata:
   name: devmeet-gateway
   namespace: devmeet
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-staging
+    # certmanager가 staging 인증서를 secret로 생성해서 넣어둔다. ( 브라우저에게는 신뢰되지 않는 인증서라고 알려준다. )
+    cert-manager.io/cluster-issuer: letsencrypt-staging 
+    
     nginx.ingress.kubernetes.io/proxy-body-size: "10m"
     nginx.ingress.kubernetes.io/proxy-buffering: "off"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
