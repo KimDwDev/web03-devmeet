@@ -9,9 +9,6 @@ concurrency:
   group: gitops-post-merge
   cancel-in-progress: true
 
-permissions:
-  contents: write
-
 jobs:
   gitops-post-merge:
     # 오직 merge를 한것만 + gitops 브런치만 승인
@@ -55,8 +52,11 @@ jobs:
           git checkout dev
           git pull origin dev
 
-          # main을 dev에 머지
-          git merge origin/main --no-edit
+          # main을 dev에 머지 ( 충돌 나면 실패 시킨다. )
+          git merge origin/main --no-edit || {
+            echo "❌ main -> dev merge failed (conflict)."
+            exit 1
+          }
 
           # ✅ push만 bot 토큰으로 인증 (dev 보호룰 통과용)
           git remote set-url origin https://x-access-token:${BOT_TOKEN}@github.com/${{ github.repository }}.git
@@ -65,23 +65,15 @@ jobs:
           echo "✅ back-merge main -> dev pushed"
 
       - name: gitops 브런치 삭제
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-            const headRef = process.env.HEAD_REF;
+        env:
+          BOT_TOKEN: ${{ secrets.DEV_PUSH_TOKEN }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        shell: bash
+        run: |
+          # ✅ GitHub API로 브랜치 삭제 (PAT 사용)
+          curl -fsS -X DELETE \
+            -H "Authorization: token ${BOT_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/git/refs/heads/${HEAD_REF}"
 
-            if (!headRef || !headRef.startsWith("gitops/")) {
-              core.setFailed(`Not a gitops branch: ${headRef}`);
-              return;
-            }
-
-            await github.rest.git.deleteRef({
-              owner,
-              repo,
-              ref: `heads/${headRef}`,
-            });
-
-            core.info(`✅ 브런치 삭제 확인: ${headRef}`);
+          echo "Deleted branch: ${HEAD_REF}"
