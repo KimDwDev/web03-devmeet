@@ -22,6 +22,7 @@ import { useMeetingStore } from '@/store/useMeetingStore';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useWhiteboardSocket } from '@/hooks/useWhiteboardSocket';
+import { useChatStore } from '@/store/useChatStore';
 
 export default function MeetingMenu() {
   const {
@@ -48,7 +49,7 @@ export default function MeetingMenu() {
   } = useProduce();
 
   const { openCodeEditor, closeCodeEditor } = useCodeEditorSocket();
-  
+
   // 화이트보드 연결 / 해제 함수 가져오기
   const { connectWhiteboard, disconnectWhiteboard } = useWhiteboardSocket();
 
@@ -119,7 +120,10 @@ export default function MeetingMenu() {
   const router = useRouter();
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
   const toggleExitModal = () => setIsExitModalOpen((prev) => !prev);
-  const onExit = () => router.replace('/');
+  const onExit = () => {
+    useChatStore.getState().reset();
+    router.replace('/');
+  };
 
   return (
     <nav className="flex w-full justify-between px-4 py-2">
