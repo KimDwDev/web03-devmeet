@@ -260,7 +260,7 @@ jobs:
       - name: Docker compose 실행
         working-directory: ./deploy/test
         run: |
-          docker compose --env-file compose.env -f docker-compose.yml up -d
+          docker compose --env-file compose.env -f docker-compose.test.yml up -d
           docker compose ps
 
       # 통합 테스트 실행
@@ -373,6 +373,9 @@ jobs:
             # 전에거 삭제 후 재시작 하기
             docker compose --env-file compose.env -f docker-compose.yml up -d --remove-orphans
             docker image prune -a -f
+
+            # docker에서 nginx 재시작 ( DNS 변경에 따라서 조치 )
+            docker compose restart frontend-nginx main-backend-nginx
 
             # docker compose 작동 확인
             docker ps
