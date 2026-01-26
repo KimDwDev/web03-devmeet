@@ -1,13 +1,15 @@
 'use client';
 
-import { DUMMY_MEETING_INFO } from '@/app/[meetingId]/dummy';
 import Modal from '@/components/common/Modal';
 import MeetingLobby from '@/components/meeting/MeetingLobby';
 import MeetingRoom from '@/components/meeting/MeetingRoom';
 import { useMeetingSocket } from '@/hooks/useMeetingSocket';
 import { useMeetingSocketStore } from '@/store/useMeetingSocketStore';
+import { useUserStore } from '@/store/useUserStore';
+import { MeetingInfoResponse } from '@/types/meeting';
+import { api } from '@/utils/apiClient';
 import { initMediasoupTransports } from '@/utils/initMediasoupTransports';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 interface JoinError {
@@ -18,27 +20,28 @@ interface JoinError {
 export default function MeetingPage() {
   const { socket } = useMeetingSocket();
   const { setMediasoupTransports } = useMeetingSocketStore();
+  const { isLoggedIn, setTempUser } = useUserStore();
 
-  // 이후 실제 회의 정보 API 호출로 수정 필요
-  const { password } = DUMMY_MEETING_INFO;
-
-  const params = useParams<{ meetingId: string }>();
-  const meetingId = params.meetingId;
+  const { meetingId } = useParams<{ meetingId: string }>();
+  const [meetingInfo, setMeetingInfo] = useState<MeetingInfoResponse | null>(
+    null,
+  );
 
   const passwordRef = useRef<HTMLInputElement>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [joinError, setJoinError] = useState<JoinError | null>(null);
   const [isJoined, setIsJoined] = useState<boolean>(false);
 
-  const [nickname, setNickname] = useState('');
+  const router = useRouter();
+
   const onJoin = (nickname: string) => {
-    setNickname(nickname);
+    setTempUser({ nickname });
     validateJoin();
   };
 
   // 회의실 비밀번호 유무로 분기 처리
   const validateJoin = () => {
-    if (password) {
+    if (meetingInfo?.has_password) {
       setIsPasswordModalOpen(true);
     } else {
       handleJoin();
@@ -57,21 +60,32 @@ export default function MeetingPage() {
   };
 
   // 회의실 참여 로직
-  const handleJoin = (password?: string) => {
+  const handleJoin = async (password?: string) => {
     if (!socket) return;
 
+    // 회의실 참여
+    const currentNickname = useUserStore.getState().nickname;
     socket.emitWithAck('signaling:ws:join_room', {
       code: meetingId,
       password,
-      nickname,
+      nickname: currentNickname,
     });
   };
 
   useEffect(() => {
     if (!socket) return;
 
-    const onRoomJoined = async ({ ok }: { ok: boolean }) => {
+    const onRoomJoined = async ({
+      ok,
+      user_id,
+    }: {
+      ok: boolean;
+      user_id: string;
+    }) => {
       if (ok) {
+        // 비회원인 경우 임시 id 저장
+        if (!isLoggedIn) setTempUser({ userId: user_id });
+
         // SDP / ICE / DTLS 초기화 진행
         const transports = await initMediasoupTransports(socket);
         setMediasoupTransports(socket, transports);
@@ -99,6 +113,27 @@ export default function MeetingPage() {
     };
   }, [socket]);
 
+  useEffect(() => {
+    const getMeetingInfo = async () => {
+      try {
+        const meetingInfo = await api.get<MeetingInfoResponse>(
+          `/rooms/${meetingId}`,
+        );
+        setMeetingInfo(meetingInfo);
+      } catch (err: unknown) {
+        const params = new URLSearchParams({
+          title: '존재하지 않는 회의실입니다',
+          status: '409',
+          message:
+            err instanceof Error ? err.message : '회의 코드를 확인해주세요',
+        });
+        router.replace(`/error?${params.toString()}`);
+      }
+    };
+
+    getMeetingInfo();
+  }, []);
+
   if (!meetingId) {
     return <div>잘못된 회의 접근입니다. 다시 시도해주세요.</div>;
   }
@@ -107,7 +142,7 @@ export default function MeetingPage() {
     <main className="min-h-screen">
       {!isJoined ? (
         <>
-          <MeetingLobby meetingId={meetingId} onJoin={onJoin} />
+          <MeetingLobby meetingInfo={meetingInfo} onJoin={onJoin} />
           {!joinError && isPasswordModalOpen && (
             <Modal
               title="비밀번호 입력"
@@ -121,6 +156,7 @@ export default function MeetingPage() {
                 ref={passwordRef}
                 className="input-sm input-light"
                 type="password"
+                autoFocus
               />
             </Modal>
           )}
