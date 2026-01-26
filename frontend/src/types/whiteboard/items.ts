@@ -72,6 +72,10 @@ export interface ShapeItem extends BaseItem {
   opacity?: number;
   dash?: number[];
   cornerRadius?: number;
+  text?: string;
+  fontSize?: number;
+  fontFamily?: string;
+  textColor?: string;
 }
 
 // Image Item
