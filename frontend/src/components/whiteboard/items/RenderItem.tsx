@@ -214,11 +214,21 @@ export default function RenderItem({
           if (node.getClassName() !== 'Line') return;
           const lineNode = node as Konva.Line;
 
+          // 기준 x,y 변화 반영(transform 시 밀림)
+          const pos = lineNode.position();
+          const currentPoints = lineNode.points();
+
+          // 기준점이 변했으면 points에 반영
+          const adjustedPoints = currentPoints.map((p, i) =>
+            i % 2 === 0 ? p + pos.x : p + pos.y,
+          );
+
+          // 기준점 리셋
+          lineNode.position({ x: 0, y: 0 });
+
           onChange({
-            points: lineNode.points(),
+            points: adjustedPoints,
             rotation: lineNode.rotation(),
-            scaleX: 1,
-            scaleY: 1,
           });
         }}
       />
@@ -248,7 +258,9 @@ export default function RenderItem({
     return (
       <ImageItem
         imageItem={imageItem}
-        onSelect={() => onSelect(item.id)}
+        isDraggable={isDraggable}
+        isListening={isListening}
+        onSelect={() => isInteractive && onSelect(item.id)}
         onChange={onChange}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -264,7 +276,9 @@ export default function RenderItem({
     return (
       <VideoItem
         videoItem={videoItem}
-        onSelect={() => onSelect(item.id)}
+        isDraggable={isDraggable}
+        isListening={isListening}
+        onSelect={() => isInteractive && onSelect(item.id)}
         onChange={onChange}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -280,7 +294,9 @@ export default function RenderItem({
     return (
       <YoutubeItem
         youtubeItem={youtubeItem}
-        onSelect={() => onSelect(item.id)}
+        isDraggable={isDraggable}
+        isListening={isListening}
+        onSelect={() => isInteractive && onSelect(item.id)}
         onChange={onChange}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
