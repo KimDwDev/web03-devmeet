@@ -37,7 +37,7 @@ export default function ShapeTextArea({
   // 텍스트 상태를 컴포넌트 내부에서 관리
   const [text, setText] = useState(shapeItem.text || '');
 
-  // 입력 중일 때 텍스트 노드 숨기기
+  // 입력 중일 때 텍스트 노드 숨기기 (텍스트 변경 시에도 재실행)
   useEffect(() => {
     if (!stageRef.current) return;
 
@@ -49,16 +49,61 @@ export default function ShapeTextArea({
     const textNode = shapeGroup.findOne('Text') as Konva.Text;
     if (textNode) {
       textNode.visible(false);
+      textNode.getLayer()?.batchDraw();
     }
 
     return () => {
-      if (textNode) {
-        textNode.visible(true);
-        textNode.getLayer()?.batchDraw();
+      // cleanup 시 다시 찾아서 보이게 (textNode가 새로 생성될 수 있음)
+      const currentGroup = stage.findOne('#' + shapeId) as Konva.Group;
+      if (currentGroup) {
+        const currentTextNode = currentGroup.findOne('Text') as Konva.Text;
+        if (currentTextNode) {
+          currentTextNode.visible(true);
+          currentTextNode.getLayer()?.batchDraw();
+        }
       }
     };
-  }, [shapeId, stageRef]);
+  }, [shapeId, stageRef, text]); // text를 의존성에 추가하여 텍스트 변경 시에도 재실행
 
+  // 스타일 동기화 useEffect (shapeItem 변경 시 실시간 반영)
+  useEffect(() => {
+    if (!ref.current || !stageRef.current) return;
+
+    const textarea = ref.current;
+    const stage = stageRef.current;
+
+    // 스타일 속성만 업데이트 (위치/크기는 초기화 시에만)
+    const fontSize = shapeItem.fontSize || 16;
+    const lineHeight = 1.2;
+
+    textarea.style.fontSize = `${fontSize * stage.scaleX()}px`;
+    textarea.style.fontFamily = shapeItem.fontFamily || 'Arial';
+    textarea.style.color = shapeItem.textColor || '#000000';
+
+    // fontStyle 파싱 ('normal' | 'italic' | 'bold' | 'bold italic')
+    const fontStyle = shapeItem.fontStyle || 'normal';
+    textarea.style.fontWeight = fontStyle.includes('bold') ? 'bold' : 'normal';
+    textarea.style.fontStyle = fontStyle.includes('italic')
+      ? 'italic'
+      : 'normal';
+
+    textarea.style.textDecoration = shapeItem.textDecoration || 'none';
+    textarea.style.textAlign = shapeItem.textAlign || 'center';
+
+    // Line Height 계산
+    const lineHeightPx = fontSize * lineHeight * stage.scaleX();
+    textarea.style.lineHeight = `${lineHeightPx}px`;
+  }, [
+    shapeItem.fontSize,
+    shapeItem.fontFamily,
+    shapeItem.textColor,
+    shapeItem.fontStyle,
+    shapeItem.textDecoration,
+    shapeItem.textAlign,
+    stageRef,
+  ]);
+
+  // 초기화 useEffect (위치, 크기, 이벤트 리스너 설정)
   useEffect(() => {
     // 이미 초기화되었으면 스킵 (크기 변경 시 재실행 방지)
     if (initializedRef.current) return;
@@ -104,29 +149,16 @@ export default function ShapeTextArea({
     textarea.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
     textarea.style.transformOrigin = 'center center';
 
-    // 스타일 설정
-    const fontSize = shapeItem.fontSize || 16;
-    const lineHeight = 1.2;
-
-    textarea.style.fontSize = `${fontSize * stage.scaleX()}px`;
-    textarea.style.fontFamily = shapeItem.fontFamily || 'Arial';
-    textarea.style.color = shapeItem.textColor || '#000000';
-    textarea.style.fontStyle = shapeItem.fontStyle || 'normal';
-    textarea.style.textDecoration = shapeItem.textDecoration || 'none';
+    // 기본 스타일 설정
     textarea.style.background = 'transparent';
     textarea.style.border = 'none';
     textarea.style.outline = 'none';
     textarea.style.resize = 'none';
     textarea.style.overflow = 'hidden';
 
-    // Line Height 계산
-    const lineHeightPx = fontSize * lineHeight * stage.scaleX();
-    textarea.style.lineHeight = `${lineHeightPx}px`;
-
     const padding = 4;
     textarea.style.padding = `${padding * stage.scaleX()}px`;
 
-    textarea.style.textAlign = shapeItem.textAlign || 'center';
     textarea.style.boxSizing = 'border-box';
     textarea.style.zIndex = '1000';
 
