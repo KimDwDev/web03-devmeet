@@ -173,68 +173,72 @@ export default function ChatModal() {
         {/* 파일 업로드 현황 */}
         {pendingFiles.length > 0 && (
           <div className="flex flex-wrap gap-3 bg-neutral-700/50 p-3">
-            {pendingFiles.map((f, idx) => (
-              <div key={f.id} className="group relative">
-                {f.mediaType === 'image' && f.preview && (
-                  <Image
-                    src={f.preview}
-                    width={64}
-                    height={64}
-                    alt="preview"
-                    className="h-16 w-16 rounded-md border border-neutral-500 object-cover"
-                    unoptimized
-                  />
-                )}
+            {pendingFiles.map((f, idx) => {
+              const containerClass =
+                f.mediaType === 'file' ? 'w-full' : 'w-fit';
+              return (
+                <div key={f.id} className={`group relative ${containerClass}`}>
+                  {f.mediaType === 'image' && f.preview && (
+                    <Image
+                      src={f.preview}
+                      width={64}
+                      height={64}
+                      alt="preview"
+                      className="h-16 w-16 rounded-md border border-neutral-500 object-cover"
+                      unoptimized
+                    />
+                  )}
 
-                {f.mediaType === 'video' && f.preview && (
-                  <video
-                    src={f.preview}
-                    className="h-16 w-16 rounded-md border border-neutral-500 object-cover"
-                    muted
-                    playsInline
-                  />
-                )}
+                  {f.mediaType === 'video' && f.preview && (
+                    <video
+                      src={f.preview}
+                      className="h-16 w-16 rounded-md border border-neutral-500 object-cover"
+                      muted
+                      playsInline
+                    />
+                  )}
 
-                {f.mediaType === 'file' && (
-                  <div className="flex w-full items-center justify-center gap-2 rounded-md border border-neutral-500 bg-neutral-600 px-3 py-2">
-                    <FileIcon className="h-6 w-6 text-neutral-300" />
+                  {f.mediaType === 'file' && (
+                    <div className="flex w-full items-center justify-center gap-2 rounded-md border border-neutral-500 bg-neutral-600 px-3 py-2">
+                      <FileIcon className="h-6 w-6 text-neutral-300" />
 
-                    <div className="flex min-w-0 flex-1 flex-col gap-1">
-                      <span className="truncate text-left text-sm font-bold text-neutral-50">
-                        {f.file.name}
-                      </span>
-                      <span className="text-xs text-neutral-300">
-                        {formatFileSize(f.file.size)}
-                      </span>
+                      <div className="flex min-w-0 flex-1 flex-col gap-1">
+                        <span className="truncate text-left text-sm font-bold text-neutral-50">
+                          {f.file.name}
+                        </span>
+                        <span className="text-xs text-neutral-300">
+                          {formatFileSize(f.file.size)}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* 업로드 진행률 표시 */}
-                {uploading && idx === 0 && (
-                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/60">
-                    <span className="mb-1 text-[10px] font-bold text-white">
-                      {percent}%
-                    </span>
-                    <div className="h-1 w-12 overflow-hidden rounded-full bg-neutral-600">
-                      <div
-                        className="h-full bg-blue-500 transition-all duration-300"
-                        style={{ width: `${percent}%` }}
-                      />
+                  {/* 업로드 진행률 표시 */}
+                  {uploading && idx === 0 && (
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/60">
+                      <span className="mb-1 text-[10px] font-bold text-white">
+                        {percent}%
+                      </span>
+                      <div className="h-1 w-12 overflow-hidden rounded-full bg-neutral-600">
+                        <div
+                          className="h-full bg-blue-500 transition-all duration-300"
+                          style={{ width: `${percent}%` }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* 삭제 버튼 */}
-                <button
-                  type="button"
-                  onClick={() => removePendingFiles(f.id)}
-                  className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-neutral-500 text-neutral-200 opacity-0 transition-opacity group-hover:opacity-100"
-                >
-                  <CloseIcon className="h-3 w-3" />
-                </button>
-              </div>
-            ))}
+                  {/* 삭제 버튼 */}
+                  <button
+                    type="button"
+                    onClick={() => removePendingFiles(f.id)}
+                    className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-neutral-500 text-neutral-200 opacity-0 transition-opacity group-hover:opacity-100"
+                  >
+                    <CloseIcon className="h-3 w-3" />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
 
