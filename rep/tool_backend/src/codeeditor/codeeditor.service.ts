@@ -1,11 +1,16 @@
 import { GuardService } from '@/guards/guard.service';
 import { ToolBackendPayload } from '@/guards/guard.type';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CODEEDITOR_GROUP } from './codeeditor.constants';
+import { REDIS_SERVER } from '@/infra/cache/cache.constants';
+import type { RedisClientType } from 'redis';
 
 @Injectable()
 export class CodeeditorService {
-  constructor(private readonly guard: GuardService) {}
+  constructor(
+    private readonly guard: GuardService,
+    @Inject(REDIS_SERVER) private readonly redis : RedisClientType<any, any>, // redis를 사용하기 위한 부분
+  ) {}
 
   async guardService(token: string, type: 'main' | 'sub'): Promise<ToolBackendPayload> {
     const verified = await this.guard.verify(token);
@@ -29,4 +34,7 @@ export class CodeeditorService {
   makeNamespace(room_id: string): string {
     return `${CODEEDITOR_GROUP.CODEEDITOR}:${room_id}`;
   }
+
+  // 여기서 redis를 처리할 예정이다.
+
 }
