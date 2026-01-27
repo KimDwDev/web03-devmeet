@@ -77,7 +77,6 @@ export function useItemActions() {
       wrap: payload?.wrap ?? 'char',
       rotation: payload?.rotation ?? 0,
       width: payload?.width ?? 200,
-      parentPolygonId: payload?.parentPolygonId,
     };
 
     yItems.doc.transact(() => {
