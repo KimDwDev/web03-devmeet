@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import logoImg from '@/assets/logo.png';
+import { LogoIcon } from '@/assets/icons/common';
 
 interface UserResponse {
   email: string;
@@ -48,9 +49,9 @@ export default function Header() {
   };
 
   return (
-    <header className="fixed top-0 left-0 flex h-16 w-screen items-center justify-between border-b border-neutral-200 px-6">
+    <header className="fixed top-0 left-0 flex h-16 w-screen items-center justify-between border-b border-neutral-200 bg-white px-6">
       <Link href="/">
-        <Image width={127} height={30} src={logoImg} alt="logo" />
+        <LogoIcon className="h-7.5 w-auto" width="100%" height="100%" />
       </Link>
 
       {isLoaded &&
