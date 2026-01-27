@@ -18,7 +18,7 @@ import { EVENT_STREAM_NAME } from '@/infra/event-stream/event-stream.constants';
 import { CODEEDITOR_WEBSOCKET } from '@/infra/websocket/websocket.constants';
 import { CodeeditorWebsocket } from '@/infra/websocket/codeeditor/codeeditor.service';
 import * as Y from 'yjs';
-import { CodeeditorRepository, YjsSyncServerPayload, YjsUpdateClientPayload } from '@/infra/memory/tool';
+import { CodeeditorRepository, YjsSyncReqPayload, YjsSyncServerPayload, YjsUpdateClientPayload } from '@/infra/memory/tool';
 
 
 @WebSocketGateway({
@@ -85,7 +85,11 @@ export class CodeeditorWebsocketGateway implements OnGatewayInit, OnGatewayConne
     const full = this.codeeditorRepo.encodeFull(roomName); // 그 업데이트 본을 준다. 
 
     // 초기에 idx와 함께 같이 전달해준다. ( 현재 메모리에 저장된 idx )
-    client.emit('yjs-init', { update: full.update, seq : full.seq }); 
+    client.emit('yjs-init', { 
+      update: Buffer.from(full.update), 
+      seq : full.seq,
+      origin: 'INIT'
+    }); 
     client.data.last_seq = full.seq;
 
     if (payload.clientType === 'main') {
@@ -143,12 +147,11 @@ export class CodeeditorWebsocketGateway implements OnGatewayInit, OnGatewayConne
     const roomName = client.data.roomName;
 
     try {
-      const updateBuf = this.codeeditorService.normalizeToBuffer(payload.update);
-      if ( !updateBuf ) {
-        const err: YjsSyncServerPayload = { type: 'error', ok: false, code: 'BAD_PAYLOAD' };
-        client.emit('yjs-sync', err);
-        return // 만약 잘못 보냈다면 에러를 보내야 한다. 
-      };
+      const bufs = this.codeeditorService.normalizeToBuffers(payload);
+      if (!bufs || bufs.length === 0) {
+        client.emit('yjs-sync', { type: 'error', ok: false, code: 'BAD_PAYLOAD' } satisfies YjsSyncServerPayload);
+        return;
+      }
 
       // 클라이언트에 마지막 값과 비교
       const missed = this.codeeditorRepo.getUpdatesSince(roomName, payload.last_seq);
@@ -161,6 +164,7 @@ export class CodeeditorWebsocketGateway implements OnGatewayInit, OnGatewayConne
           ok: true,
           server_seq: full.seq,
           update: Buffer.from(full.update),
+          origin : "UPDATE_REJECTED",
         };
         client.emit('yjs-sync', msg); // 새롭게 전체 업데이트 한것 까지 추가해서 보내면 좋다. 
         return;
@@ -175,29 +179,99 @@ export class CodeeditorWebsocketGateway implements OnGatewayInit, OnGatewayConne
           to_seq: missed[missed.length - 1].seq,
           updates: missed.map((u) => Buffer.from(u.update)),
           server_seq: this.codeeditorRepo.ensure(roomName).seq,
+          origin : "UPDATE_REJECTED"
         };
         client.emit('yjs-sync', msg);
         return;
       }
 
-      // 다른 클라들에게 브로드캐스트 
-      const serverSeq = this.codeeditorRepo.applyAndAppendUpdate(
-        roomName,
-        new Uint8Array(updateBuf),
-      );
+      let firstSeq: number | null = null;
+      let lastSeq = payload.last_seq;
 
-      // idx만 변경
-      const ack: YjsSyncServerPayload = { type: 'ack', ok: true, server_seq: serverSeq };
-      client.emit('yjs-sync', ack);
+      const appliedUpdates: Buffer[] = [];
+      for (const b of bufs) {
+        const seq = this.codeeditorRepo.applyAndAppendUpdate(roomName, new Uint8Array(b));
+        if (firstSeq === null) firstSeq = seq;
+        lastSeq = seq;
+        appliedUpdates.push(b);
+      }
 
-      // yjs에 대해서 업데이트 이건 정상적인 업데이트가 맞긴 하다. 
-      client.to(roomName).emit('yjs-update', {
-        seq: serverSeq,
-        update: updateBuf,
-      });
+      // ack에 경우는 마지막만 
+      client.emit('yjs-sync', { type: 'ack', ok: true, server_seq: lastSeq } satisfies YjsSyncServerPayload);
+
+      // 브로드캐스트: 단일/배치 둘 다 가능
+      if (appliedUpdates.length === 1) {
+        client.to(roomName).emit('yjs-update', { seq: lastSeq, update: appliedUpdates[0] });
+      } else {
+        client.to(roomName).emit('yjs-update', {
+          from_seq: firstSeq!,
+          to_seq: lastSeq,
+          updates: appliedUpdates,
+        });
+      }
     } catch (error) {
       this.logger.error(`Yjs Update Error: ${error?.message ?? error}`);
       const msg: YjsSyncServerPayload = { type: 'error', ok: false, code: 'INTERNAL', message: error?.message };
+      client.emit('yjs-sync', msg);
+    }
+  }
+
+  // update를 받았는데 싱크가 안맞을 경우 요청해야 한다. 
+  @SubscribeMessage('yjs-sync-req')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  handleYjsSyncReq(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: YjsSyncReqPayload,
+  ) {
+    const roomName = client.data.roomName;
+    if (!roomName) return;
+
+    try {
+      const missed = this.codeeditorRepo.getUpdatesSince(roomName, payload.last_seq);
+
+      if (missed === null) {
+        const full = this.codeeditorRepo.encodeFull(roomName);
+        const msg: YjsSyncServerPayload = {
+          type: 'full',
+          ok: true,
+          server_seq: full.seq,
+          update: Buffer.from(full.update),
+          origin: 'SYNC_REQ',
+        };
+        client.emit('yjs-sync', msg);
+        return;
+      }
+
+      if (missed.length > 0) {
+        const msg: YjsSyncServerPayload = {
+          type: 'patch',
+          ok: true,
+          from_seq: missed[0].seq,
+          to_seq: missed[missed.length - 1].seq,
+          updates: missed.map((u) => Buffer.from(u.update)),
+          server_seq: this.codeeditorRepo.ensure(roomName).seq,
+          origin: 'SYNC_REQ',
+        };
+        client.emit('yjs-sync', msg);
+        return;
+      }
+
+      // 이미 최신이면 ack로 알려주기
+      client.emit('yjs-sync', {
+        type: 'ack',
+        ok: true,
+        server_seq: this.codeeditorRepo.ensure(roomName).seq,
+        origin: 'SYNC_REQ',
+      } satisfies YjsSyncServerPayload);
+    } catch (error: any) {
+      this.logger.error(`Yjs SyncReq Error: ${error?.message ?? error}`);
+      const msg: YjsSyncServerPayload = {
+        type: 'error',
+        ok: false,
+        code: 'INTERNAL',
+        message: error?.message,
+        origin: 'SYNC_REQ',
+      };
       client.emit('yjs-sync', msg);
     }
   }

@@ -4,7 +4,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CODEEDITOR_GROUP } from './codeeditor.constants';
 import { encodeUpdate, REDIS_SERVER, streamKey } from '@/infra/cache/cache.constants';
 import type { RedisClientType } from 'redis';
-import { CodeeditorRepository } from '@/infra/memory/tool';
+import { CodeeditorRepository, YjsUpdateClientPayload } from '@/infra/memory/tool';
 
 
 @Injectable()
@@ -108,5 +108,34 @@ export class CodeeditorService {
     if (value instanceof ArrayBuffer) return Buffer.from(new Uint8Array(value));
     return null;
   }
+  normalizeToBuffers(payload: YjsUpdateClientPayload): Buffer[] | null {
+    // 검증을 위한 buf
+    const toBuf = (v: any): Buffer | null => {
+      if (!v) return null;
+      if (Buffer.isBuffer(v)) return v;
+      if (v instanceof Uint8Array) return Buffer.from(v);
+      if (v instanceof ArrayBuffer) return Buffer.from(new Uint8Array(v));
+      return null;
+    };
 
+    // updates 우선
+    if (payload.updates !== undefined) {
+      if (!Array.isArray(payload.updates)) return null;
+      const bufs: Buffer[] = [];
+      for (const item of payload.updates as any[]) {
+        const b = toBuf(item);
+        if (!b) return null;
+        bufs.push(b);
+      }
+      return bufs;
+    }
+
+    // 다음은 update
+    if (payload.update !== undefined) {
+      const b = toBuf(payload.update);
+      return b ? [b] : null;
+    }
+
+    return null; // 둘 다 없음
+  }
 }
