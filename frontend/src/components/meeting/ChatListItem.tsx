@@ -1,8 +1,10 @@
 import { DownloadIcon, FileIcon } from '@/assets/icons/meeting';
+import { useFileDownload } from '@/hooks/chat/useFileDownload';
+import { useMeetingSocketStore } from '@/store/useMeetingSocketStore';
 import { ChatMessage } from '@/types/chat';
 import { formatFileSize, formatTimestamp } from '@/utils/formatter';
 import Image from 'next/image';
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
 
 export function ChatListItem({
   nickname,
@@ -10,6 +12,21 @@ export function ChatListItem({
   createdAt,
   content,
 }: ChatMessage) {
+  const socket = useMeetingSocketStore((s) => s.socket);
+  const { downloadFile, downloadingId } = useFileDownload(socket);
+
+  const isFile = content.type === 'file';
+  const fileId = isFile ? content.fileId : null;
+  const fileName = isFile ? content.filename : '';
+
+  const isItemDownloading = isFile && downloadingId === content.fileId;
+
+  const handleDownload = useCallback(() => {
+    if (isFile && fileId) {
+      downloadFile(fileId, fileName || 'download');
+    }
+  }, [isFile, fileId, fileName, downloadFile]);
+
   return (
     <div className="flex w-full gap-3 p-4">
       {profileImg ? (
@@ -37,20 +54,29 @@ export function ChatListItem({
 
         {/* 댓글 내용 */}
         {content.type === 'text' && (
-          <span className="rounded-sm bg-neutral-600 p-2 text-sm break-all whitespace-pre-wrap text-neutral-50">
+          <span className="inline-flex self-start rounded-sm bg-neutral-600 p-2 text-sm break-all whitespace-pre-wrap text-neutral-50">
             {content.text}
           </span>
         )}
 
-        {content.type === 'file' && content.category === 'image' && (
-          <span className="rounded-sm bg-neutral-600 p-2">
+        {isFile && content.category === 'image' && (
+          <span className="group relative rounded-sm bg-neutral-600 p-2">
             <Image
               width={200}
               height={200}
               className="max-h-50 w-auto object-cover"
-              src={content.fileUrl}
+              src={content.fileUrl as string}
               alt="채팅 이미지"
             />
+
+            <button
+              type="button"
+              disabled={isItemDownloading}
+              onClick={handleDownload}
+              className="absolute top-3 right-3 flex h-5 w-5 items-center justify-center rounded-full bg-neutral-800/80 text-neutral-200 opacity-0 transition-opacity group-hover:opacity-100"
+            >
+              <DownloadIcon className="h-4 w-4" />
+            </button>
           </span>
         )}
 
@@ -91,6 +117,7 @@ export function ChatListItem({
             <button
               type="button"
               aria-label="파일 다운로드"
+              onClick={handleDownload}
               className="rounded-full p-1 group-hover:bg-neutral-500"
             >
               <DownloadIcon className="h-6 w-6 text-neutral-50" />
