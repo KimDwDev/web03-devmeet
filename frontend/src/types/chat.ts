@@ -3,14 +3,6 @@ export type TextContent = {
   text: string;
 };
 
-export type ImageContent = {
-  type: 'image';
-  fileId: string;
-  src: string;
-  width?: number;
-  height?: number;
-};
-
 export type FileCategory = 'image' | 'video' | 'audio' | 'text' | 'binary';
 
 export type FileContent = {
@@ -22,7 +14,7 @@ export type FileContent = {
   fileUrl?: string;
 };
 
-export type ChatContent = TextContent | ImageContent | FileContent;
+export type ChatContent = TextContent | FileContent;
 
 export interface ChatMessage {
   id: string;
