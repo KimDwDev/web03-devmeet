@@ -103,14 +103,11 @@ export default function ItemTransformer({
               textNode.width(originalWidth);
               textNode.height(originalHeight);
 
-              // 너비 변경 감지
-              const widthChanging = Math.abs(newBox.width - oldBox.width) > 1;
-              // 높이 변경 감지
-              const heightChanging =
-                Math.abs(newBox.height - oldBox.height) > 1;
-
-              // 좌우 앵커 드래그 감지: 너비는 변하고 높이는 거의 안 변함
-              const isHorizontalResize = widthChanging && !heightChanging;
+              // 좌우 앵커 드래그 감지
+              const activeAnchor = transformerRef.current?.getActiveAnchor();
+              const isHorizontalResize =
+                activeAnchor === 'middle-left' ||
+                activeAnchor === 'middle-right';
 
               if (isHorizontalResize) {
                 // 원래 높이와 텍스트 필요 높이 중 큰 값으로 자동 조절
