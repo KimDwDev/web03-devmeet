@@ -12,6 +12,13 @@ import { formatFileSize } from '@/utils/formatter';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
+type PendingFile = {
+  file: File;
+  id: string;
+  preview?: string;
+  mediaType: 'image' | 'video' | 'file';
+};
+
 export default function ChatModal() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -20,9 +27,7 @@ export default function ChatModal() {
   const { setIsOpen } = useMeetingStore();
 
   const [hasValue, setHasValue] = useState(false);
-  const [pendingFiles, setPendingFiles] = useState<
-    Array<{ file: File; id: string; preview?: string }>
-  >([]);
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
 
   // 파일 선택 핸들러
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,8 +38,16 @@ export default function ChatModal() {
       const isImageOrVideo =
         file.type.startsWith('image/') || file.type.startsWith('video/');
 
+      const isImage = file.type.startsWith('image/');
+      const isVideo = file.type.startsWith('video/');
+
+      let mediaType: PendingFile['mediaType'] = 'file';
+      if (isImage) mediaType = 'image';
+      else if (isVideo) mediaType = 'video';
+
       return {
         file,
+        mediaType,
         id: Math.random().toString(36).substring(7),
         // 미리보기 URL 생성
         preview: isImageOrVideo ? URL.createObjectURL(file) : undefined,
@@ -161,15 +174,27 @@ export default function ChatModal() {
           <div className="flex flex-wrap gap-3 bg-neutral-700/50 p-3">
             {pendingFiles.map((f) => (
               <div key={f.id} className="group relative">
-                {f.preview ? (
+                {f.mediaType === 'image' && f.preview && (
                   <Image
                     src={f.preview}
                     width={64}
                     height={64}
                     alt="preview"
                     className="h-16 w-16 rounded-md border border-neutral-500 object-cover"
+                    unoptimized
                   />
-                ) : (
+                )}
+
+                {f.mediaType === 'video' && f.preview && (
+                  <video
+                    src={f.preview}
+                    className="h-16 w-16 rounded-md border border-neutral-500 object-cover"
+                    muted
+                    playsInline
+                  />
+                )}
+
+                {f.mediaType === 'file' && (
                   <div className="flex w-full items-center justify-center gap-2 rounded-md border border-neutral-500 bg-neutral-600 px-3 py-2">
                     <FileIcon className="h-6 w-6 text-neutral-300" />
 
