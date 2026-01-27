@@ -225,7 +225,7 @@ export default function MeetingMenu() {
   ];
 
   return (
-    <nav className="flex w-full justify-between px-4 py-2">
+    <nav className="flex w-full justify-between overflow-x-auto px-4 py-2">
       {/* 미디어 관련 메뉴 */}
       <section className="flex gap-2">
         <MeetingButton

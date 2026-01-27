@@ -297,7 +297,11 @@ export default function MeetingRoom({ meetingId }: { meetingId: string }) {
             <div className="group flex-center relative aspect-video w-full rounded-lg bg-neutral-800">
               <div className="flex-center h-full w-auto overflow-hidden rounded-lg">
                 <div className="flex-center h-full max-h-full w-full max-w-full overflow-hidden">
-                  <VideoView stream={screenVideoStream} mirrored={false} />
+                  <VideoView
+                    stream={screenVideoStream}
+                    mirrored={false}
+                    objectFit="object-contain"
+                  />
                 </div>
                 {screenAudioStream && (
                   <AudioView stream={screenAudioStream} userId={userId} />

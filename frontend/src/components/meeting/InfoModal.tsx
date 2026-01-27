@@ -73,7 +73,7 @@ export default function InfoModal({ meetingId }: { meetingId: string }) {
             >
               <span className="text-sm text-neutral-200">회의 코드</span>
               <div className="flex w-full items-center gap-2 overflow-hidden">
-                <span className="w-full text-left font-bold text-neutral-50">{`${meetingId}`}</span>
+                <span className="w-full truncate text-left font-bold text-neutral-50">{`${meetingId}`}</span>
                 <CopyIcon className="h-5 w-5 shrink-0 text-neutral-200" />
               </div>
             </li>
