@@ -119,11 +119,26 @@ export default function Canvas() {
     const filtered = filterVisibleItems(items, viewportRect);
 
     console.log(
-      `[Viewport Culling] 전체: ${items.length} / 렌더링: ${filtered.length}`,
+      `[화이트보드] 전체: ${items.length} / 렌더링: ${filtered.length}`,
     );
 
     return filtered;
   }, [items, viewportRect]);
+
+  // 줌 레벨에 따른 pixelRatio 조절
+  const pixelRatio = useMemo(() => {
+    let ratio: number;
+    if (stageScale >= 1.5) ratio = window.devicePixelRatio;
+    else if (stageScale >= 1) ratio = 1.5;
+    else if (stageScale >= 0.5) ratio = 1;
+    else if (stageScale >= 0.3) ratio = 0.5;
+    else ratio = 0.25;
+
+    console.log(
+      `[화이트보드] scale: ${stageScale.toFixed(2)} / pixelRatio: ${ratio}`,
+    );
+    return ratio;
+  }, [stageScale]);
 
   // viewport 크기를 store에 업데이트
   useEffect(() => {
@@ -312,6 +327,7 @@ export default function Canvas() {
         y={stagePos.y}
         scaleX={stageScale}
         scaleY={stageScale}
+        pixelRatio={pixelRatio}
         onWheel={handleWheel}
         onDragStart={() => setIsDraggingCanvas(true)}
         onDragMove={handleDragMove}
