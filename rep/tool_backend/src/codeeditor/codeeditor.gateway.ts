@@ -1,5 +1,5 @@
 import { AuthType, ToolBackendPayload } from '@/guards/guard.type';
-import { Inject, Logger } from '@nestjs/common';
+import { Inject, Logger, UsePipes, ValidationPipe } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -18,7 +18,7 @@ import { EVENT_STREAM_NAME } from '@/infra/event-stream/event-stream.constants';
 import { CODEEDITOR_WEBSOCKET } from '@/infra/websocket/websocket.constants';
 import { CodeeditorWebsocket } from '@/infra/websocket/codeeditor/codeeditor.service';
 import * as Y from 'yjs';
-import { CodeeditorRepository } from '@/infra/memory/tool';
+import { CodeeditorRepository, YjsRoomResult, YjsUpdateMessage } from '@/infra/memory/tool';
 
 
 @WebSocketGateway({
@@ -85,7 +85,9 @@ export class CodeeditorWebsocketGateway implements OnGatewayInit, OnGatewayConne
 
     // 그 업데이트 본을 준다. 
     const fullUpdate = Y.encodeStateAsUpdate(entry.doc);
-    client.emit('yjs-init', fullUpdate); // 클라이언트에게 yjs 초기 문서를 전달해준다. 
+
+    // 초기에 idx와 함께 같이 전달해준다. ( 현재 메모리에 저장된 idx )
+    client.emit('yjs-init', { update: fullUpdate, idx: entry.idx }); 
 
     if (payload.clientType === 'main') {
       // main이 불러오면 ydoc에 있는 캐시도 자동으로 불러오게 한다. 
@@ -137,26 +139,54 @@ export class CodeeditorWebsocketGateway implements OnGatewayInit, OnGatewayConne
   };
 
   // 업데이트 하고 싶다고 보내는 메시지
+  @UsePipes(
+  new ValidationPipe({
+    whitelist : true,
+    transform : true
+  }))
   @SubscribeMessage('yjs-update')
-  handleYjsUpdate(
+  async handleYjsUpdate(
     @ConnectedSocket() client: Socket,
-    @MessageBody() update: Buffer, // Yjs 데이터는 바이너리
+    @MessageBody() updateMsg: YjsUpdateMessage, // Yjs 데이터는 바이너리
   ) {
     try {
-      if (!update) return;
-
       // 캐싱된 룸 이름 사용
       const roomName = client.data.roomName;
+      const payload: ToolBackendPayload = client.data.payload;
 
-      const entry = this.codeeditorRepo.get(roomName);
-      if (!entry) return;
+      const entry = this.codeeditorRepo.ensure(roomName);
+
+      // 안전하게 변환
+      const updateBuf =
+        Buffer.isBuffer(updateMsg.update)
+          ? updateMsg.update
+          : updateMsg.update instanceof Uint8Array
+            ? Buffer.from(updateMsg.update)
+            : Buffer.from(updateMsg.update);
 
       // 여기서 메모리 업데이트 + cache 업데이트를 진행해야 한다. 
-      Y.applyUpdate(entry.doc, new Uint8Array(update));
+      Y.applyUpdate(entry.doc, updateBuf);
+
+      // redis 스트림에 업데이트 
+      const { updateIdx } = await this.codeeditorService.appendUpdateLog({
+        room_id: payload.room_id,       // ✅ room_id 원본
+        prevIdx: updateMsg.prev_idx ?? entry.idx,
+        update: updateBuf,
+        user_id: payload.user_id,
+      });
+
+      // 메모리 idx에 갱신을 시킨다.
+      entry.idx = updateIdx;
+
+      const result: YjsRoomResult = {
+        prev_idx: updateMsg.prev_idx,
+        update_idx: updateIdx,
+        update: updateBuf,
+      };
 
       // 브로드캐스트 (이게 나를 제외하고 전부 보내는것인지 궁금)
       // code에 경우 최신성 보다는 정확성이 더 중요하다고 생각하기 때문에 이 부분에서 volatile을 삭제한다. 
-      client.to(roomName).emit('yjs-update', update);
+      client.to(roomName).emit('yjs-update', result);
     } catch (error) {
       this.logger.error(`Yjs Update Error: ${error.message}`);
     }

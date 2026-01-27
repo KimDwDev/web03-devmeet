@@ -1,4 +1,5 @@
 import * as Y from 'yjs';
+import { IsDefined, IsNotEmpty, IsString } from "class-validator";
 
 // yjs에서 저장할 map 모양
 export type YjsRoomEntry = {
@@ -25,3 +26,22 @@ export interface YjsRepository {
 }
 
 export const DEFAULT_IDX = '0-0';
+
+// update할때 보내야 하는 값
+export class YjsUpdateMessage {
+
+  @IsNotEmpty()
+  @IsString()
+  prev_idx : string;
+
+  @IsDefined()
+  update : any; // 바로 버퍼로 받지말고 안전하게 gateway에서 변환하는게 안전
+
+};
+
+// yjs 반환 값
+export type YjsRoomResult = {
+  prev_idx : string;
+  update_idx : string | undefined;
+  update : Buffer
+}
