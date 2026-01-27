@@ -14,7 +14,7 @@ export function MediaPreview() {
 
   return (
     <div
-      className={`relative box-border h-90 w-160 overflow-hidden rounded-2xl bg-neutral-700 ${!canRenderVideo && 'p-4'}`}
+      className={`relative box-border aspect-video h-fit w-full overflow-hidden rounded-2xl bg-neutral-700 ${!canRenderVideo && 'p-4'}`}
     >
       {/* Video Layer */}
       {canRenderVideo && stream && <VideoView stream={stream} />}
@@ -53,20 +53,20 @@ export function MediaPreview() {
       )}
 
       {/* Control Layer */}
-      <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 gap-6">
+      <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 gap-6 max-sm:bottom-4 max-sm:gap-4">
         <button onClick={toggleVideo} className="group">
           {media.videoOn ? (
-            <CamOnIcon className="h-12 w-12 rounded-full bg-white p-3 text-neutral-700 shadow-lg transition-all group-active:scale-95" />
+            <CamOnIcon className="h-12 w-12 rounded-full bg-white p-3 text-neutral-700 shadow-lg transition-all group-active:scale-95 max-sm:h-9 max-sm:w-9 max-sm:p-2" />
           ) : (
-            <CamOffIcon className="h-12 w-12 rounded-full bg-white p-3 shadow-lg transition-all group-active:scale-95" />
+            <CamOffIcon className="h-12 w-12 rounded-full bg-white p-3 shadow-lg transition-all group-active:scale-95 max-sm:h-9 max-sm:w-9 max-sm:p-2" />
           )}
         </button>
 
         <button onClick={toggleAudio} className="group">
           {media.audioOn ? (
-            <MicOnIcon className="h-12 w-12 rounded-full bg-white p-3 text-neutral-700 shadow-lg transition-all group-active:scale-95" />
+            <MicOnIcon className="h-12 w-12 rounded-full bg-white p-3 text-neutral-700 shadow-lg transition-all group-active:scale-95 max-sm:h-9 max-sm:w-9 max-sm:p-2" />
           ) : (
-            <MicOffIcon className="h-12 w-12 rounded-full bg-white p-3 shadow-lg transition-all group-active:scale-95" />
+            <MicOffIcon className="h-12 w-12 rounded-full bg-white p-3 shadow-lg transition-all group-active:scale-95 max-sm:h-9 max-sm:w-9 max-sm:p-2" />
           )}
         </button>
       </div>
