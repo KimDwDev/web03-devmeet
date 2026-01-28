@@ -2,24 +2,45 @@ import { GuardService } from '@/guards/guard.service';
 import { ToolBackendPayload } from '@/guards/guard.type';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { WHITEBOARD_GROUP } from './whiteboard.constants';
-import { CACHE_NAMESPACE_NAME, CACHE_WHITEBOARD_NAMESPACE_NAME, CACHE_WHITEBOARD_SNAPSHOT_KEY_NAME, CACHE_WHITEBOARD_STREAM_KEY_NAME, decodeB64, encodeB64, REDIS_SERVER, SNAPSHOT_N, STREAM_MAXLEN, WHITEBOARD_BATCH_MAX_UPDATES, WHITEBOARD_BATCH_WINDOW_MS, WHITEBOARD_SNAPSHOT_EVERY_MS, WHITEBOARD_SNAPSHOT_MIN_SEQ_DELTA, WHITEBOARD_STREAM_MAXLEN } from '@/infra/cache/cache.constants';
+import {
+  CACHE_NAMESPACE_NAME,
+  CACHE_WHITEBOARD_NAMESPACE_NAME,
+  CACHE_WHITEBOARD_SNAPSHOT_KEY_NAME,
+  CACHE_WHITEBOARD_STREAM_KEY_NAME,
+  decodeB64,
+  encodeB64,
+  REDIS_SERVER,
+  SNAPSHOT_N,
+  STREAM_MAXLEN,
+  WHITEBOARD_BATCH_MAX_UPDATES,
+  WHITEBOARD_BATCH_WINDOW_MS,
+  WHITEBOARD_SNAPSHOT_EVERY_MS,
+  WHITEBOARD_SNAPSHOT_MIN_SEQ_DELTA,
+  WHITEBOARD_STREAM_MAXLEN,
+} from '@/infra/cache/cache.constants';
 import type { RedisClientType } from 'redis';
-import { Pending, PendingRepository, SnapState, SnapStateRepository, UpdateEntry, WhiteboardRepository, YjsUpdateClientPayload } from '@/infra/memory/tool';
+import {
+  Pending,
+  PendingRepository,
+  SnapState,
+  SnapStateRepository,
+  UpdateEntry,
+  WhiteboardRepository,
+  YjsUpdateClientPayload,
+} from '@/infra/memory/tool';
 import * as Y from 'yjs';
-
 
 @Injectable()
 export class WhiteboardService {
-
   private logger = new Logger(WhiteboardService.name);
   // whiteboar에서 buffer가 쌓일때 처리할 pendin
-  
+
   constructor(
     private readonly guard: GuardService,
     @Inject(REDIS_SERVER) private readonly redis: RedisClientType<any, any>,
-    private readonly whiteboardRepo : WhiteboardRepository,
-    private readonly pending : PendingRepository,
-    private readonly snapState : SnapStateRepository
+    private readonly whiteboardRepo: WhiteboardRepository,
+    private readonly pending: PendingRepository,
+    private readonly snapState: SnapStateRepository,
   ) {}
 
   async guardService(token: string, type: 'main' | 'sub'): Promise<ToolBackendPayload> {
@@ -40,11 +61,11 @@ export class WhiteboardService {
     // main인 경우 emit 해준다.
 
     return payload;
-  };
+  }
 
   makeNamespace(room_id: string): string {
     return `${WHITEBOARD_GROUP.WHITEBOARD}:${room_id}`;
-  };
+  }
 
   // buffer가 ydocs가 허용하는 buffer인지 검증
   normalizeToBuffer(value: unknown): Buffer | null {
@@ -96,14 +117,14 @@ export class WhiteboardService {
     return `${CACHE_NAMESPACE_NAME.WHITEBOARD}:${room_id}:${CACHE_WHITEBOARD_NAMESPACE_NAME.SNAPSHOT}`;
   }
 
-  // stream으로 쌓아서 처리하는 것이 좀 더 유리하기 때문에 
-  // flush는 정리하는 함수이고 
+  // stream으로 쌓아서 처리하는 것이 좀 더 유리하기 때문에
+  // flush는 정리하는 함수이고
   private async flushRoom(room_id: string) {
     const p = this.pending.get(room_id);
     if (!p) return;
 
     if (p.timer) {
-      clearTimeout(p.timer); // 시간이 걸려있다면 잠시 아웃 
+      clearTimeout(p.timer); // 시간이 걸려있다면 잠시 아웃
       p.timer = undefined;
     }
 
@@ -117,9 +138,9 @@ export class WhiteboardService {
     } catch (err) {
       // 레디스에 저장을 한경우만 정리하도록 로직을 정리하였다.
       this.logger.error(err);
-    };
-  }  
-  
+    }
+  }
+
   // 아래는 queue에 쌓는 함수 ( whiteboard에경우 서버 자체이서도 데이터를 쌓아서 처리하는게 유리할 tn )
   queueUpdates(room_id: string, updates: Uint8Array[], user_id: string) {
     if (!updates.length) return;
@@ -145,7 +166,7 @@ export class WhiteboardService {
   async ensureDocFromRedis(room_id: string): Promise<UpdateEntry> {
     const existed = this.whiteboardRepo.get(room_id);
     if (existed) return this.whiteboardRepo.encodeFull(room_id);
-    
+
     // 없으면 생성한다. ( cache에서 채울 예정 )
     this.whiteboardRepo.ensure(room_id);
 
@@ -191,17 +212,17 @@ export class WhiteboardService {
       [CACHE_WHITEBOARD_STREAM_KEY_NAME.TX]: String(Date.now()),
       [CACHE_WHITEBOARD_STREAM_KEY_NAME.USER_ID]: user_id,
     });
-  
+
     return lastId;
   }
-  
+
   // stream 300 마다 snapshot 작성
   async maybeSnapShot(room_id: string) {
     const entry = this.whiteboardRepo.ensure(room_id);
 
-    // whiteboard는 시간 or 데이터가 일정수준일때 snapshot을 찍어야 하기때문에 아래와 같이 처리한다. 
+    // whiteboard는 시간 or 데이터가 일정수준일때 snapshot을 찍어야 하기때문에 아래와 같이 처리한다.
     const now = Date.now();
-    const st = this.snapState.get(room_id) ?? { lastTs: 0, lastSeq: 0 }; 
+    const st = this.snapState.get(room_id) ?? { lastTs: 0, lastSeq: 0 };
     if (!this.snapState.get(room_id)) this.snapState.set(room_id, st);
 
     // 하나라도 충족하면 snapshot을 찍습니다.
@@ -241,5 +262,5 @@ export class WhiteboardService {
     } catch (err) {
       this.logger.error(err);
     }
-  }  
+  }
 }

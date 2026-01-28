@@ -18,7 +18,6 @@ import { WHITEBOARD_WEBSOCKET } from '@/infra/websocket/websocket.constants';
 import { WhiteboardWebsocket } from '@/infra/websocket/whiteboard/whiteboard.service';
 import { WhiteboardRepository } from '@/infra/memory/tool';
 
-
 @WebSocketGateway({
   namespace: process.env.NODE_BACKEND_WEBSOCKET_WHITEBOARD,
   path: process.env.NODE_BACKEND_WEBSOCKET_PREFIX,
@@ -130,11 +129,11 @@ export class WhiteboardWebsocketGateway implements OnGatewayInit, OnGatewayConne
     } catch (err) {
       this.logger.error(err);
       throw new WsException({ message: err.message ?? 'READY_ERROR', status: 500 });
-    };
+    }
   }
 
-  // Yjs 업데이트 (아이템 동기화) -> 이부분에서 동기화를 진행하는것 같다 여기서도 만약 문제가 발생하면 다시 싱크를 맞추는 작업이 필요해 보인다. 
-  // source of trutch로 도메인에서 업데이트 하기 전에 여기를 거쳐야 한다. 
+  // Yjs 업데이트 (아이템 동기화) -> 이부분에서 동기화를 진행하는것 같다 여기서도 만약 문제가 발생하면 다시 싱크를 맞추는 작업이 필요해 보인다.
+  // source of trutch로 도메인에서 업데이트 하기 전에 여기를 거쳐야 한다.
   @SubscribeMessage('yjs-update')
   handleYjsUpdate(@ConnectedSocket() client: Socket, @MessageBody() update: Buffer) {
     try {
@@ -147,16 +146,12 @@ export class WhiteboardWebsocketGateway implements OnGatewayInit, OnGatewayConne
       const seq = this.whiteboardRepo.applyAndAppendUpdate(payload.room_id, u8);
 
       // 서버에 저장 하기 전에 queue에 올린다.
-      this.whiteboardService.queueUpdates(
-        payload.room_id,
-        [u8],
-        payload.user_id,
-      );
+      this.whiteboardService.queueUpdates(payload.room_id, [u8], payload.user_id);
 
-      // 브로드캐스트 이러한 방식을 이용해서 이를 업데이트 한다. 
+      // 브로드캐스트 이러한 방식을 이용해서 이를 업데이트 한다.
       client.to(roomName).volatile.emit('yjs-update', {
-        update,  
-        seq,     
+        update,
+        seq,
       });
     } catch (error) {
       this.logger.error(`Yjs Update Error: ${error.message}`);
@@ -165,17 +160,14 @@ export class WhiteboardWebsocketGateway implements OnGatewayInit, OnGatewayConne
 
   // 동기화 요청 처리 ( 도메인 수정이나 비슷한 상황에서 동기화가 필요할때 사용한다.  )
   @SubscribeMessage('request-sync')
-  handleRequestSync(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() body: { last_seq?: number },
-  ) {
+  handleRequestSync(@ConnectedSocket() client: Socket, @MessageBody() body: { last_seq?: number }) {
     try {
       const payload: ToolBackendPayload = client.data.payload;
 
       const room_id = payload.room_id;
       const last_seq = Number(body?.last_seq ?? 0);
 
-      // 증분을 시도한다. 
+      // 증분을 시도한다.
       const updates = this.whiteboardRepo.getUpdatesSince(room_id, last_seq);
 
       if (updates === null) {
@@ -187,13 +179,13 @@ export class WhiteboardWebsocketGateway implements OnGatewayInit, OnGatewayConne
         });
         this.logger.log(`[Sync] FULL: room=${room_id} last_seq=${last_seq} -> seq=${full.seq}`);
         return;
-      }; // update 부분이 없다면 스킵
+      } // update 부분이 없다면 스킵
 
       if (updates.length === 0) {
         const entry = this.whiteboardRepo.ensure(room_id);
         client.emit('yjs-sync-ok', { ok: true, seq: entry.seq });
         return;
-      };
+      }
 
       const entry = this.whiteboardRepo.ensure(room_id);
       client.emit('yjs-sync-delta', {
@@ -203,10 +195,12 @@ export class WhiteboardWebsocketGateway implements OnGatewayInit, OnGatewayConne
         origin: 'DELTA',
       });
 
-      this.logger.log(`[Sync] DELTA: room=${room_id} from=${last_seq} to=${entry.seq} count=${updates.length}`);
+      this.logger.log(
+        `[Sync] DELTA: room=${room_id} from=${last_seq} to=${entry.seq} count=${updates.length}`,
+      );
     } catch (err) {
       this.logger.error(`Request Sync Error: ${err.message}`);
-    };
+    }
   }
 
   // Awareness 업데이트 (커서 위치, 선택 아이템 동기화)
@@ -228,7 +222,7 @@ export class WhiteboardWebsocketGateway implements OnGatewayInit, OnGatewayConne
       const roomName = client.data.roomName;
       // 현재 인덱스 확인 후 동기화 작업 진행 (다른것도 마찬가지이다.)
 
-      // 맞으면 뿌리고 업데이트 
+      // 맞으면 뿌리고 업데이트
 
       client.to(roomName).emit(WHITEBOARD_CLIENT_EVENT_NAME.REMOTE_CREATE_ELEMENT, data);
     } catch (error) {
