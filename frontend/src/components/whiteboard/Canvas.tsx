@@ -71,6 +71,13 @@ export default function Canvas() {
     rotation?: number;
   } | null>(null);
 
+  // stageRef를 store에 저장
+  useEffect(() => {
+    if (stageRef.current) {
+      useWhiteboardLocalStore.getState().setStageRef(stageRef);
+    }
+  }, []);
+
   // Viewport culling을 위한 상태
   const [viewportRect, setViewportRect] = useState<{
     x: number;
@@ -98,6 +105,7 @@ export default function Canvas() {
       y: (size.height - canvasHeight) / 2,
     };
 
+    stage.scale({ x: 1, y: 1 });
     stage.position(centerPos);
     stage.batchDraw();
     setViewportSize(size.width, size.height);
@@ -145,20 +153,32 @@ export default function Canvas() {
   }, [items, viewportRect]);
 
   // 줌 레벨에 따른 pixelRatio 조절
-  const pixelRatio = useMemo(() => {
-    const stage = stageRef.current;
-    if (!stage) return window.devicePixelRatio;
-    
-    const scale = stage.scaleX();
-    let ratio: number;
-    if (scale >= 1.5) ratio = window.devicePixelRatio;
-    else if (scale >= 1) ratio = 1.5;
-    else if (scale >= 0.5) ratio = 1;
-    else if (scale >= 0.3) ratio = 0.5;
-    else ratio = 0.25;
+  const [pixelRatio, setPixelRatio] = useState(window.devicePixelRatio);
 
-    return ratio;
-  }, [stageRef]);
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+
+    const updatePixelRatio = () => {
+      const scale = stage.scaleX();
+      let ratio: number;
+      if (scale >= 1.5) ratio = window.devicePixelRatio;
+      else if (scale >= 1) ratio = 1.5;
+      else if (scale >= 0.5) ratio = 1;
+      else if (scale >= 0.3) ratio = 0.5;
+      else ratio = 0.25;
+
+      setPixelRatio(ratio);
+    };
+
+    updatePixelRatio();
+
+    stage.on('wheel', updatePixelRatio);
+
+    return () => {
+      stage.off('wheel', updatePixelRatio);
+    };
+  }, []);
 
   // viewport 크기를 store에 업데이트
   useEffect(() => {
