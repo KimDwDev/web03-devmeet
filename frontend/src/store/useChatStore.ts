@@ -3,8 +3,6 @@ import { create } from 'zustand';
 
 interface ChatState {
   messages: ChatMessage[];
-  addMessage: (msg: ChatMessage) => void;
-  reset: () => void;
 }
 
 interface ChatAction {
