@@ -144,12 +144,8 @@ export class WhiteboardService {
   // redis로 부터 docs를 가져오는 로직 ( 메모리에 없을 경우 cache에서 불러와서 저장한다. )
   async ensureDocFromRedis(room_id: string): Promise<UpdateEntry> {
     const existed = this.whiteboardRepo.get(room_id);
-    if (existed) {
-      console.log("메모리에서 가져옴")
-      return this.whiteboardRepo.encodeFull(room_id);
-    }
-
-    console.log("레디스에서 가져옴")
+    if (existed) return this.whiteboardRepo.encodeFull(room_id);
+    
     // 없으면 생성한다. ( cache에서 채울 예정 )
     this.whiteboardRepo.ensure(room_id);
 
