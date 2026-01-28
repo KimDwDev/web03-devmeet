@@ -13,14 +13,11 @@ export function getViewportRect(stage: Konva.Stage): Rect {
   const scale = stage.scaleX();
   const pos = stage.position();
 
-  const width = stage.width() / scale;
-  const height = stage.height() / scale;
-
   return {
     x: -pos.x / scale,
     y: -pos.y / scale,
-    width,
-    height,
+    width: stage.width() / scale,
+    height: stage.height() / scale,
   };
 }
 
@@ -48,13 +45,19 @@ export function getItemBoundingBox(item: WhiteboardItem): Rect {
         height: item.height,
       };
 
+    // 텍스트는 크게 잡음
     case 'text': {
-      const estimatedHeight = item.fontSize * 1.5; // 정확한 높이는 아님
+      const SAFE_WIDTH = Math.max(item.width * 3, 3000);
+      const SAFE_HEIGHT = Math.max(
+        item.fontSize * (item.text?.split('\n').length || 1) * 3,
+        2000,
+      );
+
       return {
-        x: item.x,
-        y: item.y,
-        width: item.width,
-        height: estimatedHeight,
+        x: item.x - SAFE_WIDTH / 2,
+        y: item.y - SAFE_HEIGHT / 2,
+        width: SAFE_WIDTH,
+        height: SAFE_HEIGHT,
       };
     }
 
