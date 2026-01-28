@@ -225,9 +225,9 @@ export default function MeetingMenu() {
   ];
 
   return (
-    <nav className="flex w-full justify-between overflow-x-auto px-4 py-2">
+    <nav className="flex w-full justify-between px-4 py-2">
       {/* 미디어 관련 메뉴 */}
-      <section className="flex gap-2">
+      <section className="flex w-full max-w-44 gap-2">
         <MeetingButton
           icon={
             media.audioOn ? (
@@ -254,9 +254,9 @@ export default function MeetingMenu() {
 
       {/* 미팅 관련 메뉴 */}
       {width > BREAK_POINT && (
-        <section className="flex gap-2">
+        <section className="flex w-full justify-center gap-2">
           {MENU_ITEMS.map((item) => (
-            <div key={item.id} className="relative">
+            <div key={item.id} className="relative w-full max-w-22">
               <MeetingButton
                 icon={item.icon}
                 text={item.text}
@@ -274,9 +274,11 @@ export default function MeetingMenu() {
         </section>
       )}
 
-      <section className="flex gap-2">
+      <section
+        className={`flex w-full gap-2 ${width <= BREAK_POINT ? 'max-w-44' : 'max-w-22'}`}
+      >
         {width <= BREAK_POINT && (
-          <div className="relative">
+          <div className="relative w-full">
             <MeetingButton
               icon={<MoreMenuIcon className="h-8 w-8" />}
               text="더보기"
