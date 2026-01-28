@@ -29,7 +29,8 @@ export type ToolType =
   | 'video'
   | 'youtube'
   | 'stack'
-  | 'eraser';
+  | 'eraser'
+  | null;
 
 export interface PanelProps {
   selectedTool: ToolType;

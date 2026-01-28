@@ -13,7 +13,10 @@ import { useAddWhiteboardItem } from '@/hooks/useAddWhiteboardItem';
 import { PanelProps } from '@/types/whiteboard/whiteboardUI';
 import { SearchIcon } from '@/assets/icons/whiteboard';
 
-export default function StackPanel({ selectedTool }: Partial<PanelProps>) {
+export default function StackPanel({
+  selectedTool,
+  onSelect,
+}: Partial<PanelProps>) {
   // stack add hook
   const { handleAddStack } = useAddWhiteboardItem();
 
@@ -61,6 +64,14 @@ export default function StackPanel({ selectedTool }: Partial<PanelProps>) {
     'tool',
   ];
 
+  const handleIconClick = (icon: StackIconInfo) => {
+    // 화이트보드에 아이콘 추가
+    handleAddStack(icon);
+
+    // 패널 닫기 (부모의 선택 상태를 null로 변경)
+    if (onSelect) onSelect(null);
+  };
+
   return (
     <div className="flex max-w-[400px] min-w-[380px] flex-col gap-3 rounded-xl border border-neutral-200 bg-white p-3 shadow-2xl">
       {/* 상단 검색 바 */}
@@ -81,7 +92,7 @@ export default function StackPanel({ selectedTool }: Partial<PanelProps>) {
       <div
         ref={scrollRef}
         onWheel={handleWheel}
-        className="flex cursor-ew-resize gap-2 overflow-x-auto border-b-2 border-neutral-300 pb-5"
+        className="no-scrollbar flex cursor-ew-resize gap-2 overflow-x-auto border-b-2 border-neutral-300 pb-5"
       >
         {categories.map((category) => (
           <button
@@ -99,12 +110,12 @@ export default function StackPanel({ selectedTool }: Partial<PanelProps>) {
       </div>
 
       {/* 아이콘 */}
-      <div className="grid max-h-[300px] grid-cols-5 gap-3 overflow-y-auto pr-1">
+      <div className="custom-scrollbar grid max-h-[300px] grid-cols-5 gap-3 overflow-y-auto pr-1">
         {filteredIcons.length > 0 ? (
           filteredIcons.map((icon: StackIconInfo) => (
             <button
               key={icon.id}
-              onClick={() => handleAddStack(icon)}
+              onClick={() => handleIconClick(icon)}
               className="group flex flex-col items-center justify-center gap-1.5 rounded-lg border border-transparent p-1 transition-all hover:bg-sky-50"
               title={icon.name}
             >
