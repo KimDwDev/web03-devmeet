@@ -214,13 +214,13 @@ export function useArrowHandles({
         updates.startBinding = currentSnapTarget.current;
       } else {
         // 빈 공간에 놓으면 바인딩 해제
-        updates.startBinding = undefined;
+        updates.startBinding = null;
       }
     } else if (handleType === 'end') {
       if (currentSnapTarget.current) {
         updates.endBinding = currentSnapTarget.current;
       } else {
-        updates.endBinding = undefined;
+        updates.endBinding = null;
       }
     }
 
