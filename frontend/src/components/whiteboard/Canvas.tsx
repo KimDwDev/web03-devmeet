@@ -71,13 +71,6 @@ export default function Canvas() {
     rotation?: number;
   } | null>(null);
 
-  // stageRef를 store에 저장
-  useEffect(() => {
-    if (stageRef.current) {
-      useWhiteboardLocalStore.getState().setStageRef(stageRef);
-    }
-  }, []);
-
   // Viewport culling을 위한 상태
   const [viewportRect, setViewportRect] = useState<{
     x: number;
@@ -109,6 +102,9 @@ export default function Canvas() {
     stage.position(centerPos);
     stage.batchDraw();
     setViewportSize(size.width, size.height);
+
+    useWhiteboardLocalStore.getState().setStageRef(stageRef);
+
     isInitialMount.current = false;
   }, [size.width, size.height, canvasWidth, canvasHeight, setViewportSize]);
 
