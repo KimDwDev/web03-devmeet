@@ -44,7 +44,7 @@ export default function Header() {
 
   const logout = async () => {
     await apiWithToken.delete('/auth/logout');
-    window.location.href = '/landing';
+    window.location.href = '/';
   };
 
   return (
