@@ -84,15 +84,15 @@ export class CodeeditorWebsocketGateway implements OnGatewayInit, OnGatewayConne
     client.data.roomName = roomName;
 
     // 메모리에 존재하면 가져오고 없으면 cache에서 가져온다. ( 이 부분을 cache에서 가져오는 걸로 수정을 한다. )
-    const full = await this.codeeditorService.ensureDocFromRedis(roomName, payload.room_id);
+    // const full = await this.codeeditorService.ensureDocFromRedis(payload.room_id);
 
-    // 초기에 idx와 함께 같이 전달해준다. ( 현재 메모리에 저장된 idx )
-    client.emit('yjs-init', {
-      update: Buffer.from(full.update),
-      seq: full.seq,
-      origin: 'INIT',
-    });
-    client.data.last_seq = full.seq;
+    // // 초기에 idx와 함께 같이 전달해준다. ( 현재 메모리에 저장된 idx )
+    // client.emit('yjs-init', {
+    //   update: Buffer.from(full.update),
+    //   seq: full.seq,
+    //   origin: 'INIT',
+    // });
+    // client.data.last_seq = full.seq;
 
     if (payload.clientType === 'main') {
       // main이 불러오면 ydoc에 있는 캐시도 자동으로 불러오게 한다.
@@ -133,6 +133,22 @@ export class CodeeditorWebsocketGateway implements OnGatewayInit, OnGatewayConne
     }
   }
 
+  // 좀더 안전하게 하기 위한 ready
+  @SubscribeMessage('yjs-ready')
+  async onReady(@ConnectedSocket() client: Socket) {
+    if (client.data.__yjsReadySent) return;
+    client.data.__yjsReadySent = true;
+
+    const payload: ToolBackendPayload = client.data.payload;
+    const full = await this.codeeditorService.ensureDocFromRedis(payload.room_id);
+
+    client.emit('yjs-init', {
+      update: Buffer.from(full.update),
+      seq: full.seq,
+      origin: 'INIT',
+    });
+  }
+
   // 업데이트 하고 싶다고 보내는 메시지
   @SubscribeMessage('yjs-update')
   @UsePipes(
@@ -146,6 +162,7 @@ export class CodeeditorWebsocketGateway implements OnGatewayInit, OnGatewayConne
   ) {
     // 캐싱된 룸 이름 사용
     const roomName = client.data.roomName;
+    const dataPayload: ToolBackendPayload = client.data.payload;
 
     try {
       const bufs = this.codeeditorService.normalizeToBuffers(payload);
@@ -159,11 +176,11 @@ export class CodeeditorWebsocketGateway implements OnGatewayInit, OnGatewayConne
       }
 
       // 클라이언트에 마지막 값과 비교
-      const missed = this.codeeditorRepo.getUpdatesSince(roomName, payload.last_seq);
+      const missed = this.codeeditorRepo.getUpdatesSince(dataPayload.room_id, payload.last_seq);
 
       if (missed === null) {
         // 뒤처지면 전체를 sync해서 보낸다. 그리고 업데이트를 하고 보내면 좋겠다. 그러니까 전체 추가 후 업데이트
-        const full = this.codeeditorRepo.encodeFull(roomName);
+        const full = this.codeeditorRepo.encodeFull(dataPayload.room_id);
         const msg: YjsSyncServerPayload = {
           type: 'full',
           ok: true,
@@ -183,7 +200,7 @@ export class CodeeditorWebsocketGateway implements OnGatewayInit, OnGatewayConne
           from_seq: missed[0].seq,
           to_seq: missed[missed.length - 1].seq,
           updates: missed.map((u) => Buffer.from(u.update)),
-          server_seq: this.codeeditorRepo.ensure(roomName).seq,
+          server_seq: this.codeeditorRepo.ensure(dataPayload.room_id).seq,
           origin: 'UPDATE_REJECTED',
         };
         client.emit('yjs-sync', msg);
@@ -195,7 +212,7 @@ export class CodeeditorWebsocketGateway implements OnGatewayInit, OnGatewayConne
 
       const appliedUpdates: Buffer[] = [];
       for (const b of bufs) {
-        const seq = this.codeeditorRepo.applyAndAppendUpdate(roomName, new Uint8Array(b));
+        const seq = this.codeeditorRepo.applyAndAppendUpdate(dataPayload.room_id, new Uint8Array(b));
         if (firstSeq === null) firstSeq = seq;
         lastSeq = seq;
         appliedUpdates.push(b);
@@ -220,14 +237,13 @@ export class CodeeditorWebsocketGateway implements OnGatewayInit, OnGatewayConne
       }
 
       // 모든 업데이트가 끝났을때 redis에 업데이트 한다.
-      const dataPayload: ToolBackendPayload = client.data.payload;
       await this.codeeditorService.appendUpdatesToStream(
         dataPayload.room_id,
         appliedUpdates.map((b) => new Uint8Array(b)),
         dataPayload.user_id,
       );
 
-      await this.codeeditorService.maybeSnapShot(roomName, dataPayload.room_id);
+      await this.codeeditorService.maybeSnapShot(dataPayload.room_id);
     } catch (error) {
       this.logger.error(`Yjs Update Error: ${error?.message ?? error}`);
       const msg: YjsSyncServerPayload = {
@@ -245,13 +261,14 @@ export class CodeeditorWebsocketGateway implements OnGatewayInit, OnGatewayConne
   @UsePipes(new ValidationPipe({ whitelist: true }))
   handleYjsSyncReq(@ConnectedSocket() client: Socket, @MessageBody() payload: YjsSyncReqPayload) {
     const roomName = client.data.roomName;
+    const dataPayload: ToolBackendPayload = client.data.payload;
     if (!roomName) return;
 
     try {
-      const missed = this.codeeditorRepo.getUpdatesSince(roomName, payload.last_seq);
+      const missed = this.codeeditorRepo.getUpdatesSince(dataPayload.room_id, payload.last_seq);
 
       if (missed === null) {
-        const full = this.codeeditorRepo.encodeFull(roomName);
+        const full = this.codeeditorRepo.encodeFull(dataPayload.room_id);
         const msg: YjsSyncServerPayload = {
           type: 'full',
           ok: true,
@@ -270,7 +287,7 @@ export class CodeeditorWebsocketGateway implements OnGatewayInit, OnGatewayConne
           from_seq: missed[0].seq,
           to_seq: missed[missed.length - 1].seq,
           updates: missed.map((u) => Buffer.from(u.update)),
-          server_seq: this.codeeditorRepo.ensure(roomName).seq,
+          server_seq: this.codeeditorRepo.ensure(dataPayload.room_id).seq,
           origin: 'SYNC_REQ',
         };
         client.emit('yjs-sync', msg);
@@ -281,7 +298,7 @@ export class CodeeditorWebsocketGateway implements OnGatewayInit, OnGatewayConne
       client.emit('yjs-sync', {
         type: 'ack',
         ok: true,
-        server_seq: this.codeeditorRepo.ensure(roomName).seq,
+        server_seq: this.codeeditorRepo.ensure(dataPayload.room_id).seq,
         origin: 'SYNC_REQ',
       } satisfies YjsSyncServerPayload);
     } catch (error: any) {

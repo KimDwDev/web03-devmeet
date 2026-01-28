@@ -40,7 +40,7 @@ export class MainConsumerController {
       if (value.tool === 'codeeditor') {
         await this.codeeditorSocket.disconnectCodeeditorRoom(value.room_id);
         // 메모리를 비워야 한다.
-        this.codeeditorRepo.delete(`${CODEEDITOR_GROUP.CODEEDITOR}:${value.room_id}`);
+        this.codeeditorRepo.delete(value.room_id);
         // snapshot을 찍을 것인가??
       } else if (value.tool === 'whiteboard') {
         await this.whiteboardSocket.disconnectWhiteboardRoom(value.room_id);

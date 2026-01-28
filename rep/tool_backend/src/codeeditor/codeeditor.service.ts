@@ -102,12 +102,12 @@ export class CodeeditorService {
   }
 
   // redis로 부터 docs를 가져오는 로직 ( 메모리에 없을 경우 cache에서 불러와서 저장한다. )
-  async ensureDocFromRedis(roomName: string, room_id: string): Promise<UpdateEntry> {
+  async ensureDocFromRedis(room_id: string): Promise<UpdateEntry> {
     const existed = this.codeeditorRepo.get(room_id);
     if (existed) return this.codeeditorRepo.encodeFull(room_id);
 
     // 없으면 생성한다. ( cache에서 채울 예정 )
-    this.codeeditorRepo.ensure(roomName);
+    this.codeeditorRepo.ensure(room_id);
 
     const snapKey: string = this.snapshotKey(room_id);
     const snap = await this.redis.hGetAll(snapKey); // 현재 snap shot을 가져온다.
@@ -118,7 +118,7 @@ export class CodeeditorService {
     if (snap && snapStr && idx) {
       const snapBuf = decodeB64(snapStr);
       // 위에서 새로운 codeeditor을 업데이트 했음으로 데이터를 업데이트 해준다. ( 없을 경우에는 그냥 docs로 가게 된다. )
-      this.codeeditorRepo.applySnapshot(roomName, new Uint8Array(snapBuf));
+      this.codeeditorRepo.applySnapshot(room_id, new Uint8Array(snapBuf));
       snapshotIdx = idx; // 가장 마지막으로 업데이트
     }
 
@@ -131,11 +131,11 @@ export class CodeeditorService {
       const uB64 = row.message[CACHE_CODEEDITOR_STREAM_KEY_NAME.UPDATE] as string | undefined;
       if (!uB64) continue;
       const uBuf = decodeB64(uB64);
-      this.codeeditorRepo.applyAndAppendUpdate(roomName, new Uint8Array(uBuf));
+      this.codeeditorRepo.applyAndAppendUpdate(room_id, new Uint8Array(uBuf));
     }
 
     // 마지막 stream 까지 업데이트 시킨다.
-    return this.codeeditorRepo.encodeFull(roomName);
+    return this.codeeditorRepo.encodeFull(room_id);
   }
 
   // stream update
@@ -155,14 +155,14 @@ export class CodeeditorService {
   }
 
   // stream 300 마다 snapshot 작성
-  async maybeSnapShot(roomName: string, room_id: string) {
-    const state = this.codeeditorRepo.ensure(roomName);
+  async maybeSnapShot(room_id: string) {
+    const state = this.codeeditorRepo.ensure(room_id);
     if (state.seq % SNAPSHOT_N !== 0) return; // 현재 stream이 정한 갯수 만큼 찍혔다면 업데이트한다.
 
     // 추후 여러 pod 대비 lock을 추가해야 한다. ( 지금은 스킵 )
 
     try {
-      const snapU8 = this.codeeditorRepo.encodeSnapshot(roomName); // snapshot을 만든다. ( 성능 병목 현상이 뜨는 장소 )
+      const snapU8 = this.codeeditorRepo.encodeSnapshot(room_id); // snapshot을 만든다. ( 성능 병목 현상이 뜨는 장소 )
       const snapB64 = encodeB64(snapU8);
       const ts = String(Date.now());
 

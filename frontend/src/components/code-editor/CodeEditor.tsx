@@ -27,6 +27,7 @@ type CodeEditorProps = {
  * - server -> client: 'yjs-update' 단일/배치 브로드캐스트
  * - client -> server: 'yjs-update' { last_seq, update? | updates? }
  * - client -> server: 'yjs-sync-req' { last_seq, reason? }
+ * - client -> server: 'yjs-ready' (리스너 준비 완료 후 init 요청)
  */
 
 type YjsInitPayload = {
@@ -119,6 +120,9 @@ export default function CodeEditor({
   const dirtyRef = useRef<boolean>(false); // ack 대기 중 변경이 더 생겼는지
   const syncReqInFlightRef = useRef<boolean>(false); // sync-req 폭주 방지
 
+  // ✅ yjs-ready 중복 방지
+  const readySentRef = useRef<boolean>(false);
+
   const handleMount = async (
     editor: monaco.editor.IStandaloneCodeEditor,
     monaco: typeof import('monaco-editor'),
@@ -139,12 +143,7 @@ export default function CodeEditor({
     if (!model) return;
 
     const { MonacoBinding } = await import('y-monaco');
-    const binding = new MonacoBinding(
-      yText,
-      model,
-      new Set([editor]),
-      awareness,
-    );
+    const binding = new MonacoBinding(yText, model, new Set([editor]), awareness);
 
     const undoManager = new Y.UndoManager(yText, {
       trackedOrigins: new Set([binding]),
@@ -247,6 +246,8 @@ export default function CodeEditor({
       awaitingAckRef.current = false;
       dirtyRef.current = false;
       syncReqInFlightRef.current = false;
+
+      console.log(data);
     };
     socket.on('yjs-init', onYjsInit);
 
@@ -333,6 +334,15 @@ export default function CodeEditor({
       syncReqInFlightRef.current = false;
     };
     socket.on('yjs-update', onYjsRemoteUpdate);
+
+    /**
+     * ---- ✅ Ready handshake ----
+     * 모든 리스너 등록이 끝난 뒤에 서버에 init 요청
+     */
+    if (!readySentRef.current) {
+      readySentRef.current = true;
+      socket.emit('yjs-ready');
+    }
 
     /**
      * ---- Yjs -> Socket (local updates) ----
@@ -481,6 +491,9 @@ export default function CodeEditor({
      * ---- cleanup ----
      */
     cleanupRef.current = () => {
+      // ✅ ready flag reset (선택이지만 깔끔)
+      readySentRef.current = false;
+
       // socket handler 제거
       socket.off('awareness-update', onAwarenessUpdate);
       socket.off('yjs-init', onYjsInit);
