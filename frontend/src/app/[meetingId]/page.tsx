@@ -81,9 +81,11 @@ export default function MeetingPage() {
     const onRoomJoined = async ({
       ok,
       user_id,
+      is_hosted,
     }: {
       ok: boolean;
       user_id: string;
+      is_hosted: boolean;
     }) => {
       if (ok) {
         // 비회원인 경우 임시 id 저장
@@ -92,6 +94,7 @@ export default function MeetingPage() {
         // SDP / ICE / DTLS 초기화 진행
         const transports = await initMediasoupTransports(socket);
         setMediasoupTransports(socket, transports);
+        setMeetingInfo({ isHosted: is_hosted });
 
         // 회의실로 이동
         setIsPasswordModalOpen(false);
@@ -178,7 +181,7 @@ export default function MeetingPage() {
           )}
         </>
       ) : (
-        <MeetingRoom meetingId={meetingId} />
+        <MeetingRoom />
       )}
     </main>
   );

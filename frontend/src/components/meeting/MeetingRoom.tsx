@@ -29,7 +29,7 @@ import VideoView from './media/VideoView';
 import AudioView from '@/components/meeting/media/AudioView';
 import MainVideo from '@/components/meeting/MainVideo';
 
-export default function MeetingRoom({ meetingId }: { meetingId: string }) {
+export default function MeetingRoom() {
   const {
     media,
     isInfoOpen,
@@ -366,7 +366,7 @@ export default function MeetingRoom({ meetingId }: { meetingId: string }) {
 
       <MeetingMenu />
 
-      {isInfoOpen && <InfoModal meetingId={meetingId} />}
+      {isInfoOpen && <InfoModal />}
     </main>
   );
 }

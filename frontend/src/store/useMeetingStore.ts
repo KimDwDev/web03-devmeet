@@ -15,15 +15,21 @@ const INITIAL_MEDIA_STATE: MediaState = {
   micPermission: 'unknown',
 };
 
-const INITIAL_MEETING_INFO: MeetingInfoResponse = {
+const INITIAL_MEETING_INFO: MeetingInfo = {
   title: '',
   host_nickname: '',
   current_participants: 0,
   max_participants: 0,
   has_password: false,
+  meetingId: '',
 };
 
 const VISIBLE_COUNT = 5;
+
+type MeetingInfo = MeetingInfoResponse & {
+  meetingId: string;
+  isHosted?: boolean;
+};
 
 interface MeetingState {
   media: MediaState;
@@ -34,9 +40,8 @@ interface MeetingState {
   speakingMembers: Record<string, boolean>;
   orderedMemberIds: string[];
   pinnedMemberIds: string[];
-  meetingInfo: MeetingInfoResponse;
+  meetingInfo: MeetingInfo;
   lastSpeakerId: string | null;
-  meetingId: string | null;
 
   isInfoOpen: boolean;
   isMemberOpen: boolean;
@@ -54,9 +59,7 @@ interface MeetingActions {
   setScreenSharer: (sharer: { id: string; nickname: string } | null) => void;
   setSpeaking: (userId: string, isSpeaking: boolean) => void;
   togglePin: (userId: string) => void;
-  setMeetingInfo: (
-    info: Partial<MeetingInfoResponse & { meetingId: string }>,
-  ) => void;
+  setMeetingInfo: (info: Partial<MeetingInfo>) => void;
 
   setMemberStream: (
     userId: string,
@@ -91,7 +94,6 @@ export const useMeetingStore = create<MeetingState & MeetingActions>((set) => ({
   pinnedMemberIds: [],
   meetingInfo: INITIAL_MEETING_INFO,
   lastSpeakerId: null,
-  meetingId: null,
 
   isInfoOpen: false,
   isMemberOpen: false,

@@ -12,7 +12,7 @@ export const useCodeEditorSocket = () => {
 
   const { setCodeEditorSocket } = useToolSocketStore();
   const { setIsOpen } = useMeetingStore();
-  const meetingId = useMeetingStore.getState().meetingId;
+  const meetingId = useMeetingStore.getState().meetingInfo.meetingId;
 
   const connectToTool = useCallback(
     (tool: string, ticket: string, type: 'main' | 'sub') => {
