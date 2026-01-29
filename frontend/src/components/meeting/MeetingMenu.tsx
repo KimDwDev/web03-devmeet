@@ -156,7 +156,13 @@ export default function MeetingMenu() {
 
     if (isWhiteboardOpen) {
       // 이미 열려있으면 -> 연결 끊고 닫기
-      closeWhiteboard();
+      setIsExitModalOpen({
+        title: '화이트보드 종료',
+        message:
+          '화이트보드를 종료할까요?\n다른 사용자의 화이트보드도 함께 종료돼요.',
+        confirmText: '종료',
+        onConfirm: closeWhiteboard,
+      });
     } else {
       // 닫혀있으면 -> 연결 시도
       openWhiteboard();
@@ -178,7 +184,13 @@ export default function MeetingMenu() {
     if (isCodeEditorOpening) return;
 
     if (isCodeEditorOpen) {
-      closeCodeEditor();
+      setIsExitModalOpen({
+        title: '코드 에디터 종료',
+        message:
+          '코드 에디터를 종료할까요?\n다른 사용자의 코드 에디터도 함께 종료돼요.',
+        confirmText: '종료',
+        onConfirm: closeCodeEditor,
+      });
     } else {
       openCodeEditor();
     }
@@ -192,8 +204,12 @@ export default function MeetingMenu() {
   };
 
   const router = useRouter();
-  const [isExitModalOpen, setIsExitModalOpen] = useState(false);
-  const toggleExitModal = () => setIsExitModalOpen((prev) => !prev);
+  const [isExitModalOpen, setIsExitModalOpen] = useState<{
+    title: string;
+    message: string;
+    confirmText: string;
+    onConfirm: () => void;
+  } | null>(null);
   const onExit = () => {
     useChatStore.getState().reset();
     router.replace('/');
@@ -340,19 +356,29 @@ export default function MeetingMenu() {
         <MeetingButton
           icon={<ExitMeetingIcon className="h-8 w-8" />}
           text="나가기"
-          onClick={toggleExitModal}
+          onClick={() =>
+            setIsExitModalOpen({
+              title: '회의 나가기',
+              message: '회의를 나갈까요?',
+              confirmText: '나가기',
+              onConfirm: onExit,
+            })
+          }
         />
       </section>
       {isExitModalOpen && (
         <Modal
-          title="회의 나가기"
+          title={isExitModalOpen.title}
           cancelText="취소"
-          onCancel={toggleExitModal}
-          confirmText="나가기"
-          onConfirm={onExit}
+          onCancel={() => setIsExitModalOpen(null)}
+          confirmText={isExitModalOpen.confirmText}
+          onConfirm={() => {
+            isExitModalOpen.onConfirm();
+            setIsExitModalOpen(null);
+          }}
           isWarning
         >
-          회의를 나갈까요?
+          {isExitModalOpen.message}
         </Modal>
       )}
 
