@@ -48,6 +48,26 @@ export default function ChatModal() {
 
   const { uploadFile, uploading, percent } = useFileUpload(socket);
 
+  const checkIsNearBottom = () => {
+    const container = scrollRef.current;
+    if (!container) return false;
+
+    const threshold = 150;
+    return (
+      container.scrollHeight - container.scrollTop - container.clientHeight <
+      threshold
+    );
+  };
+
+  // 사용자가 직접 스크롤할 때 호출되는 함수
+  const handleScroll = () => {
+    if (!showScrollBtn) return;
+
+    if (checkIsNearBottom()) {
+      if (showScrollBtn) setScrollBtn(false);
+    }
+  };
+
   // 파일 선택 핸들러
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
@@ -214,6 +234,7 @@ export default function ChatModal() {
       {/* 채팅 내역 */}
       <section
         ref={scrollRef}
+        onScroll={handleScroll}
         className="chat-scrollbar flex-1 overflow-y-auto scroll-smooth"
       >
         {messages.map((chat) => (
@@ -221,22 +242,11 @@ export default function ChatModal() {
             key={chat.id}
             {...chat}
             onImageLoad={() => {
-              const container = scrollRef.current;
-              if (!container) return;
-
-              const threshold = 150;
-              const isNearBottom =
-                container.scrollHeight -
-                  container.scrollTop -
-                  container.clientHeight <
-                threshold;
-
-              if (isNearBottom) {
-                container.scrollTo({
-                  top: container.scrollHeight,
-                  behavior: 'smooth',
-                });
-              }
+              if (!checkIsNearBottom()) return;
+              scrollRef.current?.scrollTo({
+                top: scrollRef.current.scrollHeight,
+                behavior: 'smooth',
+              });
             }}
           />
         ))}
