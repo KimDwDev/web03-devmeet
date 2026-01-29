@@ -83,8 +83,8 @@ export const useWhiteboardSocket = () => {
     const { whiteboardSocket } = useToolSocketStore.getState();
 
     if (whiteboardSocket) {
-      whiteboardSocket.off();
-      whiteboardSocket.disconnect();
+      whiteboardSocket.emit('whiteboard:disconnect');
+
       setWhiteboardSocket(null);
     }
   };
