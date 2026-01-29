@@ -132,7 +132,7 @@ export default function ToolbarContainer() {
           onClick={(e) => togglePanelWithSelect('shape', e)}
           bgColor="bg-white"
           hvColor="bg-neutral-100"
-          activeBgColor="bg-sky-200"
+          activeBgColor="bg-neutral-200"
         />
 
         <NavButton
@@ -184,7 +184,7 @@ export default function ToolbarContainer() {
           onClick={(e) => togglePanelWithSelect('stack', e)}
           bgColor="bg-white"
           hvColor="bg-neutral-100"
-          activeBgColor="bg-sky-200"
+          activeBgColor="bg-neutral-200"
         />
 
         <NavButton
