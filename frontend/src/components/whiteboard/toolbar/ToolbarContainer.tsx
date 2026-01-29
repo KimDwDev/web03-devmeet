@@ -102,7 +102,7 @@ export default function ToolbarContainer() {
   return (
     <div
       ref={toolbarRef}
-      className="absolute top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2"
+      className="absolute top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2 select-none"
     >
       <div className="flex items-center gap-1 rounded-lg border border-neutral-200 bg-white p-2 shadow-sm">
         <NavButton
