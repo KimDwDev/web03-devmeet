@@ -188,16 +188,12 @@ export const useWhiteboardYjs = (socket: Socket | null) => {
 
     // 사용자 연결 해제 처리
     const onUserDisconnected = ({ userId }: { userId: string }) => {
-      console.log(`[Whiteboard] User ${userId} disconnected`);
-      // Awareness Store에서 해당 사용자 제거
       useWhiteboardAwarenessStore.getState().removeUser(userId);
     };
     socket.on('user-disconnected', onUserDisconnected);
 
     // 내 소켓이 끊어졌을 때 처리
     const onDisconnect = (reason: string) => {
-      console.log(`[Whiteboard] Disconnected: ${reason}`);
-      // 내 awareness 상태 정리
       if (awareness) {
         awareness.setLocalState(null);
       }
@@ -250,7 +246,7 @@ export const useWhiteboardYjs = (socket: Socket | null) => {
           serverSeqRef.current = payload.seq;
         }
       } catch (e) {
-        console.error('[Yjs] yjs-init apply error', e);
+        requestSync(0);
       }
     };
     socket.on('yjs-init', onYjsInit);
@@ -299,7 +295,6 @@ export const useWhiteboardYjs = (socket: Socket | null) => {
 
         Y.applyUpdate(ydoc, normalizeToU8(update), 'remote');
       } catch (e) {
-        console.error('[Yjs] yjs-update apply error', e);
         requestSync(serverSeqRef.current);
       }
     };
@@ -312,8 +307,6 @@ export const useWhiteboardYjs = (socket: Socket | null) => {
       try {
         Y.applyUpdate(ydoc, normalizeToU8(payload.update), 'remote-full');
         serverSeqRef.current = payload.seq;
-      } catch (e) {
-        console.error('[Yjs] yjs-sync-full apply error', e);
       } finally {
         syncingRef.current = false;
       }
@@ -327,7 +320,6 @@ export const useWhiteboardYjs = (socket: Socket | null) => {
         }
         serverSeqRef.current = payload.to;
       } catch (e) {
-        console.error('[Yjs] yjs-sync-delta apply error', e);
         requestSync(serverSeqRef.current);
       } finally {
         syncingRef.current = false;
@@ -346,11 +338,16 @@ export const useWhiteboardYjs = (socket: Socket | null) => {
     // -------------------------
     // Awareness 동기화 (안정형)
     // -------------------------
-    const onAwarenessUpdateLocal = ({ added, updated, removed }: any) => {
-      const changed = (added as number[]).concat(
-        updated as number[],
-        removed as number[],
-      );
+    const onAwarenessUpdateLocal = ({
+      added,
+      updated,
+      removed,
+    }: {
+      added: number[];
+      updated: number[];
+      removed: number[];
+    }) => {
+      const changed = added.concat(updated, removed);
       if (changed.length === 0) return;
 
       const u = awarenessProtocol.encodeAwarenessUpdate(awareness, changed);
@@ -366,7 +363,7 @@ export const useWhiteboardYjs = (socket: Socket | null) => {
           'remote',
         );
       } catch (e) {
-        console.error('[Yjs] awareness-update apply error', e);
+        // Awareness 업데이트 실패 시 무시 (일시적 상태이므로)
       }
     };
     socket.on('awareness-update', onAwarenessUpdateRemote);
@@ -421,11 +418,17 @@ export const useWhiteboardYjs = (socket: Socket | null) => {
     // -------------------------
     // Awareness change -> store 반영
     // -------------------------
-    const onAwarenessChange = ({ added, updated }: any) => {
+    const onAwarenessChange = ({
+      added,
+      updated,
+    }: {
+      added: number[];
+      updated: number[];
+    }) => {
       const states = awareness.getStates();
 
       // 추가/업데이트된 사용자만 처리함
-      [...(added as number[]), ...(updated as number[])].forEach((clientId) => {
+      [...added, ...updated].forEach((clientId) => {
         if (clientId === ydoc.clientID) return;
 
         const state = states.get(clientId);
