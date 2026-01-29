@@ -1,0 +1,19 @@
+global:
+  # 기존과 동일한데 좀 더 추가 될 수 있다.
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["prometheus:9090"]
+
+  # node 서버 외부에서 메트릭을 긁어오기 위해 있는 metrics
+  - job_name: node-exporter
+    static_configs:
+      - targets: ["node-exporter:9100"]
+
+  # docker 등 컨테이너의 메트릭 정보를 긁어오기 위해 필요한 metrics
+  - job_name: cadvisor
+    static_configs:
+      - targets: ["cadvisor:8080"]
