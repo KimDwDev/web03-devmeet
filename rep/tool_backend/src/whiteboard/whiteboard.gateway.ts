@@ -17,7 +17,7 @@ import { EVENT_STREAM_NAME } from '@/infra/event-stream/event-stream.constants';
 import { WHITEBOARD_WEBSOCKET } from '@/infra/websocket/websocket.constants';
 import { WhiteboardWebsocket } from '@/infra/websocket/whiteboard/whiteboard.service';
 import { WhiteboardRepository } from '@/infra/memory/tool';
-import { error } from 'console';
+
 
 @WebSocketGateway({
   namespace: process.env.NODE_BACKEND_WEBSOCKET_WHITEBOARD,
