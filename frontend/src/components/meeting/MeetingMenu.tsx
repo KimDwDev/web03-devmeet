@@ -21,10 +21,11 @@ import { useCodeEditorSocket } from '@/hooks/useCodeEditorSocket';
 import { useProduce } from '@/hooks/useProduce';
 import { useMeetingStore } from '@/store/useMeetingStore';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useWhiteboardSocket } from '@/hooks/useWhiteboardSocket';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import { useChatStore } from '@/store/useChatStore';
+import { useClickOutside } from '@/hooks/useClickOutside';
 
 export default function MeetingMenu() {
   const { width } = useWindowSize();
@@ -253,6 +254,13 @@ export default function MeetingMenu() {
     },
   ];
 
+  const moreMenuBtnRef = useRef<HTMLDivElement>(null);
+  useClickOutside(
+    moreMenuBtnRef,
+    () => setIsMoreMenuOpen(false),
+    isMoreMenuOpen,
+  );
+
   return (
     <nav className="flex w-full justify-between px-4 py-2">
       {/* 미디어 관련 메뉴 */}
@@ -307,7 +315,7 @@ export default function MeetingMenu() {
         className={`flex w-full gap-2 ${width <= BREAK_POINT ? 'max-w-44' : 'max-w-22'}`}
       >
         {width <= BREAK_POINT && (
-          <div className="relative w-full">
+          <div ref={moreMenuBtnRef} className="relative w-full">
             <MeetingButton
               icon={<MoreMenuIcon className="h-8 w-8" />}
               text="더보기"
