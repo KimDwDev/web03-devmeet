@@ -217,7 +217,16 @@ export default function ChatModal() {
         className="chat-scrollbar flex-1 overflow-y-auto scroll-smooth"
       >
         {messages.map((chat) => (
-          <ChatListItem key={chat.id} {...chat} />
+          <ChatListItem
+            key={chat.id}
+            {...chat}
+            onImageLoad={() => {
+              scrollRef.current?.scrollTo({
+                top: scrollRef.current.scrollHeight,
+                behavior: 'smooth',
+              });
+            }}
+          />
         ))}
 
         {showScrollBtn && (

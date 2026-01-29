@@ -11,7 +11,8 @@ export function ChatListItem({
   profileImg,
   createdAt,
   content,
-}: ChatMessage) {
+  onImageLoad,
+}: ChatMessage & { onImageLoad?: () => void }) {
   const socket = useMeetingSocketStore((s) => s.socket);
   const { downloadFile, downloadingId } = useFileDownload(socket);
 
@@ -67,6 +68,7 @@ export function ChatListItem({
               className="h-auto w-full object-contain"
               src={content.fileUrl as string}
               alt={content.filename}
+              onLoad={onImageLoad}
             />
 
             <button
