@@ -40,6 +40,7 @@ export default function MeetingMenu() {
     isMemberOpen,
     isWhiteboardOpen,
     isCodeEditorOpen,
+    isCodeEditorOpening,
     setIsOpen,
     screenSharer,
   } = useMeetingStore();
@@ -150,6 +151,8 @@ export default function MeetingMenu() {
       });
       return;
     }
+    
+    if (isCodeEditorOpening) return;
 
     if (isCodeEditorOpen) {
       closeCodeEditor();
