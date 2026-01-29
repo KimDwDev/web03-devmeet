@@ -73,7 +73,17 @@ export default function MeetingMenu() {
     if (audioOn) {
       stopAudioProduce();
     } else {
-      await startAudioProduce();
+      try {
+        await startAudioProduce();
+      } catch (error) {
+        if (error instanceof Error && error.message === 'PERMISSION_DENIED') {
+          setError({
+            title: '마이크 권한 필요',
+            message:
+              '브라우저 설정에서 마이크 권한을 허용해 주세요.\n(주소창 왼쪽 자물쇠 아이콘 클릭)',
+          });
+        }
+      }
     }
   };
 
@@ -82,7 +92,17 @@ export default function MeetingMenu() {
     if (videoOn) {
       stopVideoProduce();
     } else {
-      await startVideoProduce();
+      try {
+        await startVideoProduce();
+      } catch (error) {
+        if (error instanceof Error && error.message === 'PERMISSION_DENIED') {
+          setError({
+            title: '카메라 권한 필요',
+            message:
+              '브라우저 설정에서 카메라 권한을 허용해 주세요.\n(주소창 왼쪽 자물쇠 아이콘 클릭)',
+          });
+        }
+      }
     }
   };
 
