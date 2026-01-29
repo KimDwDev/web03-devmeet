@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 import { useWhiteboardLocalStore } from '@/store/useWhiteboardLocalStore';
 import { useAddWhiteboardItem } from '@/hooks/useAddWhiteboardItem';
@@ -43,6 +43,10 @@ export default function ToolbarContainer() {
 
   // 커서 모드 상태
   const cursorMode = useWhiteboardLocalStore((state) => state.cursorMode);
+
+  useEffect(() => {
+    setActiveTool(cursorMode);
+  }, [cursorMode]);
 
   // 아이템 추가 훅
   const { handleAddText, handleAddArrow, handleAddLine, handleAddImage } =
