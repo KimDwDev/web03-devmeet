@@ -1,5 +1,5 @@
 import { AuthType, ToolBackendPayload } from '@/guards/guard.type';
-import { Inject, Logger, UseInterceptors } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -18,11 +18,8 @@ import { EVENT_STREAM_NAME } from '@/infra/event-stream/event-stream.constants';
 import { WHITEBOARD_WEBSOCKET } from '@/infra/websocket/websocket.constants';
 import { WhiteboardWebsocket } from '@/infra/websocket/whiteboard/whiteboard.service';
 import { WhiteboardRepository } from '@/infra/memory/tool';
-import { WsMetricsInterceptor } from '@/infra/metric/prometheus/prometheus.intercepter';
 import { PrometheusService } from '@/infra/metric/prometheus/prometheus.service';
 
-
-@UseInterceptors(WsMetricsInterceptor)
 @WebSocketGateway({
   namespace: process.env.NODE_BACKEND_WEBSOCKET_WHITEBOARD,
   path: process.env.NODE_BACKEND_WEBSOCKET_PREFIX,
@@ -83,10 +80,6 @@ export class WhiteboardWebsocketGateway
   // 시점: afterInit의 미들웨어(next())가 성공적으로 호출된 직후 실행
   // 역할: 소켓을 특정 그룹(Room)에 넣고 필요한 초기 설정과 로그 작성
   async handleConnection(client: Socket) {
-    const ns : string = client.nsp.name; // 여기서는 /signal이 될 예정이다.
-    this.prom.wsConnectionsCurrent.labels(ns).inc();
-    this.prom.wsConnectionsTotal.labels(ns).inc();
-
     const payload: ToolBackendPayload = client.data.payload;
     if (!payload) {
       client.disconnect(true);
@@ -252,11 +245,11 @@ export class WhiteboardWebsocketGateway
   @SubscribeMessage(WHITEBOARD_EVENT_NAME.DISCONNECT_WHITEBOARD)
   disconnectWhiteboard(@ConnectedSocket() client: Socket) {
     try {
-      this.whiteboardSocket.disconnectWhiteboardRoom(client.data.payload.room_id)
+      this.whiteboardSocket.disconnectWhiteboardRoom(client.data.payload.room_id);
     } catch (err) {
-      this.logger.error(`Whiteboard Disconnect Error : ${err}`)
-    };  
-  };
+      this.logger.error(`Whiteboard Disconnect Error : ${err}`);
+    }
+  }
 
   // 요소 생성
   @SubscribeMessage(WHITEBOARD_EVENT_NAME.CREATE_ELEMENT)
