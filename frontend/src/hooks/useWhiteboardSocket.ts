@@ -83,8 +83,9 @@ export const useWhiteboardSocket = () => {
     const { whiteboardSocket } = useToolSocketStore.getState();
 
     if (whiteboardSocket) {
-      whiteboardSocket.emit('whiteboard:disconnect');
-
+      // 소켓 연결 해제
+      whiteboardSocket.emit("whiteboard:disconnect");
+      // 스토어 비우기
       setWhiteboardSocket(null);
     }
   };
