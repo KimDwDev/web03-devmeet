@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 import { useWhiteboardLocalStore } from '@/store/useWhiteboardLocalStore';
 import { useAddWhiteboardItem } from '@/hooks/useAddWhiteboardItem';
@@ -43,6 +43,10 @@ export default function ToolbarContainer() {
 
   // 커서 모드 상태
   const cursorMode = useWhiteboardLocalStore((state) => state.cursorMode);
+
+  useEffect(() => {
+    setActiveTool(cursorMode);
+  }, [cursorMode]);
 
   // 아이템 추가 훅
   const { handleAddText, handleAddArrow, handleAddLine, handleAddImage } =
@@ -107,7 +111,7 @@ export default function ToolbarContainer() {
       <div className="flex items-center gap-1 rounded-lg border border-neutral-200 bg-white p-2 shadow-sm">
         <NavButton
           icon={CursorIcon}
-          label="선택"
+          label="선택 (V)"
           isActive={activeTool === 'select'}
           onClick={() => toggleCursorMode('select')}
           bgColor="bg-white"
@@ -117,7 +121,7 @@ export default function ToolbarContainer() {
 
         <NavButton
           icon={HandIcon}
-          label="화면 이동"
+          label="화면 이동 (H)"
           isActive={activeTool === 'move'}
           onClick={() => toggleCursorMode('move')}
           bgColor="bg-white"
