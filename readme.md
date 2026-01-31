@@ -129,9 +129,23 @@ dev:meet는 분리된 협업 도구로 인한 비효율을 하나의 흐름으�
 
 ## 🚀 빌드 & 실행 (One-shot)
 
-### 환경변수 등록
+### 1. 저장소 clone
 
-**[frontend/.env.example]**
+```bash
+git clone https://github.com/boostcampwm2025/web03-devmeet.git
+cd devmeet
+```
+
+### 2. 환경변수 설정
+
+각 서비스별로 .env.example 파일을 기반으로 .env 파일을 생성합니다.
+
+<details>
+  <summary>
+  <b>
+  [frontend/.env.example]
+  </b>
+  </summary>
 
 ```bash
 # 소켓 통신 및 공통 서버 기본 주소
@@ -159,9 +173,14 @@ NEXT_PUBLIC_TOOL_BACKEND_WEBSOCKET_CODEEDITOR=""
 NEXT_PUBLIC_TOOL_BACKEND_WEBSOCKET_WHITEBOARD=""
 ```
 
-<br/>
+</details>
 
-**[rep/main_backend/.env.example]**
+<details>
+  <summary>
+  <b>
+  [rep/main_backend/.env.example]
+  </b>
+  </summary>
 
 ```bash
 # 기본 서버 설정
@@ -235,7 +254,14 @@ NODE_APP_PROMETHEUS_SERVICE_LABEL="main-backend"
 NODE_APP_PROMETHEUS_SERVICE_ENV="local"
 ```
 
-**[rep/tool_backend/.env.example]**
+</details>
+
+<details>
+  <summary>
+  <b>
+  [rep/tool_backend/.env.example]
+  </b>
+  </summary>
 
 ```bash
 # 기본 서버 설정
@@ -297,6 +323,61 @@ NODE_APP_TICKET_AUD="tool_backend"
 NODE_APP_PROMETHEUS_DEFAULT_PREFIX="tool_backend_"
 NODE_APP_PROMETHEUS_SERVICE_LABEL="tool-backend"
 NODE_APP_PROMETHEUS_SERVICE_ENV="local"
+```
+
+</details>
+
+<br/>
+
+**frontend**
+
+```bash
+cd frontend
+cp .env.example .env.local
+```
+
+**main_backend**
+
+```bash
+cd backend/main
+cp .env.example .env
+```
+
+**tool_backend**
+
+```bash
+cd backend/tool
+cp .env.example .env
+```
+
+⚠️ 실제 서버 주소, DB 정보, 인증 키 값은 .env 파일에 직접 입력해야 합니다.
+
+<br/>
+
+### 3. 개발 모드 실행
+
+Docker 없이 개별 서비스 단독 실행도 가능합니다.
+
+### Frontend
+
+```bash
+cd frontend
+pnpm install
+pnpm run dev
+```
+
+### Backend
+
+```bash
+cd rep/main_backend
+pnpm install
+pnpm start:dev
+```
+
+```bash
+cd rep/tool_backend
+pnpm install
+pnpm start:dev
 ```
 
 <br/>
