@@ -1,4 +1,4 @@
-# 🍀 dev:meet - 코드와 설계, 대화의 맥락이 하나로 이어지는 공간
+# 🖥️ dev:meet - 코드와 설계, 대화의 맥락이 하나로 이어지는 공간
 
 <img width="7680" height="4320" alt="Image" src="https://github.com/user-attachments/assets/d31ac372-65a2-420c-8957-a568f2aba90c" />
 
@@ -129,7 +129,9 @@ dev:meet는 분리된 협업 도구로 인한 비효율을 하나의 흐름으�
 
 <br/>
 
-## 🏗️ 아키텍처
+## 🏗️ 시스템 아키텍처
+
+<img width="12986" height="6982" alt="Image" src="https://github.com/user-attachments/assets/e8ce3827-2eca-4664-9f08-cd6d0fcfed0f" />
 
 <br/>
 
@@ -393,7 +395,27 @@ pnpm start:dev
 ### [FE] 통화 음질 개선
 
 - 작성자: Tony (윤장호)
-- 링크: [[FE] 통화 음질 개선](https://github.com/boostcampwm2025/web03-devmeet/wiki/%5BFE%5D-%ED%86%B5%ED%99%94-%EC%9D%8C%EC%A7%88-%EA%B0%9C%EC%84%A0)
+- [🔗 링크](https://github.com/boostcampwm2025/web03-devmeet/wiki/%5BFE%5D-%ED%86%B5%ED%99%94-%EC%9D%8C%EC%A7%88-%EA%B0%9C%EC%84%A0)
+
+### [FE] React-Konva 라이브러리 환경에서의 SVG 렌더링 이슈 및 해결 방안
+
+- 작성자: Kuma (차지태)
+- [🔗 링크](https://github.com/boostcampwm2025/web03-devmeet/wiki/%5BFE%5D-React%E2%80%90Konva-%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC-%ED%99%98%EA%B2%BD%EC%97%90%EC%84%9C%EC%9D%98-SVG-%EB%A0%8C%EB%8D%94%EB%A7%81-%EC%9D%B4%EC%8A%88-%EB%B0%8F-%ED%95%B4%EA%B2%B0-%EB%B0%A9%EC%95%88)
+
+### [FE] canvas 재렌더링 문제 및 개선
+
+- 작성자: Andrew (이선우)
+- [🔗 링크](https://github.com/boostcampwm2025/web03-devmeet/wiki/%5BFE%5D-canvas-%EC%9E%AC%EB%A0%8C%EB%8D%94%EB%A7%81-%EB%AC%B8%EC%A0%9C-%EB%B0%8F-%EA%B0%9C%EC%84%A0)
+
+### [FE] Redo Undo 시 아이템 중복 생성 문제 및 개선
+
+- 작성자: Andrew (이선우)
+- [🔗 링크](https://github.com/boostcampwm2025/web03-devmeet/wiki/%5BFE%5D-Redo-Undo-%EC%8B%9C-%EC%95%84%EC%9D%B4%ED%85%9C-%EC%A4%91%EB%B3%B5-%EC%83%9D%EC%84%B1-%EB%AC%B8%EC%A0%9C-%EB%B0%8F-%EA%B0%9C%EC%84%A0)
+
+### [FE] next image의 비동기 로딩에 따른 Layout Shift와 채팅 스크롤 동기화 개선
+
+- 작성자: Lisey (이채민)
+- [🔗 링크](https://github.com/boostcampwm2025/web03-devmeet/wiki/%5BFE%5D-next-image%EC%9D%98-%EB%B9%84%EB%8F%99%EA%B8%B0-%EB%A1%9C%EB%94%A9%EC%97%90-%EB%94%B0%EB%A5%B8-Layout-Shift%EC%99%80-%EC%B1%84%ED%8C%85-%EC%8A%A4%ED%81%AC%EB%A1%A4-%EB%8F%99%EA%B8%B0%ED%99%94-%EA%B0%9C%EC%84%A0)
 
 <br/>
 
