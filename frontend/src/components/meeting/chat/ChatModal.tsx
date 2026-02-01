@@ -10,7 +10,7 @@ import { useUserStore } from '@/store/useUserStore';
 import { mapRecvPayloadToChatMessage } from '@/utils/chat';
 import { formatFileSize } from '@/utils/formatter';
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChatListItem } from './ChatListItem';
 import { useChatScroll } from '@/hooks/chat/useChatScroll';
 
@@ -95,6 +95,21 @@ export default function ChatModal() {
     e.target.value = '';
   };
 
+  // 파일 삭제 및 메모리 해제용
+  const clearFilePreview = (file: PendingFile) => {
+    if (file.preview) {
+      URL.revokeObjectURL(file.preview);
+    }
+  };
+
+  const removePendingFiles = (id: string) => {
+    setPendingFiles((prev) => {
+      const target = prev.find((f) => f.id === id);
+      if (target) clearFilePreview(target);
+      return prev.filter((f) => f.id !== id);
+    });
+  };
+
   const onCloseClick = () => setIsOpen('isChatOpen', false);
 
   // 메시지 수신 시 스크롤 처리
@@ -119,9 +134,9 @@ export default function ChatModal() {
 
     if (isMyMessage || isAtBottomRef.current) {
       scrollToBottom(isMyMessage);
-      setScrollBtn(false);
+      setScrollBtn((prev) => (prev !== false ? false : prev));
     } else {
-      setScrollBtn(true);
+      setScrollBtn((prev) => (prev !== true ? true : prev));
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -147,22 +162,28 @@ export default function ChatModal() {
     if (pendingFiles.length > 0) {
       const filesToUpload = [...pendingFiles];
 
-      for (const item of filesToUpload) {
+      const uploadPromises = filesToUpload.map(async (item) => {
         try {
           const res = await uploadFile(item.file);
-
           if (res) {
             // 서버 응답 데이터를 채팅 메시지 객체로 변환
             const newMessage = mapRecvPayloadToChatMessage(res);
             useChatStore.getState().addMessage(newMessage);
-
-            setPendingFiles((prev) => prev.filter((f) => f.id !== item.id));
+            clearFilePreview(item); // 성공하면 메모리 해제
+            return item.id;
           }
         } catch (err) {
           console.error(`${item.file.name} 업로드에 실패했습니다.`);
+          return null;
         }
-      }
-      setPendingFiles([]);
+      });
+
+      const results = await Promise.all(uploadPromises);
+      const successfulIds = results.filter((id) => id !== null);
+
+      setPendingFiles((prev) =>
+        prev.filter((f) => !successfulIds.includes(f.id)),
+      );
     }
   };
 
@@ -188,13 +209,11 @@ export default function ChatModal() {
     setHasValue(obj.value.trim().length > 0);
   };
 
-  const removePendingFiles = (id: string) => {
-    setPendingFiles((prev) => {
-      const target = prev.find((f) => f.id === id);
-      if (target?.preview) URL.revokeObjectURL(target.preview); // 메모리 해제
-      return prev.filter((f) => f.id !== id);
-    });
-  };
+  const handleImageLoad = useCallback((isMine: boolean) => {
+    if (isAtBottomRef.current || isMine) {
+      scrollToBottom(true);
+    }
+  }, []);
 
   return (
     <aside className="meeting-side-modal z-6">
@@ -222,11 +241,7 @@ export default function ChatModal() {
           <ChatListItem
             key={chat.id}
             {...chat}
-            onImageLoad={() => {
-              if (isAtBottomRef.current || chat.userId === userId) {
-                scrollToBottom(true);
-              }
-            }}
+            onImageLoad={() => handleImageLoad(chat.userId === userId)}
           />
         ))}
 
