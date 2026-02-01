@@ -388,6 +388,15 @@ pnpm start:dev
 
 <br/>
 
+## ⛏️ 문제 해결 과정 및 기술 경험
+
+### [FE] 통화 음질 개선
+
+- 작성자: Tony (윤장호)
+- 링크: [[FE] 통화 음질 개선](https://github.com/boostcampwm2025/web03-devmeet/wiki/%5BFE%5D-%ED%86%B5%ED%99%94-%EC%9D%8C%EC%A7%88-%EA%B0%9C%EC%84%A0)
+
+<br/>
+
 ## 🦉 Team OwlCloud 소개
 
 <img width="1600" alt="image" src="https://github.com/user-attachments/assets/8a2a6ac9-b3a8-4bc1-a034-f20247321440" />
