@@ -91,16 +91,19 @@ export default function TextItem({
       }}
       onTransform={(e) => {
         if (!isInteractive) return;
-        if (isMultiSelected) return;
-        const node = e.target;
+        const node = e.target as Konva.Text;
         const scaleX = node.scaleX();
         const scaleY = node.scaleY();
 
-        // Transform 중에도 스케일 보정
+        // Transform 중 스케일 보정
         if (scaleX !== 1 || scaleY !== 1) {
           node.scaleX(1);
           node.scaleY(1);
           node.width(node.width() * scaleX);
+
+          if (isMultiSelected) {
+            node.fontSize(node.fontSize() * scaleY);
+          }
         }
       }}
       onTransformEnd={(e) => {

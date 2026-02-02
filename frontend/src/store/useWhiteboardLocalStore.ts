@@ -304,6 +304,15 @@ export const useWhiteboardLocalStore = create<LocalStore>((set, get) => ({
           width: item.width || 0,
           height: item.height || 0,
         };
+      } else if (item.type === 'text' && 'width' in item) {
+        const fontSize = 'fontSize' in item ? item.fontSize || 16 : 16;
+        const estimatedHeight = fontSize * 1.5; // 높이 없으면 다중 선택 안돼서 추정 높이 추가
+        itemRect = {
+          x: item.x,
+          y: item.y,
+          width: item.width || 0,
+          height: estimatedHeight,
+        };
       } else {
         // width/height 없는 아이템은 넘김
         return;

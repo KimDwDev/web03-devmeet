@@ -156,15 +156,18 @@ export default function ItemTransformer({
         }
 
         if (item.type === 'text') {
-          const newWidth = Math.max(5, node.width() * scaleX);
+          const textNode = node as Konva.Text;
+          const newWidth = Math.max(5, textNode.width() * scaleX);
+          const newFontSize = Math.max(8, textNode.fontSize());
 
-          node.scaleX(1);
-          node.scaleY(1);
+          textNode.scaleX(1);
+          textNode.scaleY(1);
 
           updateItem(id, {
             x,
             y,
             width: newWidth,
+            fontSize: newFontSize,
             rotation,
           });
           return;
