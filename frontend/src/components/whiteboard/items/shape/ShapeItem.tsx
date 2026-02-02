@@ -193,27 +193,24 @@ export default function ShapeItem({
 
   const handleDragMove = useCallback(
     (e: Konva.KonvaEventObject<DragEvent>) => {
-      if (isMultiSelected) return;
       const newX = e.target.x();
       const newY = e.target.y();
 
       onDragMove?.(newX, newY);
     },
-    [onDragMove, isMultiSelected],
+    [onDragMove],
   );
 
   const handleDragEnd = useCallback(
     (e: Konva.KonvaEventObject<DragEvent>) => {
       setIsDragging(false);
-      if (isMultiSelected) return;
-
       const newX = e.target.x();
       const newY = e.target.y();
 
       onChange({ x: newX, y: newY });
       onDragEnd?.();
     },
-    [onChange, onDragEnd, isMultiSelected],
+    [onChange, onDragEnd],
   );
 
   const w = shapeItem.width || 0;

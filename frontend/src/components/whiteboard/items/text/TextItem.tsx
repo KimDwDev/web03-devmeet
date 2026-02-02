@@ -81,12 +81,10 @@ export default function TextItem({
       onDragEnd={(e) => {
         if (!isInteractive) return;
         setIsDragging(false);
-        if (!isMultiSelected) {
-          onChange({
-            x: e.target.x(),
-            y: e.target.y(),
-          });
-        }
+        onChange({
+          x: e.target.x(),
+          y: e.target.y(),
+        });
         onDragEnd?.();
       }}
       onTransform={(e) => {
