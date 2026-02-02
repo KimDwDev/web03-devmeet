@@ -347,9 +347,13 @@ export default function Canvas() {
         return;
       }
 
+      if (selectedIds.includes(id)) {
+        return;
+      }
+
       selectOnly(id);
     },
-    [addToSelection, selectOnly, toggleSelection],
+    [addToSelection, selectOnly, toggleSelection, selectedIds],
   );
 
   // 마우스 이벤트 통합 훅
