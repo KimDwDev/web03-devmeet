@@ -30,10 +30,13 @@ export const useWhiteboardClipboard = () => {
 
   // 붙여넣기 (Paste)
   const paste = useCallback(() => {
+    // 클립보드가 비어있거나 Yjs 연결이 유효하지 않으면 중단
     if (!clipboard || !yItems || !yItems.doc) return;
 
     performTransaction(() => {
+      // 붙여넣기 시 기존 위치에서 오프셋된 위치에 삽입
       const offset = 30;
+      // 복제본 고유 id 생성
       const newId = uuidv4();
 
       // 속성 수정을 위해 임시 객체 생성
@@ -54,13 +57,14 @@ export const useWhiteboardClipboard = () => {
         }
       }
 
-      // unknown 대신 YMapValue 타입을 명시합니다.
+      // Yjs 공유 데이터 구조 생성 및 데이터 주입
       const yMap = new Y.Map<YMapValue>();
 
       Object.entries(newItem).forEach(([key, value]) => {
         if (value !== undefined) yMap.set(key, value as YMapValue);
       });
 
+      // 공유 배열 끝에 삽입 해서 다른 사용자에게 동기화
       yItems.push([yMap]);
     });
   }, [clipboard, yItems, performTransaction]);
