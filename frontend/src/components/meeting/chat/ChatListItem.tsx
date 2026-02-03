@@ -12,7 +12,8 @@ export function ChatListItem({
   createdAt,
   content,
   onImageLoad,
-}: ChatMessage & { onImageLoad?: () => void }) {
+  showProfile,
+}: ChatMessage & { onImageLoad?: () => void; showProfile: boolean }) {
   const socket = useMeetingSocketStore((s) => s.socket);
   const { downloadFile, downloadingId } = useFileDownload(socket);
 
@@ -29,29 +30,37 @@ export function ChatListItem({
   }, [isFile, fileId, fileName, downloadFile]);
 
   return (
-    <div className="flex w-full gap-3 p-4 pb-2">
-      {profileImg ? (
-        <Image
-          width={32}
-          height={32}
-          className="h-8 w-8 rounded-full"
-          src={profileImg}
-          alt={`${nickname}님의 프로필 사진`}
-        />
-      ) : (
-        <div className="flex-center aspect-square h-8 w-8 rounded-full bg-neutral-500 text-sm font-bold text-neutral-50">
-          {nickname[0]}
-        </div>
-      )}
+    <div className={`flex w-full gap-3 px-4 ${showProfile ? 'mt-4' : 'mt-1'}`}>
+      <div className="w-8 shrink-0">
+        {showProfile ? (
+          profileImg ? (
+            <Image
+              width={32}
+              height={32}
+              className="h-8 w-8 rounded-full object-cover"
+              src={profileImg}
+              alt={`${nickname}님의 프로필 사진`}
+            />
+          ) : (
+            <div className="flex-center aspect-square h-8 w-8 rounded-full bg-neutral-500 text-sm font-bold text-neutral-50">
+              {nickname[0]}
+            </div>
+          )
+        ) : null}
+      </div>
 
       <section className="flex flex-col gap-2">
         {/* 댓글 정보 */}
-        <div className="flex items-end gap-2">
-          <span className="text-sm font-bold text-neutral-200">{nickname}</span>
-          <span className="text-[10px] font-bold text-neutral-400">
-            {formatTimestamp(createdAt)}
-          </span>
-        </div>
+        {showProfile && (
+          <div className="flex items-end gap-2">
+            <span className="text-sm font-bold text-neutral-200">
+              {nickname}
+            </span>
+            <span className="text-[10px] font-bold text-neutral-400">
+              {formatTimestamp(createdAt)}
+            </span>
+          </div>
+        )}
 
         {/* 댓글 내용 */}
         {!isFile && content.type === 'text' && (

@@ -248,15 +248,30 @@ export default function ChatModal() {
       <section
         ref={scrollRef}
         onScroll={handleScroll}
-        className="chat-scrollbar flex-1 overflow-y-auto scroll-smooth pb-2"
+        className="chat-scrollbar flex-1 overflow-y-auto scroll-smooth pb-4"
       >
-        {messages.map((chat) => (
-          <ChatListItem
-            key={chat.id}
-            {...chat}
-            onImageLoad={() => handleImageLoad(chat.userId === userId)}
-          />
-        ))}
+        {messages.map((chat, idx) => {
+          const prevMsg = messages[idx - 1];
+
+          const isDifferentUser =
+            !prevMsg || prevMsg.nickname !== chat.nickname;
+          const isTimeDiff = prevMsg
+            ? new Date(chat.createdAt).getTime() -
+                new Date(prevMsg.createdAt).getTime() >
+              60000
+            : true;
+
+          const showProfile = isDifferentUser || isTimeDiff;
+
+          return (
+            <ChatListItem
+              key={chat.id}
+              {...chat}
+              showProfile={showProfile}
+              onImageLoad={() => handleImageLoad(chat.userId === userId)}
+            />
+          );
+        })}
 
         {showScrollBtn && (
           <button
