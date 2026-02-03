@@ -27,7 +27,7 @@ export function useCanvasMouseEvents({
   const lastCursorUpdateRef = useRef(0);
 
   const { handleDrawingStart, currentDrawing } = useDrawing();
-  const { handleEraserStart, handleEraserMove, handleEraserEnd } = useEraser();
+  const { handleEraserStart } = useEraser();
 
   // 커서 위치 업데이트 (스로틀링 30ms)
   const updateCursor = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
@@ -63,37 +63,11 @@ export function useCanvasMouseEvents({
     e: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
   ) => {
     updateCursor(e);
-
-    if (cursorMode === 'eraser') {
-      const point = getCanvasPoint(e);
-      if (point) {
-        handleEraserMove(e, point);
-      }
-    }
-  };
-
-  const handlePointerUp = () => {
-    if (cursorMode === 'eraser') {
-      handleEraserEnd();
-    }
-  };
-
-  const handlePointerLeave = () => {
-    // 펜 그리기 중에는 Stage를 벗어나도 계속 그리기
-    if (cursorMode === 'draw') {
-      return;
-    }
-
-    if (cursorMode === 'eraser') {
-      handleEraserEnd();
-    }
   };
 
   return {
     handlePointerDown,
     handlePointerMove,
-    handlePointerUp,
-    handlePointerLeave,
     currentDrawing,
   };
 }

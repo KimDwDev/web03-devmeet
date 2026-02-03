@@ -306,15 +306,10 @@ export default function Canvas() {
   );
 
   // 마우스 이벤트 통합 훅
-  const {
-    handlePointerDown,
-    handlePointerMove,
-    handlePointerUp,
-    handlePointerLeave,
-    currentDrawing,
-  } = useCanvasMouseEvents({
-    onDeselect: handleCheckDeselect,
-  });
+  const { handlePointerDown, handlePointerMove, currentDrawing } =
+    useCanvasMouseEvents({
+      onDeselect: handleCheckDeselect,
+    });
 
   // 캔버스 드래그 가능 여부
   const isDraggable = useWhiteboardLocalStore(
@@ -411,11 +406,8 @@ export default function Canvas() {
         }}
         onMouseDown={handlePointerDown}
         onMouseMove={handlePointerMove}
-        onMouseUp={handlePointerUp}
-        onMouseLeave={handlePointerLeave}
         onTouchStart={handlePointerDown}
         onTouchMove={handlePointerMove}
-        onTouchEnd={handlePointerUp}
       >
         <Layer
           clipX={0}
