@@ -212,18 +212,8 @@ export default function MeetingMenu() {
     onConfirm: () => void;
   } | null>(null);
   const onExit = () => {
-    const { audioProducer, videoProducer } =
-      useMeetingSocketStore.getState().producers;
-
-    // 하드웨어 정리
-    audioProducer?.track?.stop();
-    audioProducer?.close();
-    videoProducer?.track?.stop();
-    videoProducer?.close();
-    stopScreenProduce();
-
     useChatStore.getState().reset();
-    router.replace('/');
+    window.location.href = '/';
   };
 
   const MENU_ITEMS = [
