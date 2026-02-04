@@ -103,3 +103,12 @@ export interface MeetingInfoResponse {
   max_participants: number;
   has_password: boolean;
 }
+
+export interface MemberListItemProps {
+  id: string;
+  name: string;
+  audio: boolean;
+  video: boolean;
+  profileImg: string | null;
+  reverseDropdown?: boolean;
+}
