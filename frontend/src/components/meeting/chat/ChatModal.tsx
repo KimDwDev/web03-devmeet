@@ -289,12 +289,15 @@ export default function ChatModal() {
       >
         {/* 파일 업로드 현황 */}
         {pendingFiles.length > 0 && (
-          <div className="flex flex-wrap gap-3 bg-neutral-700/50 p-3">
-            {pendingFiles.map((f, idx) => {
+          <div className="horizon-scrollbar flex gap-3 overflow-x-auto overflow-y-hidden bg-neutral-700/50 p-3">
+            {pendingFiles.map((f) => {
               const containerClass =
                 f.mediaType === 'file' ? 'w-full' : 'w-fit';
               return (
-                <div key={f.id} className={`group relative ${containerClass}`}>
+                <div
+                  key={f.id}
+                  className={`group relative shrink-0 ${containerClass}`}
+                >
                   {f.mediaType === 'image' && f.preview && (
                     <Image
                       src={f.preview}
