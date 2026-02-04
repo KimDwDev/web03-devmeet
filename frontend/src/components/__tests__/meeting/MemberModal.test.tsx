@@ -4,10 +4,6 @@ import { useUserStore } from '@/store/useUserStore';
 import MemberModal from '@/components/meeting/MemberModal';
 import { MemberListItemProps } from '@/types/meeting';
 
-// --------------------------------------------------------------------------
-// 1. Mocking: 자식 컴포넌트와 아이콘
-// --------------------------------------------------------------------------
-
 // MemberListItem이 올바른 Props를 받았는지 확인하기 위해
 // 전달받은 Props를 data-attribute로 렌더링하는 Mock 컴포넌트를 만듭니다.
 jest.mock('@/components/meeting/MemberListItem', () => {
