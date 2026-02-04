@@ -5,6 +5,7 @@ import {
   MeetingMemberInfo,
   MemberStream,
 } from '@/types/meeting';
+import { reorderMembers } from '@/utils/meeting';
 import { create } from 'zustand';
 
 const INITIAL_MEDIA_STATE: MediaState = {
@@ -180,30 +181,22 @@ export const useMeetingStore = create<MeetingState & MeetingActions>((set) => ({
   setScreenSharer: (sharer) => set(() => ({ screenSharer: sharer })),
   setSpeaking: (userId, isSpeaking) =>
     set((state) => {
-      const lastSpeakerUpdate = isSpeaking ? { lastSpeakerId: userId } : {};
-
-      // 말하기를 멈췄을 때나, 고정된 유저는 계산에서 제외
-      if (!isSpeaking && state.pinnedMemberIds.includes(userId)) {
-        return {
-          speakingMembers: { ...state.speakingMembers, [userId]: isSpeaking },
-        };
-      }
-
-      const currentIndex = state.orderedMemberIds.indexOf(userId);
-      let nextOrderedIds = state.orderedMemberIds;
-
-      // 발언한 사람이 첫 페이지에 존재하는지 확인
-      if (isSpeaking && currentIndex > VISIBLE_COUNT - 1) {
-        const otherIds = state.orderedMemberIds.filter(
-          (id) => !state.pinnedMemberIds.includes(id) && id !== userId,
-        );
-        nextOrderedIds = [...state.pinnedMemberIds, userId, ...otherIds];
-      }
+      const nextOrderedIds = isSpeaking
+        ? reorderMembers({
+            orderedIds: state.orderedMemberIds,
+            pinnedIds: state.pinnedMemberIds,
+            speakingUserId: userId,
+            visibleCount: VISIBLE_COUNT,
+          })
+        : state.orderedMemberIds;
 
       return {
-        speakingMembers: { ...state.speakingMembers, [userId]: isSpeaking },
+        speakingMembers: {
+          ...state.speakingMembers,
+          [userId]: isSpeaking,
+        },
         orderedMemberIds: nextOrderedIds,
-        ...lastSpeakerUpdate,
+        ...(isSpeaking ? { lastSpeakerId: userId } : {}),
       };
     }),
   togglePin: (userId) =>
