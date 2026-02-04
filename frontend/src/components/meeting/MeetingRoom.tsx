@@ -329,7 +329,6 @@ export default function MeetingRoom() {
         // 유저가 cam을 켰을때 addMember에 들어갈 요소 추가
         const member = useMeetingStore.getState().members[userId];
         newAddMember(member);
-        console.log("비디오 다시 켰음")
       };
     };
     socket.on("room:camera_on", onCameraProduced);
