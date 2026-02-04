@@ -122,12 +122,33 @@ export function useSelectionBox({ stageRef, enabled }: UseSelectionBoxProps) {
       finishSelectionBox();
     };
 
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDrawingRef.current || e.touches.length === 0) return;
+
+      const touch = e.touches[0];
+      const point = getCanvasPoint(touch.clientX, touch.clientY);
+      if (point) {
+        updateSelectionBox(point.x, point.y);
+      }
+    };
+
+    const handleTouchEnd = () => {
+      if (!isDrawingRef.current) return;
+
+      isDrawingRef.current = false;
+      finishSelectionBox();
+    };
+
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('touchmove', handleTouchMove);
+    window.addEventListener('touchend', handleTouchEnd);
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
     };
   }, [enabled, updateSelectionBox, finishSelectionBox, getCanvasPoint]);
 
