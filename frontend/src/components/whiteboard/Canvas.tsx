@@ -28,6 +28,7 @@ import { useClickOutside } from '@/hooks/useClickOutside';
 import { useCanvasInteraction } from '@/hooks/useCanvasInteraction';
 import { useArrowHandles } from '@/hooks/useArrowHandles';
 import { useCanvasMouseEvents } from '@/hooks/useCanvasMouseEvents';
+import { useCanvasShortcuts } from '@/hooks/useCanvasShortcuts';
 import { useSelectionBox } from '@/hooks/useSelectionBox';
 import { useMultiDrag } from '@/hooks/useMultiDrag';
 import { usePinchZoom } from '@/hooks/usePinchZoom';
@@ -286,11 +287,19 @@ export default function Canvas() {
     handleArrowDblClick,
     draggingPoints,
     snapIndicator,
+    deleteControlPoint,
   } = useArrowHandles({
     arrow: isArrowOrLineSelected ? (selectedItem as ArrowItem) : null,
     items,
     stageRef,
     updateItem,
+  });
+
+  // 키보드 단축키 훅
+  useCanvasShortcuts({
+    isArrowOrLineSelected,
+    selectedHandleIndex,
+    deleteControlPoint,
   });
 
   // 도형 더블클릭 핸들러 (텍스트 편집 모드)
