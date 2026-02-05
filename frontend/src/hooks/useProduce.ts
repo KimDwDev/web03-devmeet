@@ -82,7 +82,7 @@ export const useProduce = () => {
   };
 
   const startVideoProduce = async () => {
-    const { isProducing } = useMeetingSocketStore.getState();
+    const { isProducing, producers, setCamStream, stopCamStream } = useMeetingSocketStore.getState();
     if (!helpers || isProducing.video) {
       return;
     }
@@ -95,19 +95,34 @@ export const useProduce = () => {
           ...(media.cameraId ? { deviceId: { exact: media.cameraId } } : {}),
           width:  { ideal: 1280 },
           height: { ideal: 720 },
-          frameRate: { ideal: 24, max: 30 },
+          frameRate: { ideal: 24, max: 24 },
         },
       });
+      
+      setCamStream(stream);
       const videoTrack = stream.getVideoTracks()[0];
+      
+      let videoProducer = producers.videoProducer;
 
-      const videoProducer = await helpers.produceCam(videoTrack);
-      setProducer('videoProducer', videoProducer);
+      // 첫 생성시에는 track만 보내고 정리
+      if (!videoProducer) {
+        const created = await helpers.produceCam(videoTrack);
+        setProducer('videoProducer', created);
+        setMedia({ videoOn: true });
+
+        created.on('trackended', () => {
+          stopAudioProduce();
+          stopNoiseSuppressor();
+        });
+        return;
+      }
+
+      await videoProducer.replaceTrack({ track: videoTrack });
+      videoProducer = await helpers.produceCam(videoTrack, true);
       setMedia({ videoOn: true });
-
-      videoProducer.on('trackended', () => {
-        stopVideoProduce();
-      });
     } catch (error) {
+      stopCamStream();
+
       if (
         error instanceof Error &&
         (error.name === 'NotAllowedError' ||
@@ -122,13 +137,15 @@ export const useProduce = () => {
   };
 
   const stopVideoProduce = () => {
-    const { videoProducer } = useMeetingSocketStore.getState().producers;
+    const { producers, stopCamStream } = useMeetingSocketStore.getState();
+    const videoProducer = producers.videoProducer;
 
     if (socket && videoProducer) {
       socket.emit('signaling:ws:produce_off', {
         producer_id: videoProducer.id,
         kind: 'video',
       });
+      stopCamStream();
       setMedia({ videoOn: false });
     }
   };
@@ -150,7 +167,7 @@ export const useProduce = () => {
       // screen에 경우는 video의 설정을 적어서 보내준다.
       stream = await navigator.mediaDevices.getDisplayMedia({
         video: {
-          frameRate: { ideal: 15, max: 30 },
+          frameRate: { ideal: 30, max: 30 },
           width:  { ideal: 1920 }, // 화면 공유쪽 테스팅 진행
           height: { ideal: 1080 },
         }, 
