@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { S3_DISK } from "./disk.constants";
-import { HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { ConfigService } from "@nestjs/config";
 import path from "path";
@@ -59,6 +59,21 @@ export class DiskService {
     };
   };
 
-  // get
+  // img용 url
+  async getDownloadUrl({ pathName }: { pathName: string[] }) : Promise<string> {
+    const key_name = path.posix.join(this.prefixName, ...pathName);
+    const Bucket = this.config.get<string>('NODE_APP_AWS_BUCKET_NAME', "bucket_name");
+    const expiresIn = this.config.get<number>("NODE_APP_AWS_PRESIGNED_URL_EXPIRES_SEC", 300); 
 
+    const command = new GetObjectCommand({
+      Bucket,
+      Key: key_name,
+    });
+
+    const downloadUrl = await getSignedUrl(this.disk, command, {
+      expiresIn,
+    });
+
+    return downloadUrl;
+  }
 };
