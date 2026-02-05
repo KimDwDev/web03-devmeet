@@ -57,6 +57,7 @@ interface MeetingActions {
   setMedia: (media: Partial<MediaState>) => void;
   setMembers: (members: MeetingMemberInfo[]) => void;
   addMember: (member: MeetingMemberInfo) => void;
+  newAddMember: (member: MeetingMemberInfo) => void;
   removeMember: (userId: string) => void;
   setScreenSharer: (sharer: { id: string; nickname: string } | null) => void;
   setSpeaking: (
@@ -160,6 +161,35 @@ export const useMeetingStore = create<MeetingState & MeetingActions>((set) => ({
         orderedMemberIds: nextOrderedIds,
       };
     }),
+  newAddMember: (member) =>
+    set((state) => {
+      if (!member?.user_id) return state;
+
+      const userId = member.user_id;
+      const existingStream = state.memberStreams[userId] || {};
+
+      const remainingIds = state.orderedMemberIds.filter(
+        (id) => id !== userId && !state.pinnedMemberIds.includes(id),
+      );
+
+      const nextOrderedIds = [
+        ...state.pinnedMemberIds,
+        userId,
+        ...remainingIds,
+      ];
+
+      return {
+        members: {
+          ...state.members,
+          [userId]: member,
+        },
+        memberStreams: {
+          ...state.memberStreams,
+          [userId]: existingStream,
+        },
+        orderedMemberIds: nextOrderedIds,
+      };
+    }),
   removeMember: (userId) =>
     set((state) => {
       const nextMembers = { ...state.members };
@@ -184,7 +214,6 @@ export const useMeetingStore = create<MeetingState & MeetingActions>((set) => ({
     set((state) => {
       const lastSpeakerUpdate = isSpeaking ? { lastSpeakerId: userId } : {};
 
-      // 말하기를 멈췄을 때나, 고정된 유저는 계산에서 제외
       if (!isSpeaking && state.pinnedMemberIds.includes(userId)) {
         return {
           speakingMembers: { ...state.speakingMembers, [userId]: isSpeaking },
